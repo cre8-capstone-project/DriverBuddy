@@ -1,0 +1,5 @@
+/.expo
+node_modules
+expo-env.d.ts
+*.json
+*.config.js

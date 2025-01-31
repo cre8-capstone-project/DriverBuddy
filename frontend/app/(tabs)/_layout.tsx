@@ -1,7 +1,7 @@
 import {Tabs} from 'expo-router';
 import React from 'react';
 import {Platform} from 'react-native';
-
+import {Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
 import {HapticTab} from '@/components/HapticTab';
 import {IconSymbol} from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -30,14 +30,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({color}) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({color}) => <MaterialCommunityIcons size={28} name="home" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="eye-detection"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({color}) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Eye Detection',
+          tabBarIcon: ({color}) => <MaterialCommunityIcons size={28} name="eye" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: 'Map',
+          tabBarIcon: ({color}) => <MaterialCommunityIcons size={28} name="map" color={color} />,
         }}
       />
     </Tabs>

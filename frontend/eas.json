@@ -11,12 +11,6 @@
         "buildType": "apk"
       }
     }
-    // "preview": {
-    //   "distribution": "internal"
-    // },
-    // "production": {
-    //   "autoIncrement": true
-    // }
   },
   "submit": {
     "production": {}

@@ -8,10 +8,15 @@ import 'react-native-reanimated';
 
 import {useColorScheme} from '@/hooks/useColorScheme';
 
+import {useLiveQuery, initDatabase} from '@/db/db';
+import * as schema from '@/db/schema';
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const db = initDatabase();
+  const {data} = useLiveQuery(db.select().from(schema.users));
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -22,6 +27,9 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+  useEffect(() => {
+    console.log(data);
+  }, [data, loaded]);
 
   if (!loaded) {
     return null;

@@ -16,9 +16,12 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@libsql/client": "^0.14.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.39.1",
     "expo": "~52.0.27",
     "expo-blur": "~14.0.2",
     "expo-build-properties": "~0.13.2",
@@ -30,6 +33,7 @@
     "expo-router": "~4.0.17",
     "expo-speech": "~13.0.1",
     "expo-splash-screen": "~0.29.21",
+    "expo-sqlite": "^15.1.1",
     "expo-status-bar": "~2.0.1",
     "expo-symbols": "~0.2.1",
     "expo-system-ui": "~4.0.7",
@@ -53,6 +57,7 @@
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
+    "drizzle-kit": "^0.30.4",
     "eslint": "^8.57.0",
     "eslint-config-expo": "~8.0.1",
     "eslint-config-prettier": "^10.0.1",
@@ -62,6 +67,7 @@
     "jest-expo": "~52.0.3",
     "prettier": "^3.4.2",
     "react-test-renderer": "18.3.1",
+    "tsx": "^4.19.2",
     "typescript": "^5.3.3"
   },
   "private": true

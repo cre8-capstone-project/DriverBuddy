@@ -9,19 +9,27 @@ import {
 } from 'react-native-vision-camera';
 import {Face, Camera, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSpeech} from '@/components/ai-companion/useSpeech';
+import {useOpenAI} from '@/components/ai-companion/useOpenAI';
 
 function App() {
-  //
-  // face recognition
-  //
+  const {speak} = useSpeech();
+  const {alertDrowsiness} = useOpenAI();
+
   const device = useCameraDevice('front');
   const {hasPermission} = useCameraPermission();
-  const tabBarHeight = useBottomTabBarHeight();
+
   const {width, height} = useWindowDimensions();
+  const tabBarHeight = useBottomTabBarHeight();
   const cameraHeight = height - tabBarHeight;
+
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const isAlertTriggeredRef = useRef(false);
 
   const [leftEyeStatus, setLeftEyeStatus] = useState(false);
   const [rightEyeStatus, setRightEyeStatus] = useState(false);
+
+  // Configuration options for face detection (Refer to Google ML Kit documentation)
   const faceDetectionOptions = useRef<FaceDetectionOptions>({
     performanceMode: 'accurate',
     landmarkMode: 'all',
@@ -74,20 +82,46 @@ function App() {
   const handleFacesDetection = (faces: Face[], frame: Frame) => {
     if (faces.length > 0) {
       const face = faces[0];
-
-      const isLeftEyeClosed = face.leftEyeOpenProbability < 0.8;
-      const isRightEyeClosed = face.rightEyeOpenProbability < 0.8;
-
-      setLeftEyeStatus(isLeftEyeClosed ? true : false);
-      setRightEyeStatus(isRightEyeClosed ? true : false);
-
-      const {bounds} = faces[0];
-      const {width, height, x, y} = bounds;
-      aFaceW.value = width;
-      aFaceH.value = height;
-      aFaceX.value = x;
-      aFaceY.value = y;
+      checkEyeStatus(face);
+      updateFaceBounds(face);
     }
+  };
+
+  const updateFaceBounds = (face: Face) => {
+    const {bounds} = face;
+    const {width, height, x, y} = bounds;
+
+    aFaceW.value = width;
+    aFaceH.value = height;
+    aFaceX.value = x;
+    aFaceY.value = y;
+  };
+
+  const checkEyeStatus = (face: Face) => {
+    const isLeftEyeClosed = face.leftEyeOpenProbability < 0.8;
+    const isRightEyeClosed = face.rightEyeOpenProbability < 0.8;
+
+    setLeftEyeStatus(isLeftEyeClosed);
+    setRightEyeStatus(isRightEyeClosed);
+
+    if (isLeftEyeClosed && isRightEyeClosed) {
+      if (!isAlertTriggeredRef.current) {
+        if (!startTime) {
+          setStartTime(Date.now());
+        } else if (Date.now() - startTime > 1000) {
+          triggerAlert();
+          isAlertTriggeredRef.current = true;
+        }
+      }
+    } else {
+      setStartTime(null);
+    }
+  };
+
+  const triggerAlert = async () => {
+    const message = await alertDrowsiness();
+    speak(message);
+    isAlertTriggeredRef.current = false;
   };
 
   if (!hasPermission) return <Text>Permission Error</Text>;

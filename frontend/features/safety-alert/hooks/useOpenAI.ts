@@ -4,7 +4,7 @@ import axios from 'axios';
 export const useOpenAI = () => {
   const [loading, setLoading] = useState(false);
 
-  const alertDrowsiness = async (): Promise<string> => {
+  const generateMessage = async (content: string): Promise<string> => {
     const startTime = performance.now();
     setLoading(true);
     try {
@@ -15,8 +15,7 @@ export const useOpenAI = () => {
           messages: [
             {
               role: 'user',
-              content:
-                'The driver seems to be feeling drowsy. Please create a concise and casual message that sounds more like someone is directly speaking to them to alert them.',
+              content: content,
             },
           ],
         },
@@ -41,5 +40,5 @@ export const useOpenAI = () => {
     }
   };
 
-  return {alertDrowsiness, isAlerting: loading};
+  return {generateMessage, isGeneratingMsg: loading};
 };

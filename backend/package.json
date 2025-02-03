@@ -6,12 +6,15 @@
   "type": "module",
   "scripts": {
     "test": "npm run test",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "start": "node server.js"
   },
   "author": "Vin Souza",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.2"
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.0.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.22.0",
@@ -22,5 +25,6 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.3",
     "prettier": "^3.4.2"
-  }
+  },
+  "keywords": []
 }

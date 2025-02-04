@@ -3,20 +3,27 @@ import {useFonts} from 'expo-font';
 import {Stack} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {StatusBar} from 'expo-status-bar';
-import {useEffect} from 'react';
+import {Suspense, useEffect, useState} from 'react';
 import 'react-native-reanimated';
+import {useMigrations} from 'drizzle-orm/expo-sqlite/migrator';
+import {openDatabaseSync, SQLiteProvider} from 'expo-sqlite';
 
 import {useColorScheme} from '@/hooks/useColorScheme';
 
-import {useLiveQuery, initDatabase} from '@/db/db';
+import migrations from '@/drizzle/migrations';
+import {ActivityIndicator} from 'react-native';
+import {drizzle} from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/db/schema';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+const DATABASE_NAME = 'drivebuddy.db';
+const expo = openDatabaseSync(DATABASE_NAME, {enableChangeListener: true});
+const db = drizzle(expo, {schema: schema});
 
 export default function RootLayout() {
-  const db = initDatabase();
-  const {data} = useLiveQuery(db.select().from(schema.users));
+  const {success, error} = useMigrations(db, migrations);
+  const [settings, setSettings] = useState<any>({});
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -27,21 +34,40 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
-  useEffect(() => {
-    console.log(data);
-  }, [data, loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  useEffect(() => {
+    if (error) {
+      console.log('There was an error using migrations...:' + error.message);
+    }
+    if (success) {
+      console.log('Migrations ran successfully!');
+      const loadData = async () => {
+        try {
+          const response = await db.query.settings.findMany();
+          setSettings(response);
+          console.log(response);
+        } catch (e) {
+          console.log(e);
+        }
+      };
+      loadData();
+    }
+  }, [success, error]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{headerShown: false}} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Suspense fallback={<ActivityIndicator size="large" />}>
+      <SQLiteProvider
+        databaseName={DATABASE_NAME}
+        options={{enableChangeListener: true}}
+        useSuspense>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{headerShown: false}} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </SQLiteProvider>
+    </Suspense>
   );
 }

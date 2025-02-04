@@ -1,9 +1,8 @@
 import {Tabs} from 'expo-router';
 import React from 'react';
 import {Platform} from 'react-native';
-import {Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
+import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {HapticTab} from '@/components/HapticTab';
-import {IconSymbol} from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import {Colors} from '@/constants/Colors';
 import {useColorScheme} from '@/hooks/useColorScheme';
@@ -34,9 +33,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="eye-detection"
+        name="safety-alert"
         options={{
-          title: 'Eye Detection',
+          title: 'Safety Alert',
           tabBarIcon: ({color}) => <MaterialCommunityIcons size={28} name="eye" color={color} />,
         }}
       />

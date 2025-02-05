@@ -8,10 +8,11 @@ const CameraView = ({device}: {device: any}) => {
   const {
     faceDetectionOptions,
     handleFacesDetection,
-    animatedStyle,
+    faceBorderdStyle,
     leftEyeStatus,
     rightEyeStatus,
-    yawAngleStatus,
+    pitchAngleStatus,
+    isWarning,
   } = useFaceDetection();
 
   return (
@@ -23,7 +24,12 @@ const CameraView = ({device}: {device: any}) => {
         faceDetectionCallback={handleFacesDetection}
         faceDetectionOptions={faceDetectionOptions}
       />
-      <Animated.View style={animatedStyle} />
+      <Animated.View style={faceBorderdStyle} />
+      {isWarning && (
+        <View style={styles.warningContainer}>
+          <Text style={styles.warningText}>⚠️ WARNING ⚠️</Text>
+        </View>
+      )}
 
       {/* FOR DEBUG */}
       <View style={styles.tableContainer}>
@@ -41,7 +47,7 @@ const CameraView = ({device}: {device: any}) => {
         </View>
         <View style={styles.tableRow}>
           <Text style={styles.tableCell}>Face Direction</Text>
-          <Text style={styles.tableCell}>{yawAngleStatus}</Text>
+          <Text style={styles.tableCell}>{pitchAngleStatus}</Text>
         </View>
       </View>
     </View>
@@ -51,6 +57,21 @@ const CameraView = ({device}: {device: any}) => {
 const styles = StyleSheet.create({
   container: {flex: 1},
   camera: {...StyleSheet.absoluteFillObject},
+  warningContainer: {
+    position: 'absolute',
+    top: '40%',
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+    paddingVertical: 20,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+  },
+  warningText: {
+    color: 'white',
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
 
   //FOR DEBUG
   tableContainer: {

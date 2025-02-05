@@ -8,13 +8,8 @@ import {useSpeech} from '@/features/safety-alert/hooks/useSpeech';
 import {useOpenAI} from '@/features/safety-alert/hooks/useOpenAI';
 
 export const useFaceDetection = () => {
-  const {speak} = useSpeech();
+  const {speak, isSpeaking} = useSpeech();
   const {generateMessage} = useOpenAI();
-
-  // For FaceBounds drawing
-  const {width, height} = useWindowDimensions();
-  const tabBarHeight = useBottomTabBarHeight();
-  const cameraHeight = height - tabBarHeight;
 
   // For drowsiness detection
   const [startTimeDrowsiness, setStartTimeDrowsiness] = useState<number | null>(null);
@@ -25,16 +20,21 @@ export const useFaceDetection = () => {
   // For looking away detection
   const [startTimeLoookingAway, setStartTimeLoookingAway] = useState<number | null>(null);
   const lookingAwayAlertRef = useRef(false);
-  const [yawAngleStatus, setYawAngleStatus] = useState('center');
+  const [pitchAngleStatus, setPitchAngleStatus] = useState('center');
+
+  // Face detection settings
+  const {width, height} = useWindowDimensions();
+  const tabBarHeight = useBottomTabBarHeight();
+  const cameraHeight = height - tabBarHeight;
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
   const faceDetectionOptions = useRef<FaceDetectionOptions>({
     performanceMode: 'accurate',
     landmarkMode: 'all',
-    // contourMode: 'all',
+    contourMode: 'none',
     classificationMode: 'all',
-    trackingEnabled: true,
+    trackingEnabled: false,
     windowWidth: width,
     windowHeight: cameraHeight,
     autoScale: true,
@@ -44,10 +44,11 @@ export const useFaceDetection = () => {
   const aFaceH = useSharedValue(0);
   const aFaceX = useSharedValue(0);
   const aFaceY = useSharedValue(0);
+  const borderWidth = useSharedValue(4);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const faceBorderdStyle = useAnimatedStyle(() => ({
     position: 'absolute',
-    borderWidth: 4,
+    borderWidth: borderWidth.value,
     borderColor: 'rgb(0,255,0)',
     width: withTiming(aFaceW.value, {duration: 100}),
     height: withTiming(aFaceH.value, {duration: 100}),
@@ -55,33 +56,56 @@ export const useFaceDetection = () => {
     top: withTiming(aFaceY.value, {duration: 100}),
   }));
 
-  const handleFacesDetection = (faces: Face[], frame: Frame) => {
-    if (faces.length > 0) {
-      const face = faces[0];
+  const hideFaceBorder = () => {
+    borderWidth.value = 0;
+  };
 
-      updateFaceBounds(face);
-      const checkDrowsinessPrompt =
-        'The driver seems to be feeling drowsy. Please create a concise and casual message that sounds more like someone is directly speaking to them to alert them.';
-      checkDrowsiness(face, () => generateMessage(checkDrowsinessPrompt));
-      const checkLookingAwayPrompt =
-        'The driver seems to be looking away from the road. Please create a concise and casual message that sounds more like someone is directly speaking to them to alert them and remind them to keep their eyes on the road.';
-      checkLookingAway(face, () => generateMessage(checkLookingAwayPrompt));
+  const showFaceBorder = () => {
+    borderWidth.value = 4;
+  };
+
+  const handleFacesDetection = (faces: Face[], frame: Frame) => {
+    try {
+      if (faces.length > 0) {
+        const face = faces[0];
+        showFaceBorder();
+        updateFaceBounds(face);
+
+        const prompt = `Imagine you're a close friend talking to someone who is feeling drowsy while driving.  
+          Generate a very short, friendly, and attention-grabbing message that sounds natural and conversational.  
+          Keep it simple, casual, and urgent enough to wake them up and keep them focused on the road.`;
+
+        checkDrowsiness(face, () => generateMessage(prompt));
+        checkLookingAway(face, () => generateMessage(prompt));
+      } else {
+        console.log('No face detected');
+        hideFaceBorder();
+        updateFaceBounds();
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const updateFaceBounds = (face: Face) => {
-    const {bounds} = face;
-    const {width, height, x, y} = bounds;
-
-    aFaceW.value = width;
-    aFaceH.value = height;
-    aFaceX.value = x;
-    aFaceY.value = y;
+  const updateFaceBounds = (face?: Face) => {
+    if (face) {
+      const {bounds} = face;
+      const {width, height, x, y} = bounds;
+      aFaceW.value = width;
+      aFaceH.value = height;
+      aFaceX.value = x;
+      aFaceY.value = y;
+    } else {
+      aFaceW.value = 0;
+      aFaceH.value = 0;
+      aFaceX.value = 0;
+      aFaceY.value = 0;
+    }
   };
 
   const checkDrowsiness = (face: Face, alertFunction: () => Promise<string>) => {
-    const isLeftEyeClosed = face.leftEyeOpenProbability < 0.8;
-    const isRightEyeClosed = face.rightEyeOpenProbability < 0.8;
+    const isLeftEyeClosed = face.leftEyeOpenProbability < 0.7; // to be adjusted
+    const isRightEyeClosed = face.rightEyeOpenProbability < 0.7; // to be adjusted
     setLeftEyeStatus(isLeftEyeClosed);
     setRightEyeStatus(isRightEyeClosed);
 
@@ -100,11 +124,12 @@ export const useFaceDetection = () => {
   };
 
   const checkLookingAway = (face: Face, alertFunction: () => Promise<string>) => {
-    const isLookingRight = face.yawAngle < -30;
-    const isLookingLeft = face.yawAngle > 30;
-    setYawAngleStatus(isLookingRight ? 'right' : isLookingLeft ? 'left' : 'center');
+    console.log(face.pitchAngle);
+    const isLookingDown = face.pitchAngle < -5; // to be adjusted
+    const isLookingUp = face.pitchAngle > 15; // to be adjusted
+    setPitchAngleStatus(isLookingUp ? 'up' : isLookingDown ? 'down' : 'center');
 
-    if (yawAngleStatus !== 'center') {
+    if (pitchAngleStatus !== 'center') {
       if (!lookingAwayAlertRef.current) {
         if (!startTimeLoookingAway) {
           setStartTimeLoookingAway(Date.now());
@@ -128,9 +153,10 @@ export const useFaceDetection = () => {
   return {
     faceDetectionOptions,
     handleFacesDetection,
-    animatedStyle,
+    faceBorderdStyle,
     leftEyeStatus,
     rightEyeStatus,
-    yawAngleStatus,
+    pitchAngleStatus,
+    isWarning: isSpeaking,
   };
 };

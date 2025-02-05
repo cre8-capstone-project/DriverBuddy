@@ -5,6 +5,7 @@ import cors from 'cors';
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 // Initiarize Firebase Admin SDK
 const serviceAccount = JSON.parse(fs.readFileSync('./config/serviceAccountKey.json', 'utf-8'));
@@ -12,6 +13,8 @@ const serviceAccount = JSON.parse(fs.readFileSync('./config/serviceAccountKey.js
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
+
+const db = admin.firestore();
 
 // Root end point
 app.get('/', (req, res) => {
@@ -32,6 +35,28 @@ app.get('/test-firebase', async (req, res) => {
       message: 'Firebase connection failed',
       error: error.message,
     });
+  }
+});
+
+// API: Fetch Driver history data
+app.get('/driver-history', async (req, res) => {
+  try {
+    const historyRef = db.collection('driver-history'); // Firestore collection
+    const snapshot = await historyRef.get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({message: 'No driver history found'});
+    }
+
+    const historyData = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json(historyData);
+  } catch (error) {
+    console.error('Error fetching driver history:', error);
+    res.status(500).json({message: 'Failed to fetch driver history', error: error.message});
   }
 });
 

@@ -46,6 +46,15 @@ export default function TabLayout() {
           tabBarIcon: ({color}) => <MaterialCommunityIcons size={28} name="map" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="authentication"
+        options={{
+          title: 'Authentication',
+          tabBarIcon: ({color}) => (
+            <MaterialCommunityIcons size={28} name="account" color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

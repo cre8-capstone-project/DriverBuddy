@@ -10,16 +10,22 @@ import {useOpenAI} from '@/features/safety-alert/hooks/useOpenAI';
 export const useFaceDetection = () => {
   const {speak, isSpeaking} = useSpeech();
   const {generateMessage} = useOpenAI();
+  const alertRef = useRef(false);
+
+  const BLINK_COUNT_THRESHOLD = 30; // to be adjusted
+  const OPEN_EYE_PROBABILITY_THRESHOLD = 0.7; // to be adjusted
+  const EYECLOSE_TIME_THRESHOLD = 1500; // to be adjusted
+  const PITCH_DOWN_ANGLE_THRESHOLD = -5; // to be adjusted
+  const PITCH_UP_ANGLE_THRESHOLD = 15; // to be adjusted
+  const LOOKDOWN_TIME_THRESHOLD = 2000; // to be adjusted
 
   // For drowsiness detection
-  const [startTimeDrowsiness, setStartTimeDrowsiness] = useState<number | null>(null);
-  const drowsinessAlertRef = useRef(false);
+  const startTimeDrowsinessRef = useRef<number | null>(null);
   const [leftEyeStatus, setLeftEyeStatus] = useState(false);
   const [rightEyeStatus, setRightEyeStatus] = useState(false);
 
   // For looking away detection
-  const [startTimeLoookingAway, setStartTimeLoookingAway] = useState<number | null>(null);
-  const lookingAwayAlertRef = useRef(false);
+  const startTimeLookDownRef = useRef<number | null>(null);
   const [pitchAngleStatus, setPitchAngleStatus] = useState('center');
 
   // Face detection settings
@@ -46,7 +52,7 @@ export const useFaceDetection = () => {
   const aFaceY = useSharedValue(0);
   const borderWidth = useSharedValue(4);
 
-  const faceBorderdStyle = useAnimatedStyle(() => ({
+  const faceBorderStyle = useAnimatedStyle(() => ({
     position: 'absolute',
     borderWidth: borderWidth.value,
     borderColor: 'rgb(0,255,0)',
@@ -71,10 +77,9 @@ export const useFaceDetection = () => {
         showFaceBorder();
         updateFaceBounds(face);
 
-        const prompt = `Imagine you're a close friend talking to someone who is feeling drowsy while driving.  
-          Generate a very short, friendly, and attention-grabbing message that sounds natural and conversational.  
-          Keep it simple, casual, and urgent enough to wake them up and keep them focused on the road.`;
-
+        const prompt = `Your friend looks sleepy while driving. 
+                        Please say something over the phone to wake him up from his drowsiness.
+                        The message should be simple and clear.`;
         checkDrowsiness(face, () => generateMessage(prompt));
         checkLookingAway(face, () => generateMessage(prompt));
       } else {
@@ -103,60 +108,84 @@ export const useFaceDetection = () => {
     }
   };
 
+  const [blinkCount, setBlinkCount] = useState(0);
+  const blinkTimestampsRef = useRef<number[]>([]);
+  const blinkStatusRef = useRef<'closed' | 'open'>('open');
+
   const checkDrowsiness = (face: Face, alertFunction: () => Promise<string>) => {
-    const isLeftEyeClosed = face.leftEyeOpenProbability < 0.7; // to be adjusted
-    const isRightEyeClosed = face.rightEyeOpenProbability < 0.7; // to be adjusted
+    const isLeftEyeClosed = face.leftEyeOpenProbability < OPEN_EYE_PROBABILITY_THRESHOLD;
+    const isRightEyeClosed = face.rightEyeOpenProbability < OPEN_EYE_PROBABILITY_THRESHOLD;
     setLeftEyeStatus(isLeftEyeClosed);
     setRightEyeStatus(isRightEyeClosed);
 
     if (isLeftEyeClosed && isRightEyeClosed) {
-      if (!drowsinessAlertRef.current) {
-        if (!startTimeDrowsiness) {
-          setStartTimeDrowsiness(Date.now());
-        } else if (Date.now() - startTimeDrowsiness > 1000 && !lookingAwayAlertRef.current) {
-          triggerAlert(alertFunction);
-          drowsinessAlertRef.current = true;
-        }
+      blinkStatusRef.current = 'closed';
+      if (alertRef.current) return;
+
+      if (startTimeDrowsinessRef.current === null) {
+        startTimeDrowsinessRef.current = Date.now();
+      } else if (Date.now() - startTimeDrowsinessRef.current > EYECLOSE_TIME_THRESHOLD) {
+        triggerAlert(alertFunction);
+        startTimeDrowsinessRef.current = null;
       }
     } else {
-      setStartTimeDrowsiness(null);
+      if (blinkStatusRef.current === 'closed') {
+        recordBlink();
+        if (blinkCount > BLINK_COUNT_THRESHOLD) {
+          triggerAlert(alertFunction);
+          blinkTimestampsRef.current = [];
+        }
+      }
+      blinkStatusRef.current = 'open';
+      startTimeDrowsinessRef.current = null;
     }
   };
 
+  const recordBlink = () => {
+    const now = Date.now();
+
+    // Remove timestamps older than 1 minute
+    blinkTimestampsRef.current = blinkTimestampsRef.current.filter(
+      timestamp => now - timestamp <= 60000,
+    );
+    blinkTimestampsRef.current.push(now);
+    setBlinkCount(blinkTimestampsRef.current.length);
+  };
+
   const checkLookingAway = (face: Face, alertFunction: () => Promise<string>) => {
-    console.log(face.pitchAngle);
-    const isLookingDown = face.pitchAngle < -5; // to be adjusted
-    const isLookingUp = face.pitchAngle > 15; // to be adjusted
+    const isLookingDown = face.pitchAngle < PITCH_DOWN_ANGLE_THRESHOLD;
+    const isLookingUp = face.pitchAngle > PITCH_UP_ANGLE_THRESHOLD;
     setPitchAngleStatus(isLookingUp ? 'up' : isLookingDown ? 'down' : 'center');
 
     if (pitchAngleStatus !== 'center') {
-      if (!lookingAwayAlertRef.current) {
-        if (!startTimeLoookingAway) {
-          setStartTimeLoookingAway(Date.now());
-        } else if (Date.now() - startTimeLoookingAway > 2000 && !drowsinessAlertRef.current) {
-          triggerAlert(alertFunction);
-          lookingAwayAlertRef.current = true;
-        }
+      if (alertRef.current) return;
+
+      if (startTimeLookDownRef.current === null) {
+        startTimeLookDownRef.current = Date.now();
+      } else if (Date.now() - startTimeLookDownRef.current > LOOKDOWN_TIME_THRESHOLD) {
+        triggerAlert(alertFunction);
+        startTimeLookDownRef.current = null;
       }
     } else {
-      setStartTimeLoookingAway(null);
+      startTimeLookDownRef.current = null;
     }
   };
 
   const triggerAlert = async (alertFunction: () => Promise<string>) => {
+    alertRef.current = true;
     const message = await alertFunction();
     speak(message);
-    drowsinessAlertRef.current = false;
-    lookingAwayAlertRef.current = false;
+    alertRef.current = false;
   };
 
   return {
     faceDetectionOptions,
     handleFacesDetection,
-    faceBorderdStyle,
+    faceBorderStyle,
     leftEyeStatus,
     rightEyeStatus,
     pitchAngleStatus,
+    blinkCount,
     isWarning: isSpeaking,
   };
 };

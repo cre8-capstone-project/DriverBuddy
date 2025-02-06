@@ -8,10 +8,11 @@ const CameraView = ({device}: {device: any}) => {
   const {
     faceDetectionOptions,
     handleFacesDetection,
-    faceBorderdStyle,
+    faceBorderStyle,
     leftEyeStatus,
     rightEyeStatus,
     pitchAngleStatus,
+    blinkCount,
     isWarning,
   } = useFaceDetection();
 
@@ -24,7 +25,7 @@ const CameraView = ({device}: {device: any}) => {
         faceDetectionCallback={handleFacesDetection}
         faceDetectionOptions={faceDetectionOptions}
       />
-      <Animated.View style={faceBorderdStyle} />
+      <Animated.View style={faceBorderStyle} />
       {isWarning && (
         <View style={styles.warningContainer}>
           <Text style={styles.warningText}>⚠️ WARNING ⚠️</Text>
@@ -44,6 +45,10 @@ const CameraView = ({device}: {device: any}) => {
           <Text style={[styles.tableCell, rightEyeStatus ? styles.closed : styles.open]}>
             {rightEyeStatus ? 'closed' : 'open'}
           </Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={styles.tableCell}>Blinks/min</Text>
+          <Text style={[styles.tableCell]}>{blinkCount}</Text>
         </View>
         <View style={styles.tableRow}>
           <Text style={styles.tableCell}>Face Direction</Text>

@@ -4,8 +4,8 @@ import {useWindowDimensions} from 'react-native';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {Frame} from 'react-native-vision-camera';
 import {Face, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
-import {useSpeech} from '@/features/safety-alert/hooks/useSpeech';
-import {useOpenAI} from '@/features/safety-alert/hooks/useOpenAI';
+import {useSpeech} from '@/hooks/useSpeech';
+import {useOpenAI} from '@/hooks/useOpenAI';
 
 export const useFaceDetection = () => {
   const {speak, isSpeaking} = useSpeech();

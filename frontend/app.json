@@ -12,19 +12,29 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera.",
-        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your Microphone."
+        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your Microphone.",
+        "NSLocationWhenInUseUsageDescription": "$(PRODUCT_NAME) needs access to your Location to show your position on the map.",
+        "NSLocationAlwaysUsageDescription": "$(PRODUCT_NAME) needs access to your Location to enable location tracking features."
       },
       "bundleIdentifier": "com.cre8.DriveBuddy",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDIAo1tsrhW48a34z8OsWOdMrjsQS9LAt0"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
+      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "package": "com.cre8.DriveBuddy",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDIAo1tsrhW48a34z8OsWOdMrjsQS9LAt0"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -61,6 +71,12 @@
           "android": {
             "minSdkVersion": 26
           }
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "$(PRODUCT_NAME) needs access to your Location."
         }
       ]
     ],

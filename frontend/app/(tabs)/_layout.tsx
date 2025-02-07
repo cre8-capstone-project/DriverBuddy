@@ -35,7 +35,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="safety-alert"
         options={{
-          title: 'Safety Alert',
+          title: 'Alert',
           tabBarIcon: ({color}) => <MaterialCommunityIcons size={28} name="eye" color={color} />,
         }}
       />
@@ -44,6 +44,15 @@ export default function TabLayout() {
         options={{
           title: 'Map',
           tabBarIcon: ({color}) => <MaterialCommunityIcons size={28} name="map" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: 'History',
+          tabBarIcon: ({color}) => (
+            <MaterialCommunityIcons size={28} name="chart-bar" color={color} />
+          ),
         }}
       />
       <Tabs.Screen

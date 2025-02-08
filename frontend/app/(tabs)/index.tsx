@@ -8,6 +8,7 @@ import {HelloWave} from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import {ThemedText} from '@/components/ThemedText';
 import {ThemedView} from '@/components/ThemedView';
+import Companion from '@/features/ai-companion/ui/Companion';
 
 export default function HomeScreen() {
   const contextDb = useSQLiteContext();
@@ -33,6 +34,7 @@ export default function HomeScreen() {
           style={styles.reactLogo}
         />
       }>
+      <Companion />
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />

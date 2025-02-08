@@ -16,7 +16,7 @@
         "NSLocationWhenInUseUsageDescription": "$(PRODUCT_NAME) needs access to your Location to show your position on the map.",
         "NSLocationAlwaysUsageDescription": "$(PRODUCT_NAME) needs access to your Location to enable location tracking features."
       },
-      "bundleIdentifier": "com.cre8.DriveBuddy",
+      "bundleIdentifier": "com.vinsouza.DriveBuddy",
       "googleServicesFile": "./GoogleService-Info.plist",
       "config": {
         "googleMapsApiKey": "AIzaSyDIAo1tsrhW48a34z8OsWOdMrjsQS9LAt0"
@@ -27,8 +27,13 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
-      "package": "com.cre8.DriveBuddy",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "package": "com.vinsouza.DriveBuddy",
       "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
@@ -78,7 +83,14 @@
         {
           "locationAlwaysAndWhenInUsePermission": "$(PRODUCT_NAME) needs access to your Location."
         }
-      ]
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
@@ -88,9 +100,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "b652fd2d-db57-43dd-ac48-6ac5436ff5e0"
+        "projectId": "cbb11a84-1584-46a7-85b9-fb0cb4e000d9"
       }
     },
-    "owner": "cre8"
+    "owner": "vinsouza"
   }
 }

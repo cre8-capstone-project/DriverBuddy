@@ -3,4 +3,5 @@ server/.env
 .DS_Store
 node_modules
 android
+ios
 backend/config/serviceAccountKey.json

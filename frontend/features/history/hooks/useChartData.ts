@@ -1,4 +1,4 @@
-export const useChartData = (viewMode: string) => {
+export const useChartData = (viewMode: string, startDate: Date) => {
   // TODO:
   // This part will be replaced by fetching data through APIs
   // Now, it generates dummy data for sandbox

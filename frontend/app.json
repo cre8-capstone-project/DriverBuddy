@@ -16,7 +16,7 @@
         "NSLocationWhenInUseUsageDescription": "$(PRODUCT_NAME) needs access to your Location to show your position on the map.",
         "NSLocationAlwaysUsageDescription": "$(PRODUCT_NAME) needs access to your Location to enable location tracking features."
       },
-      "bundleIdentifier": "com.vinsouza.DriveBuddy",
+      "bundleIdentifier": "com.cre8.DriveBuddy",
       "googleServicesFile": "./GoogleService-Info.plist",
       "config": {
         "googleMapsApiKey": "AIzaSyDIAo1tsrhW48a34z8OsWOdMrjsQS9LAt0"
@@ -33,7 +33,7 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
       ],
-      "package": "com.vinsouza.DriveBuddy",
+      "package": "com.cre8.DriveBuddy",
       "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
@@ -100,9 +100,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "cbb11a84-1584-46a7-85b9-fb0cb4e000d9"
+        "projectId": "b652fd2d-db57-43dd-ac48-6ac5436ff5e0"
       }
     },
-    "owner": "vinsouza"
+    "owner": "cre8"
   }
 }

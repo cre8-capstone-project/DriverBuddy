@@ -12,7 +12,7 @@ type Props = {
 };
 
 export const Chart = ({data, viewMode}: Props) => {
-  const font = useFont(interFont, 16);
+  const font = useFont(interFont, 14);
 
   return (
     <View style={styles.chartContainer}>
@@ -47,7 +47,6 @@ export const Chart = ({data, viewMode}: Props) => {
             axisSide: 'left',
             domain: [0, 100],
             tickValues: [0, 50, 100],
-            labelColor: 'green',
             enableRescaling: true,
           },
           {
@@ -56,7 +55,7 @@ export const Chart = ({data, viewMode}: Props) => {
             axisSide: 'right',
             domain: [0, 50],
             tickValues: [0, 10, 20, 30],
-            labelColor: 'red',
+            labelColor: '#FF7E5F',
             enableRescaling: true,
           },
         ]}>
@@ -66,12 +65,12 @@ export const Chart = ({data, viewMode}: Props) => {
               chartBounds={chartBounds}
               points={points.hours}
               animate={{type: 'timing', duration: 500}}>
-              <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#00a968', '#00a968']} />
+              <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#00C9FF', '#6F00FF']} />
             </Bar>
             <Line
               points={points.alerts}
-              color="red"
-              strokeWidth={2}
+              color="#FF758C"
+              strokeWidth={3}
               animate={{type: 'timing', duration: 500}}
             />
           </View>

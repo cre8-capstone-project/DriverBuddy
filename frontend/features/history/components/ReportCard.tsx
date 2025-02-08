@@ -13,8 +13,7 @@ export const ReportCard = ({viewMode}: Props) => {
       <Text style={styles.cardTitle}>
         {viewMode.charAt(0).toUpperCase() + viewMode.slice(1)} Report
       </Text>
-      <Text style={styles.cardText}>Highest: 100 | Lowest: 50</Text>
-      <Text style={styles.cardText}>Average: 75</Text>
+      <Text style={styles.cardText}>Detailed information will be displayed here.</Text>
     </View>
   );
 };

@@ -46,7 +46,7 @@ export default function TabLayout() {
           tabBarIcon: ({color}) => <MaterialCommunityIcons size={28} name="map" color={color} />,
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="history"
         options={{
           title: 'History',
@@ -54,8 +54,8 @@ export default function TabLayout() {
             <MaterialCommunityIcons size={28} name="chart-bar" color={color} />
           ),
         }}
-      />
-      <Tabs.Screen
+      /> */}
+      {/* <Tabs.Screen
         name="authentication"
         options={{
           title: 'Authentication',
@@ -63,7 +63,7 @@ export default function TabLayout() {
             <MaterialCommunityIcons size={28} name="account" color={color} />
           ),
         }}
-      />
+      /> */}
     </Tabs>
   );
 }

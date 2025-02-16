@@ -1,100 +1,63 @@
-import React from 'react';
-import {View, StyleSheet, Text} from 'react-native';
-import {Camera} from 'react-native-vision-camera-face-detector';
-import Animated from 'react-native-reanimated';
-import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
+import React, {useEffect} from 'react';
+import {View, Text, StyleSheet} from 'react-native';
+import {
+  useCameraPermission,
+  useCameraDevice,
+  Camera as VisionCamera,
+} from 'react-native-vision-camera';
+import FaceDetection from '@/features/safety-alert/components/FaceDetection';
+import {Button} from '@rneui/themed';
 
-const CameraView = ({device}: {device: any}) => {
-  const {
-    faceDetectionOptions,
-    handleFacesDetection,
-    faceBorderStyle,
-    leftEyeStatus,
-    rightEyeStatus,
-    pitchAngleStatus,
-    blinkCount,
-    isWarning,
-  } = useFaceDetection();
+type Props = {
+  isCameraActive: boolean;
+  setIsCameraActive: (active: boolean) => void;
+};
 
-  return (
+export const CameraView = ({isCameraActive, setIsCameraActive}: Props) => {
+  const {hasPermission} = useCameraPermission();
+  const device = useCameraDevice('front');
+
+  useEffect(() => {
+    (async () => {
+      const status = await VisionCamera.requestCameraPermission();
+      console.log({status});
+    })();
+  }, [device]);
+
+  if (!hasPermission) return <Text>Permission Error</Text>;
+  if (!device) return <Text>Device Not Found Error</Text>;
+
+  return isCameraActive ? (
+    <FaceDetection device={device} />
+  ) : (
     <View style={styles.container}>
-      <Camera
-        style={styles.camera}
-        device={device}
-        isActive={true}
-        faceDetectionCallback={handleFacesDetection}
-        faceDetectionOptions={faceDetectionOptions}
+      <Button
+        title="Start Detection"
+        titleStyle={styles.buttonText}
+        buttonStyle={styles.roundButton}
+        containerStyle={styles.roundButton}
+        onPress={() => setIsCameraActive(true)}
       />
-      <Animated.View style={faceBorderStyle} />
-      {isWarning && (
-        <View style={styles.warningContainer}>
-          <Text style={styles.warningText}>⚠️ WARNING ⚠️</Text>
-        </View>
-      )}
-
-      {/* FOR DEBUG */}
-      <View style={styles.tableContainer}>
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCell}>Left Eye</Text>
-          <Text style={[styles.tableCell, leftEyeStatus ? styles.closed : styles.open]}>
-            {leftEyeStatus ? 'closed' : 'open'}
-          </Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCell}>Right Eye</Text>
-          <Text style={[styles.tableCell, rightEyeStatus ? styles.closed : styles.open]}>
-            {rightEyeStatus ? 'closed' : 'open'}
-          </Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCell}>Blinks/min</Text>
-          <Text style={[styles.tableCell]}>{blinkCount}</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={styles.tableCell}>Face Direction</Text>
-          <Text style={styles.tableCell}>{pitchAngleStatus}</Text>
-        </View>
-      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1},
-  camera: {...StyleSheet.absoluteFillObject},
-  warningContainer: {
-    position: 'absolute',
-    top: '40%',
-    alignSelf: 'center',
-    backgroundColor: 'rgba(255, 0, 0, 0.8)',
-    paddingVertical: 20,
-    paddingHorizontal: 40,
-    borderRadius: 10,
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  warningText: {
+  roundButton: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'blue',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
     color: 'white',
-    fontSize: 28,
     fontWeight: 'bold',
-    textAlign: 'center',
   },
-
-  //FOR DEBUG
-  tableContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 10,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    width: '80%',
-    alignSelf: 'center',
-    paddingVertical: 8,
-  },
-  tableCell: {fontSize: 16, flex: 1, textAlign: 'center'},
-  open: {color: 'green'},
-  closed: {color: 'red'},
 });
-
-export default CameraView;

@@ -55,7 +55,7 @@ export const useFaceDetection = () => {
   const faceBorderStyle = useAnimatedStyle(() => ({
     position: 'absolute',
     borderWidth: borderWidth.value,
-    borderColor: 'rgb(0,255,0)',
+    borderColor: 'cyan',
     width: withTiming(aFaceW.value, {duration: 100}),
     height: withTiming(aFaceH.value, {duration: 100}),
     left: withTiming(aFaceX.value, {duration: 100}),

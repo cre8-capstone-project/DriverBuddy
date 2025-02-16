@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 type Props = {
   isWarning: boolean;
@@ -9,7 +10,8 @@ export const WarningMessage = ({isWarning}: Props) => {
   return (
     isWarning && (
       <View style={styles.warningContainer}>
-        <Text style={styles.warningText}>⚠️ WARNING ⚠️</Text>
+        <Icon style={styles.warningIcon} name="warning" />
+        <Text style={styles.warningText}>Warning</Text>
       </View>
     )
   );
@@ -19,15 +21,16 @@ const styles = StyleSheet.create({
   warningContainer: {
     position: 'absolute',
     top: '50%',
-    alignSelf: 'center',
-    // backgroundColor: 'rgba(255, 0, 0, 0.8)',
-    paddingVertical: 20,
-    paddingHorizontal: 40,
-    borderRadius: 10,
+    left: '50%',
+    transform: [{translateX: '-50%'}, {translateY: '-50%'}],
+  },
+  warningIcon: {
+    fontSize: 150,
+    color: '#D0342C',
   },
   warningText: {
-    color: 'white',
     fontSize: 28,
+    color: '#D0342C',
     fontWeight: 'bold',
     textAlign: 'center',
   },

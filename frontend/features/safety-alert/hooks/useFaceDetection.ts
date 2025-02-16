@@ -1,7 +1,6 @@
 import {useRef, useState} from 'react';
 import {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useWindowDimensions} from 'react-native';
-// import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {Frame} from 'react-native-vision-camera';
 import {Face, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
 import {useSpeech} from '@/hooks/useSpeech';
@@ -26,12 +25,10 @@ export const useFaceDetection = () => {
 
   // For looking away detection
   const startTimeLookDownRef = useRef<number | null>(null);
-  const [pitchAngleStatus, setPitchAngleStatus] = useState('center');
+  const [pitchAngleStatus, setPitchAngleStatus] = useState<'up' | 'center' | 'down'>('center');
 
   // Face detection settings
   const {width, height} = useWindowDimensions();
-  // const tabBarHeight = useBottomTabBarHeight();
-  // const cameraHeight = height - tabBarHeight;
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
@@ -55,7 +52,7 @@ export const useFaceDetection = () => {
   const faceBorderStyle = useAnimatedStyle(() => ({
     position: 'absolute',
     borderWidth: borderWidth.value,
-    borderColor: 'cyan',
+    borderColor: '#00FFFF',
     width: withTiming(aFaceW.value, {duration: 100}),
     height: withTiming(aFaceH.value, {duration: 100}),
     left: withTiming(aFaceX.value, {duration: 100}),
@@ -93,7 +90,7 @@ export const useFaceDetection = () => {
   };
 
   const updateFaceBounds = (face?: Face) => {
-    const PADDING = 20;
+    const PADDING = 10;
 
     if (face) {
       const {bounds} = face;

@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     left: '2%',
   },
   debugText: {
-    color: 'cyan',
+    color: '#00FFFF',
     fontSize: 14,
     fontWeight: 'bold',
   },

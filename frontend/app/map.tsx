@@ -13,7 +13,7 @@ type Region = {
   longitudeDelta: number;
 };
 
-export default function App() {
+export const Map = () => {
   const [location, setLocation] = useState<Region | null>(null);
   const mapRef = useRef<MapView>(null);
 
@@ -71,7 +71,7 @@ export default function App() {
       </View>
     </View>
   );
-}
+};
 
 // Styles for map page
 const mapStyles = StyleSheet.create({

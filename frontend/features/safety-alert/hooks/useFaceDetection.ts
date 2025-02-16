@@ -1,7 +1,7 @@
 import {useRef, useState} from 'react';
 import {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useWindowDimensions} from 'react-native';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
+// import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {Frame} from 'react-native-vision-camera';
 import {Face, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
 import {useSpeech} from '@/hooks/useSpeech';
@@ -30,8 +30,8 @@ export const useFaceDetection = () => {
 
   // Face detection settings
   const {width, height} = useWindowDimensions();
-  const tabBarHeight = useBottomTabBarHeight();
-  const cameraHeight = height - tabBarHeight;
+  // const tabBarHeight = useBottomTabBarHeight();
+  // const cameraHeight = height - tabBarHeight;
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
@@ -42,7 +42,7 @@ export const useFaceDetection = () => {
     classificationMode: 'all',
     trackingEnabled: false,
     windowWidth: width,
-    windowHeight: cameraHeight,
+    windowHeight: height,
     autoScale: true,
   }).current;
 
@@ -67,7 +67,7 @@ export const useFaceDetection = () => {
   };
 
   const showFaceBorder = () => {
-    borderWidth.value = 4;
+    borderWidth.value = 2;
   };
 
   const handleFacesDetection = (faces: Face[], frame: Frame) => {
@@ -93,13 +93,15 @@ export const useFaceDetection = () => {
   };
 
   const updateFaceBounds = (face?: Face) => {
+    const PADDING = 20;
+
     if (face) {
       const {bounds} = face;
       const {width, height, x, y} = bounds;
-      aFaceW.value = width;
-      aFaceH.value = height;
-      aFaceX.value = x;
-      aFaceY.value = y;
+      aFaceW.value = width + PADDING * 2;
+      aFaceH.value = height + PADDING * 2;
+      aFaceX.value = x - PADDING;
+      aFaceY.value = y - PADDING;
     } else {
       aFaceW.value = 0;
       aFaceH.value = 0;

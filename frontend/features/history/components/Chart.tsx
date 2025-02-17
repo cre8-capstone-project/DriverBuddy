@@ -14,10 +14,6 @@ type Props = {
 export const Chart = ({data, viewMode}: Props) => {
   const font = useFont(interFont, 14);
 
-  if (viewMode === 'day') {
-    return null;
-  }
-
   return (
     <View style={styles.chartContainer}>
       <CartesianChart

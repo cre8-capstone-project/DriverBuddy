@@ -23,8 +23,8 @@ export const HistoryView = () => {
       <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
       <ReportCard data={data} viewMode={viewMode} />
       <ChartPager viewMode={viewMode} startDate={startDate} setStartDate={setStartDate} />
-      <Chart data={data} viewMode={viewMode} />
-      <Legend legend={legendItems} />
+      {viewMode !== 'day' && <Chart data={data} viewMode={viewMode} />}
+      {viewMode !== 'day' && <Legend legend={legendItems} />}
     </View>
   );
 };

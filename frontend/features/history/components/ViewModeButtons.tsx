@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   container: {borderRadius: 18, padding: 0, margin: 0},
   buttonContainer: {borderColor: 'transparent', padding: 0, margin: 0},
   selectedButton: {
-    backgroundColor: '#00C9FF',
+    // backgroundColor: '#00C9FF',
     margin: 7,
     borderRadius: 5,
     boxShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)',

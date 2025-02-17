@@ -6,7 +6,7 @@ type Props = {
   viewMode: string;
 };
 
-export const ReportCard = ({data, viewMode}: Props) => {
+export const SummaryCard = ({data, viewMode}: Props) => {
   const totalHours = data.reduce((acc, cur) => acc + cur.hours, 0);
   const totalAlerts = data.reduce((acc, cur) => acc + cur.alerts, 0);
 

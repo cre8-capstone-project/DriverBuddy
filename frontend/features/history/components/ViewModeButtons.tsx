@@ -1,3 +1,5 @@
+import React from 'react';
+import {StyleSheet} from 'react-native';
 import {ButtonGroup} from '@rneui/themed';
 
 type Props = {
@@ -8,14 +10,31 @@ type Props = {
 export const ViewModeButtons = ({viewMode, setViewMode}: Props) => {
   return (
     <ButtonGroup
-      buttons={['Week', 'Month', 'Year']}
-      selectedIndex={['week', 'month', 'year'].indexOf(viewMode)}
+      containerStyle={styles.container}
+      buttonContainerStyle={styles.buttonContainer}
+      selectedButtonStyle={styles.selectedButton}
+      buttons={['Day', 'Week', 'Month', 'Year']}
+      selectedIndex={['day', 'week', 'month', 'year'].indexOf(viewMode)}
       onPress={value => {
-        if (value >= 0 && value <= 2) {
-          setViewMode(value === 0 ? 'week' : value === 1 ? 'month' : 'year');
+        if (value === 0) setViewMode('day');
+        else if (value === 1) setViewMode('week');
+        else if (value === 2) setViewMode('month');
+        else if (value === 3) setViewMode('year');
+        else {
+          throw new Error('Invalid view mode');
         }
       }}
-      containerStyle={{margin: 0, padding: 0}}
     />
   );
 };
+
+const styles = StyleSheet.create({
+  container: {borderRadius: 18, padding: 0, margin: 0},
+  buttonContainer: {borderColor: 'transparent', padding: 0, margin: 0},
+  selectedButton: {
+    backgroundColor: '#00C9FF',
+    margin: 7,
+    borderRadius: 5,
+    boxShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)',
+  },
+});

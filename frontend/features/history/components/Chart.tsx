@@ -14,6 +14,10 @@ type Props = {
 export const Chart = ({data, viewMode}: Props) => {
   const font = useFont(interFont, 14);
 
+  if (viewMode === 'day') {
+    return null;
+  }
+
   return (
     <View style={styles.chartContainer}>
       <CartesianChart
@@ -82,5 +86,5 @@ export const Chart = ({data, viewMode}: Props) => {
 
 // Styles will be replaced after the visual design is ready
 const styles = StyleSheet.create({
-  chartContainer: {flex: 7},
+  chartContainer: {flex: 1},
 });

@@ -1,38 +1,51 @@
 import {View, Text, StyleSheet} from 'react-native';
+import {Card} from '@rneui/themed';
 
 type Props = {
+  data: {id: number; hours: number; alerts: number}[];
   viewMode: string;
 };
 
-export const ReportCard = ({viewMode}: Props) => {
+export const ReportCard = ({data, viewMode}: Props) => {
+  const totalHours = data.reduce((acc, cur) => acc + cur.hours, 0);
+  const totalAlerts = data.reduce((acc, cur) => acc + cur.alerts, 0);
+
   return (
-    // TODO:
-    // This part will be replaced by fetching data through APIs
-    // Now, it generates dummy data for sandbox
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        {viewMode.charAt(0).toUpperCase() + viewMode.slice(1)} Report
-      </Text>
-      <Text style={styles.cardText}>Detailed information will be displayed here.</Text>
-    </View>
+    <Card wrapperStyle={styles.wrapperStyle} containerStyle={styles.containerStyle}>
+      <Card.Title style={styles.cardTitle}>Driving Time Overview</Card.Title>
+      <View style={styles.contentContainer}>
+        <View style={styles.content}>
+          <Text style={styles.contentTitle}>{totalHours}</Text>
+          <Text>hours</Text>
+        </View>
+        <View style={styles.content}>
+          <Text style={styles.contentTitle}>{totalAlerts}</Text>
+          <Text>alerts received</Text>
+        </View>
+      </View>
+    </Card>
   );
 };
 
 // Styles will be replaced after the visual design is ready
 const styles = StyleSheet.create({
-  card: {
-    flex: 3,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 15,
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+  containerStyle: {borderRadius: 20, padding: 0, margin: 0},
+  wrapperStyle: {padding: 15},
+  cardTitle: {textAlign: 'left', fontWeight: 'bold', marginBottom: 10},
+  contentContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderColor: 'transparent',
+    padding: 0,
+    margin: 0,
   },
-  cardTitle: {fontSize: 20, fontWeight: 'bold', marginBottom: 5},
-  cardText: {fontSize: 14, color: '#666'},
+  content: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    borderColor: 'transparent',
+    boxShadow: 'none',
+    padding: 0,
+    margin: 0,
+  },
+  contentTitle: {textAlign: 'left', fontSize: 32},
 });

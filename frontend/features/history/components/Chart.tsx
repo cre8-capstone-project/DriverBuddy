@@ -1,8 +1,8 @@
-// src/components/Chart.tsx
 import {View, StyleSheet} from 'react-native';
-import {CartesianChart, Bar, Line} from 'victory-native';
+import {CartesianChart, Bar, Line, useChartPressState} from 'victory-native';
 import {LinearGradient, vec} from '@shopify/react-native-skia';
 import {useFont} from '@shopify/react-native-skia';
+import {Tooltip} from './Tooltip';
 
 const interFont = require('@/assets/fonts/SpaceMono-Regular.ttf');
 
@@ -13,19 +13,21 @@ type Props = {
 
 export const Chart = ({data, viewMode}: Props) => {
   const font = useFont(interFont, 14);
+  const {state, isActive} = useChartPressState({x: 0, y: {hours: 0, alerts: 0}});
 
   return (
     <View style={styles.chartContainer}>
       <CartesianChart
+        chartPressState={state}
         data={data}
         xKey="id"
         yKeys={['hours', 'alerts']}
         domainPadding={
           viewMode === 'week'
-            ? {left: 25, right: 25, top: 20}
+            ? {left: 25, right: 25, top: 50}
             : viewMode === 'month'
-              ? {left: 5, right: 5, top: 20}
-              : {left: 15, right: 15, top: 20}
+              ? {left: 5, right: 5, top: 50}
+              : {left: 15, right: 15, top: 50}
         }
         axisOptions={{
           font,
@@ -42,30 +44,31 @@ export const Chart = ({data, viewMode}: Props) => {
         }}
         yAxis={[
           {
-            yKeys: ['hours'],
+            // yKeys: ['hours'],
             font,
             axisSide: 'left',
-            domain: [0, 100],
-            tickValues: [0, 50, 100],
-            enableRescaling: true,
+            // domain: [0, 100],
+            // tickValues: [0, 50, 100],
+            // enableRescaling: true,
           },
-          {
-            yKeys: ['alerts'],
-            font,
-            axisSide: 'right',
-            domain: [0, 50],
-            tickValues: [0, 10, 20, 30],
-            labelColor: '#FF7E5F',
-            enableRescaling: true,
-          },
+          // {
+          //   yKeys: ['alerts'],
+          //   font,
+          //   axisSide: 'right',
+          //   domain: [0, 50],
+          //   tickValues: [0, 10, 20, 30],
+          //   labelColor: '#FF7E5F',
+          //   enableRescaling: true,
+          // },
         ]}>
         {({points, chartBounds}) => (
           <View>
             <Bar
               chartBounds={chartBounds}
               points={points.hours}
+              innerPadding={0.5}
               animate={{type: 'timing', duration: 500}}>
-              <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#00C9FF', '#6F00FF']} />
+              <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#2089DC', '#155FA2']} />
             </Bar>
             <Line
               points={points.alerts}
@@ -73,6 +76,14 @@ export const Chart = ({data, viewMode}: Props) => {
               strokeWidth={3}
               animate={{type: 'timing', duration: 500}}
             />
+            {isActive && font && (
+              <Tooltip
+                xCoordinate={state.x.position}
+                yCoordinate={state.y.hours.position}
+                date={state.x.value}
+                hours={state.y.hours.value}
+              />
+            )}
           </View>
         )}
       </CartesianChart>
@@ -80,7 +91,6 @@ export const Chart = ({data, viewMode}: Props) => {
   );
 };
 
-// Styles will be replaced after the visual design is ready
 const styles = StyleSheet.create({
-  chartContainer: {flex: 7},
+  chartContainer: {flex: 1},
 });

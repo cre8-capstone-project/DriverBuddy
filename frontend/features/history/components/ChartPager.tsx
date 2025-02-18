@@ -1,5 +1,6 @@
 import {View, Text, StyleSheet} from 'react-native';
 import {Button} from '@rneui/themed';
+import {Icon} from '@rneui/base';
 
 type Props = {
   viewMode: string;
@@ -11,7 +12,9 @@ export const ChartPager = ({viewMode, startDate, setStartDate}: Props) => {
   const handlePrev = () => {
     setStartDate(prevDate => {
       const newDate = new Date(prevDate);
-      if (viewMode === 'week') {
+      if (viewMode === 'day') {
+        newDate.setDate(newDate.getDate() - 1);
+      } else if (viewMode === 'week') {
         newDate.setDate(newDate.getDate() - 7);
       } else if (viewMode === 'month') {
         newDate.setMonth(newDate.getMonth() - 1);
@@ -25,7 +28,9 @@ export const ChartPager = ({viewMode, startDate, setStartDate}: Props) => {
   const handleNext = () => {
     setStartDate(prevDate => {
       const newDate = new Date(prevDate);
-      if (viewMode === 'week') {
+      if (viewMode === 'day') {
+        newDate.setDate(newDate.getDate() + 1);
+      } else if (viewMode === 'week') {
         newDate.setDate(newDate.getDate() + 7);
       } else if (viewMode === 'month') {
         newDate.setMonth(newDate.getMonth() + 1);
@@ -38,26 +43,27 @@ export const ChartPager = ({viewMode, startDate, setStartDate}: Props) => {
 
   const getFormattedDate = () => {
     const date = new Date(startDate);
+    const options: Intl.DateTimeFormatOptions = {year: 'numeric', month: 'short', day: 'numeric'};
 
     if (viewMode === 'week') {
       const startOfWeek = new Date(date);
       startOfWeek.setDate(date.getDate() - date.getDay());
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
-      return `${startOfWeek.toDateString()} \n- ${endOfWeek.toDateString()}`;
+      return `${startOfWeek.toLocaleDateString('en-US', options)} - ${endOfWeek.toLocaleDateString('en-US', options)}`;
     } else if (viewMode === 'month') {
       return date.toLocaleString('en-US', {month: 'long', year: 'numeric'});
     } else if (viewMode === 'year') {
       return date.getFullYear().toString();
     }
-    return startDate.toDateString();
+    return startDate.toLocaleDateString('en-US', options);
   };
 
   return (
     <View style={styles.pager}>
-      <Button title="Prev" titleStyle={{fontWeight: '100', fontSize: 12}} onPress={handlePrev} />
+      <Icon name="chevron-left" onPress={handlePrev} />
       <Text>{getFormattedDate()}</Text>
-      <Button title="Next" titleStyle={{fontWeight: '100', fontSize: 12}} onPress={handleNext} />
+      <Icon name="chevron-right" onPress={handleNext} />
     </View>
   );
 };

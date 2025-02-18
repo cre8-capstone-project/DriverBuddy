@@ -2,9 +2,11 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import {ButtonGroup} from '@rneui/themed';
 
+type viewMode = 'day' | 'week' | 'month' | 'year';
+
 type Props = {
-  viewMode: string;
-  setViewMode: (mode: string) => void;
+  viewMode: viewMode;
+  setViewMode: (mode: viewMode) => void;
 };
 
 export const ViewModeButtons = ({viewMode, setViewMode}: Props) => {

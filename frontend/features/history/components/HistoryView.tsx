@@ -7,15 +7,16 @@ import {Chart} from '@/features/history/components/Chart';
 import {ChartPager} from '@/features/history/components/ChartPager';
 import {Legend} from '@/features/history/components/Legend';
 
+type viewMode = 'day' | 'week' | 'month' | 'year';
+
 export const HistoryView = () => {
-  const [viewMode, setViewMode] = useState('week');
+  const [viewMode, setViewMode] = useState<viewMode>('week');
   const [startDate, setStartDate] = useState(new Date());
   const data = useChartData(viewMode, startDate);
 
   const legendItems = [
-    {label: 'Driving hours w/ detection', color: '#00C9FF'},
-    {label: 'Driving hours w/o detection', color: '#00C9FF'},
-    {label: 'Alerts received', color: '#FF758C'},
+    {label: 'Legend1 TBD', color: '#00C9FF'},
+    {label: 'Legend2 TBD', color: '#FF758C'},
   ];
 
   return (

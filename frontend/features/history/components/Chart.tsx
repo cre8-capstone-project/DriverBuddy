@@ -24,10 +24,10 @@ export const Chart = ({data, viewMode}: Props) => {
         yKeys={['hours', 'alerts']}
         domainPadding={
           viewMode === 'week'
-            ? {left: 25, right: 25, top: 20}
+            ? {left: 25, right: 25, top: 50}
             : viewMode === 'month'
-              ? {left: 5, right: 5, top: 20}
-              : {left: 15, right: 15, top: 20}
+              ? {left: 5, right: 5, top: 50}
+              : {left: 15, right: 15, top: 50}
         }
         axisOptions={{
           font,
@@ -44,22 +44,22 @@ export const Chart = ({data, viewMode}: Props) => {
         }}
         yAxis={[
           {
-            yKeys: ['hours'],
+            // yKeys: ['hours'],
             font,
             axisSide: 'left',
-            domain: [0, 100],
-            tickValues: [0, 50, 100],
-            enableRescaling: true,
+            // domain: [0, 100],
+            // tickValues: [0, 50, 100],
+            // enableRescaling: true,
           },
-          {
-            yKeys: ['alerts'],
-            font,
-            axisSide: 'right',
-            domain: [0, 50],
-            tickValues: [0, 10, 20, 30],
-            labelColor: '#FF7E5F',
-            enableRescaling: true,
-          },
+          // {
+          //   yKeys: ['alerts'],
+          //   font,
+          //   axisSide: 'right',
+          //   domain: [0, 50],
+          //   tickValues: [0, 10, 20, 30],
+          //   labelColor: '#FF7E5F',
+          //   enableRescaling: true,
+          // },
         ]}>
         {({points, chartBounds}) => (
           <View>

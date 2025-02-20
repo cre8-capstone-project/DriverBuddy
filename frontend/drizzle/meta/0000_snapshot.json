@@ -1,9 +1,162 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "69a8a344-c703-4bd9-98aa-fe46d4642f77",
+  "id": "16c31a6c-2f41-4c8f-8ab6-8a6d158a79e6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "Alert": {
+      "name": "Alert",
+      "columns": {
+        "alertId": {
+          "name": "alertId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "faceDetectionSessionId": {
+          "name": "faceDetectionSessionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "alertMonth": {
+          "name": "alertMonth",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(substr(timestamp, 1, 7))",
+            "type": "virtual"
+          }
+        },
+        "alertDate": {
+          "name": "alertDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(substr(timestamp, 1, 10))",
+            "type": "virtual"
+          }
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "FaceDetectionSession": {
+      "name": "FaceDetectionSession",
+      "columns": {
+        "faceDetectionSessionId": {
+          "name": "faceDetectionSessionId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "startTime": {
+          "name": "startTime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "endTime": {
+          "name": "endTime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sessionDuration": {
+          "name": "sessionDuration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(strftime('%s', endTime) - strftime('%s', startTime))",
+            "type": "virtual"
+          }
+        },
+        "sessionStartMonth": {
+          "name": "sessionStartMonth",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(substr(startTime, 1, 7))",
+            "type": "virtual"
+          }
+        },
+        "sessionStartDate": {
+          "name": "sessionStartDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(substr(startTime, 1, 10))",
+            "type": "virtual"
+          }
+        },
+        "sessionEndMonth": {
+          "name": "sessionEndMonth",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(substr(endTime, 1, 7))",
+            "type": "virtual"
+          }
+        },
+        "sessionEndDate": {
+          "name": "sessionEndDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(substr(endTime, 1, 10))",
+            "type": "virtual"
+          }
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "settings": {
       "name": "settings",
       "columns": {

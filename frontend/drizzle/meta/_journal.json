@@ -1,12 +1,12 @@
 {
-  "version": "7",
+  "version": "0",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "6",
-      "when": 1738688290204,
-      "tag": "0000_parched_korg",
+      "when": 1740002771708,
+      "tag": "0000_noisy_mongu",
       "breakpoints": true
     }
   ]

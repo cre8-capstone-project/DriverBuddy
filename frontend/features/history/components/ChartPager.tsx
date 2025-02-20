@@ -1,5 +1,4 @@
 import {View, Text, StyleSheet} from 'react-native';
-import {Button} from '@rneui/themed';
 import {Icon} from '@rneui/base';
 
 type Props = {

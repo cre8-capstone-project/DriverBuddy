@@ -1,6 +1,15 @@
-type viewMode = 'day' | 'week' | 'month' | 'year';
+import {ViewMode} from '@/features/history/types/ViewMode';
+import {useAlertData} from '@/features/history/hooks/useAlertData';
+import {useFDSessionData} from '@/features/history/hooks/useFDSessionData';
+// import {getDriverByID, getAllHistoryFromDriver, getHistoryByID} from '@/api/api';
 
-export const useChartData = (viewMode: viewMode, startDate: Date) => {
+export const useChartData = (viewMode: ViewMode, startDate: Date) => {
+  const {alert_data} = useAlertData(viewMode, startDate);
+  const {fd_data} = useFDSessionData(viewMode, startDate);
+  return {alert_data, fd_data};
+};
+
+export const useChartDataDummy = (viewMode: ViewMode, startDate: Date) => {
   // TODO:
   // This part will be replaced by fetching data through APIs
   // Now, it generates dummy data for sandbox
@@ -21,6 +30,24 @@ export const useChartData = (viewMode: viewMode, startDate: Date) => {
 
   const maxHours = maxHoursValues[viewMode] || 0;
   const maxAlerts = maxAlertValues[viewMode] || 0;
+
+  // Sample API calls
+  // const userID = 'EupIJaWMSnitQnIIcWi7';
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     console.log('Call API');
+  //     const driver = await getDriverByID(userID);
+  //     const driverHistory = await getAllHistoryFromDriver(userID);
+  //     console.log(`Driver Name: ${driver?.name}`);
+  //     console.log(`Driver History (All): ${JSON.stringify(driverHistory, null, 2)}`);
+  //     const historyID = driverHistory[0]?.id || '';
+  //     const singleHistoryDocument = await getHistoryByID(historyID);
+  //     console.log(
+  //       `Driver History (${historyID}): ${JSON.stringify(singleHistoryDocument, null, 2)}`,
+  //     );
+  //   };
+  //   loadData();
+  // }, []);
 
   return Array.from(
     {length: viewMode === 'day' ? 1 : viewMode === 'week' ? 7 : viewMode === 'month' ? 30 : 12},

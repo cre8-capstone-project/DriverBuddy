@@ -14,28 +14,26 @@ export const FDSessionService = {
     }
   },
 
-  async startFDSession(newFDSession: FDSessionType) {
+  async startFDSession(session: FDSessionType) {
     try {
-      await drizzleDb.insert(faceDetectionSession).values(newFDSession);
+      await drizzleDb.insert(faceDetectionSession).values(session);
     } catch (error) {
       console.error('Failed to start FDSession:', error);
       throw error;
     }
-    console.log('Start FDSession:', newFDSession);
+    console.log('Start FDSession:', session);
   },
 
-  async endFDSession(newFDSession: FDSessionType) {
+  async endFDSession(session: FDSessionType) {
     try {
       await drizzleDb
         .update(faceDetectionSession)
-        .set(newFDSession)
-        .where(
-          eq(faceDetectionSession.faceDetectionSessionId, newFDSession.faceDetectionSessionId),
-        );
+        .set(session)
+        .where(eq(faceDetectionSession.faceDetectionSessionId, session.faceDetectionSessionId));
     } catch (error) {
       console.error('Failed to end FDSession:', error);
       throw error;
     }
-    console.log('End FDSession:', newFDSession);
+    console.log('End FDSession:', session);
   },
 };

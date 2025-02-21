@@ -62,6 +62,7 @@ export const useFaceDetection = () => {
         const prompt = `Your friend looks sleepy while driving. 
                         Please say something over the phone to wake him up from his drowsiness.
                         The message should be simple and clear.`;
+
         checkDrowsiness(face, () => triggerAlert(() => generateMessage(prompt)));
         checkLookingAway(face, () => triggerAlert(() => generateMessage(prompt)));
       } else {
@@ -85,7 +86,7 @@ export const useFaceDetection = () => {
       // Log the alert to SQLite
       await AlertService.logAlert({
         alertId: uuid.v4(),
-        faceDetectionSessionId: '1',
+        faceDetectionSessionId: sessionIdRef.current,
         userId: '1',
         timestamp: new Date().toISOString(),
       });

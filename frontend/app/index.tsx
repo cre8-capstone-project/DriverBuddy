@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, TouchableOpacity, StyleSheet, Text} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {MaterialIcons} from '@expo/vector-icons';
 import type {StackNavigationProp} from '@react-navigation/stack';
@@ -27,28 +27,41 @@ export default function HomeScreen() {
         <Map />
       )}
       <Button
-        title={displayMode === 'camera' ? 'Turn on Map' : 'Back'}
+        title={displayMode === 'camera' ? 'Turn on Map' : ''}
         type="outline"
-        icon={{
-          name: 'map',
-          type: 'font-awesome',
-          size: 15,
-          color: 'black',
-        }}
+        icon={
+          displayMode === 'camera' ? (
+            <MaterialIcons name="location-on" size={30} color="black" />
+          ) : (
+            <View style={styles.backButtonContainer}>
+              <MaterialIcons name="west" size={30} color="black" />
+              <Text style={styles.backText}>Back</Text>
+            </View>
+          )
+        }
         titleStyle={styles.buttonText}
-        containerStyle={styles.turnOnMapButton}
+        containerStyle={[styles.turnOnMapButton, displayMode === 'map' && styles.backButtonStyle]}
         onPress={
           displayMode === 'camera' ? () => setDisplayMode('map') : () => setDisplayMode('camera')
         }
       />
-      <TouchableOpacity
-        style={styles.settingButton}
-        onPress={() => navigation.navigate('settings')}>
-        <MaterialIcons name="settings" size={24} color="black" />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('profile')}>
-        <MaterialIcons name="person" size={24} color="black" />
-      </TouchableOpacity>
+
+      {displayMode === 'camera' && (
+        <>
+          <TouchableOpacity
+            style={styles.settingButton}
+            onPress={() => navigation.navigate('settings')}>
+            <MaterialIcons name="settings" size={30} color="black" />
+            <Text>Setting</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('profile')}>
+            <MaterialIcons name="person" size={30} color="black" />
+            <Text>Profile</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 }
@@ -61,21 +74,41 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 25,
     alignSelf: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 5,
     borderWidth: 2,
+    borderRadius: 40,
     tintColor: 'black',
   },
-  settingButton: {
-    position: 'absolute',
-    bottom: 30,
-    left: 30,
+  backButtonStyle: {
+    justifyContent: 'center',
+    // alignItems: 'center',
+    width: 70,
+    height: 70,
+    left: 35,
+    borderRadius: 90,
   },
-  profileButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
+  backButtonContainer: {
+    alignItems: 'center',
+  },
+  backText: {
+    fontSize: 14,
+    color: 'black',
   },
   buttonText: {
     color: 'black',
     fontWeight: 'bold',
+  },
+  settingButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: 40,
+    alignItems: 'center',
+  },
+  profileButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 40,
+    alignItems: 'center',
   },
 });

@@ -9,7 +9,7 @@ export const settings = sqliteTable('settings', {
 export const faceDetectionSession = sqliteTable('FaceDetectionSession', {
   faceDetectionSessionId: text('faceDetectionSessionId').primaryKey(),
   userId: text('userId').notNull(),
-  startTime: text('startTime').notNull(),
+  startTime: text('startTime'),
   endTime: text('endTime'),
   sessionDuration: integer('sessionDuration').generatedAlwaysAs(
     sql`strftime('%s', endTime) - strftime('%s', startTime)`,

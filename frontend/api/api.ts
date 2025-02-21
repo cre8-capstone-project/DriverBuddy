@@ -2,7 +2,7 @@ import axios, {AxiosResponse} from 'axios';
 
 // Common setting for API requests
 const axiosClient = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.0.0.23:3000', // replace 10.0.0.23 with your own IP
+  baseURL: process.env.EXPO_PUBLIC_API_BASE_URL_PRODUCTION || 'http://10.0.0.23:3000', // replace 10.0.0.23 with your own IP
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

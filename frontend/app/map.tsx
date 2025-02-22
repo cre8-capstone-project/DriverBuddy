@@ -1,12 +1,16 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {StyleSheet, View, Alert, Modal, Keyboard} from 'react-native';
-import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import {Button, Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 
+// Get API key from .env for security
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
 console.log('GOOGLE_MAPS_APIKEY:', GOOGLE_MAPS_APIKEY);
+
+// Store base url
+const GOOGLE_MAPS_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
 // Define the region type to represent a location on the map, including the latitude, longitude, and zoom levels
 type Region = {
@@ -33,9 +37,59 @@ export const Map = () => {
   const [deviceLocation, setDeviceLocation] = useState<Region | null>(null);
   const [coordinateInput, setCoordinateInput] = useState('');
   const [searchModalVisible, setSearchModalVisible] = useState(false);
-  // New state to track which field is being edited: 'origin' or 'destination'
+  // State to track which field is being edited (origin or destination)
   const [editingField, setEditingField] = useState<'origin' | 'destination' | null>(null);
+  // State to hold autocomplete suggestions (for both origin and destination)
+  const [suggestions, setSuggestions] = useState<{description: string; place_id: string}[]>([]);
   const mapRef = useRef<MapView>(null);
+
+  // Function to geocode a place name using Google Geocoding API
+  const geocodePlace = async (place: string) => {
+    try {
+      const response = await fetch(
+        `${GOOGLE_MAPS_BASE_URL}/geocode/json?address=${encodeURIComponent(
+          place,
+        )}&key=${GOOGLE_MAPS_APIKEY}`,
+      );
+      const data = await response.json();
+      if (data.status === 'OK' && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+        return {latitude: location.lat, longitude: location.lng};
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  // Fetch suggestions when input changes (for both origin and destination)
+  useEffect(() => {
+    if (editingField !== null && coordinateInput.trim().length > 0) {
+      const fetchSuggestions = async () => {
+        try {
+          const response = await fetch(
+            `${GOOGLE_MAPS_BASE_URL}/place/autocomplete/json?input=${encodeURIComponent(
+              coordinateInput,
+            )}&key=${GOOGLE_MAPS_APIKEY}`,
+          );
+          const data = await response.json();
+          if (data.status === 'OK') {
+            setSuggestions(data.predictions);
+          } else {
+            setSuggestions([]);
+          }
+        } catch (error) {
+          console.error(error);
+          setSuggestions([]);
+        }
+      };
+      fetchSuggestions();
+    } else {
+      setSuggestions([]);
+    }
+  }, [coordinateInput, editingField]);
 
   useEffect(() => {
     // Only request location if origin is not already set (to persist state between navigations)
@@ -67,25 +121,28 @@ export const Map = () => {
     }
   }, []);
 
-  // Opens search modal
+  // Open search modal
   const openSearch = (field: 'origin' | 'destination') => {
     setEditingField(field);
-    setCoordinateInput('');
+    // Persist the input value entered
+    setCoordinateInput(field === 'origin' ? originLabel : destinationLabel);
     setSearchModalVisible(true);
   };
 
-  // Closes search modal
+  // Close search modal
   const closeSearch = () => {
     setSearchModalVisible(false);
     Keyboard.dismiss();
   };
 
-  // Handles selection of coordinate for origin or destination
+  // Handle selection of coordinates for origin or destination
+  // labelOverride to show place name in the button
   const selectCoordinate = (
     field: 'origin' | 'destination',
     latitude: number,
     longitude: number,
     isDevice: boolean = false,
+    labelOverride?: string,
   ) => {
     if (field === 'origin') {
       // Set new origin coordinates
@@ -98,7 +155,7 @@ export const Map = () => {
         setOriginLabel('Your location');
         savedOriginLabel = 'Your location';
       } else {
-        const label = `${latitude}, ${longitude}`;
+        const label = labelOverride ? labelOverride : `${latitude}, ${longitude}`;
         setOriginLabel(label);
         savedOriginLabel = label;
       }
@@ -114,38 +171,29 @@ export const Map = () => {
       if (isDevice) {
         setDestinationLabel('Your location');
         savedDestinationLabel = 'Your location';
+      } else if (labelOverride) {
+        setDestinationLabel(labelOverride);
+        savedDestinationLabel = labelOverride;
       } else {
         const label = `${latitude}, ${longitude}`;
         setDestinationLabel(label);
         savedDestinationLabel = label;
-      }
-
-      // Ensure origin label is set if it was never set before
-      if (!originLabel) {
-        setOriginLabel('Your location');
-        savedOriginLabel = 'Your location';
-      }
-
-      // Ensure destination label is set if it was never set before
-      if (!destinationLabel) {
-        setDestinationLabel('Your location');
-        savedDestinationLabel = 'Your location';
       }
     }
 
     // Close search modal
     closeSearch();
 
-    // Adjust the map to fit both origin and destination
+    // Adjust the map to fit both origin and destination on the screen
     if (field === 'origin' && destination) {
       mapRef.current?.fitToCoordinates([{latitude, longitude}, destination], {
-        edgePadding: {top: 150, right: 20, bottom: 100, left: 20},
+        edgePadding: {top: 120, right: 20, bottom: 80, left: 20},
         animated: true,
       });
     }
     if (field === 'destination' && origin) {
       mapRef.current?.fitToCoordinates([origin, {latitude, longitude}], {
-        edgePadding: {top: 150, right: 20, bottom: 100, left: 20},
+        edgePadding: {top: 120, right: 20, bottom: 80, left: 20},
         animated: true,
       });
     }
@@ -176,6 +224,10 @@ export const Map = () => {
             strokeColor="blue"
           />
         )}
+        {destination && (
+          // Display pin marker for destination
+          <Marker coordinate={destination} title="Destination" description={destinationLabel} />
+        )}
       </MapView>
 
       {/* Search Button */}
@@ -189,11 +241,7 @@ export const Map = () => {
           />
         )}
         <Button
-          title={
-            destination
-              ? `${destination.latitude}, ${destination.longitude}`
-              : 'Enter "latitude, longitude" for testing)'
-          }
+          title={destinationLabel || 'Enter destination (e.g. Langara College)'}
           buttonStyle={styles.searchButton}
           titleStyle={styles.buttonText}
           onPress={() => openSearch('destination')}
@@ -206,8 +254,8 @@ export const Map = () => {
           <Input
             placeholder={
               editingField === 'origin'
-                ? 'Enter origin (latitude, longitude)'
-                : 'Enter destination (e.g. 49.2832, -123.1203)'
+                ? 'Enter origin (latitude, longitude or place name)'
+                : 'Enter destination (e.g. Langara College)'
             }
             value={coordinateInput}
             onChangeText={setCoordinateInput}
@@ -223,7 +271,47 @@ export const Map = () => {
           />
 
           {/* Search Results */}
-          {coordinateInput !== '' && (
+          {coordinateInput !== '' &&
+            suggestions.length > 0 &&
+            suggestions.map(suggestion => (
+              <ListItem
+                key={suggestion.place_id}
+                bottomDivider
+                onPress={() => {
+                  (async () => {
+                    try {
+                      const response = await fetch(
+                        `${GOOGLE_MAPS_BASE_URL}/place/details/json?place_id=${suggestion.place_id}&key=${GOOGLE_MAPS_APIKEY}`,
+                      );
+                      const data = await response.json();
+                      if (data.status === 'OK' && data.result) {
+                        const location = data.result.geometry.location;
+                        const displayLabel = suggestion.description;
+                        selectCoordinate(
+                          editingField!,
+                          location.lat,
+                          location.lng,
+                          false,
+                          displayLabel,
+                        );
+                      } else {
+                        Alert.alert(
+                          'Place details not found',
+                          'Unable to get details for the selected place.',
+                        );
+                      }
+                    } catch (error) {
+                      console.error(error);
+                      Alert.alert('Error', 'An error occurred while fetching place details.');
+                    }
+                  })();
+                }}>
+                <ListItem.Content>
+                  <ListItem.Title>{suggestion.description}</ListItem.Title>
+                </ListItem.Content>
+              </ListItem>
+            ))}
+          {coordinateInput !== '' && suggestions.length === 0 && (
             <ListItem
               bottomDivider
               onPress={() => {
@@ -231,10 +319,20 @@ export const Map = () => {
                 if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
                   selectCoordinate(editingField!, coords[0], coords[1]);
                 } else {
-                  Alert.alert(
-                    'Invalid Input',
-                    'Please enter valid coordinates in the format: latitude, longitude',
-                  );
+                  (async () => {
+                    const result = await geocodePlace(coordinateInput);
+                    if (result) {
+                      selectCoordinate(
+                        editingField!,
+                        result.latitude,
+                        result.longitude,
+                        false,
+                        coordinateInput,
+                      );
+                    } else {
+                      Alert.alert('Location not found', 'Please enter a valid place name.');
+                    }
+                  })();
                 }
               }}>
               <ListItem.Content>
@@ -260,14 +358,13 @@ export const Map = () => {
               <ListItem.Title>Your location</ListItem.Title>
             </ListItem.Content>
           </ListItem>
-          {/* Cancel button removed as per instructions */}
         </View>
       </Modal>
     </View>
   );
 };
 
-// Styles
+// Map Page Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -303,6 +400,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'black',
     textAlign: 'left',
+    width: '100%',
   },
   modalContainer: {
     flex: 1,

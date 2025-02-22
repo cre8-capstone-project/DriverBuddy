@@ -1,33 +1,64 @@
+import {useState, useEffect} from 'react';
 import {ViewMode} from '@/features/history/types/ViewMode';
-import {useAlertData} from '@/features/history/hooks/useAlertData';
-import {useFDSessionData} from '@/features/history/hooks/useFDSessionData';
+import {AlertService} from '@/services/AlertService';
 // import {getDriverByID, getAllHistoryFromDriver, getHistoryByID} from '@/api/api';
 
+type DailyAlertPerHour = {
+  hour: number;
+  count: number;
+};
+
+type WeeklyAlertPerHour = {
+  date: string;
+  alertsPerHour: number;
+};
+
+type MonthlyAlertPerHour = {
+  date: string;
+  alertsPerHour: number;
+};
+
+type YearlyAlertPerHour = {
+  date: string;
+  alertsPerHour: number;
+};
+
 export const useChartData = (viewMode: ViewMode, startDate: Date) => {
-  const {alert_data} = useAlertData(viewMode, startDate);
-  const {fd_data} = useFDSessionData(viewMode, startDate);
-  return {alert_data, fd_data};
+  const [data, setData] = useState<WeeklyAlertPerHour[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const data = await AlertService.getWeeklyAlertPerHour(startDate.toISOString());
+      setData(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [viewMode, startDate]);
+
+  return {data, loading};
 };
 
 export const useChartDataDummy = (viewMode: ViewMode, startDate: Date) => {
-  // TODO:
-  // This part will be replaced by fetching data through APIs
-  // Now, it generates dummy data for sandbox
-
   const maxHoursValues = {
-    day: 15,
+    day: 2,
     week: 15,
     month: 15,
     year: 300,
   };
-
   const maxAlertValues = {
     day: 5,
     week: 5,
-    month: 5,
+    month: 10,
     year: 100,
   };
-
   const maxHours = maxHoursValues[viewMode] || 0;
   const maxAlerts = maxAlertValues[viewMode] || 0;
 
@@ -50,7 +81,7 @@ export const useChartDataDummy = (viewMode: ViewMode, startDate: Date) => {
   // }, []);
 
   return Array.from(
-    {length: viewMode === 'day' ? 1 : viewMode === 'week' ? 7 : viewMode === 'month' ? 30 : 12},
+    {length: viewMode === 'day' ? 24 : viewMode === 'week' ? 7 : viewMode === 'month' ? 30 : 12},
     (_, index) => ({
       id: index + 1,
       hours: Math.floor(Math.random() * maxHours),

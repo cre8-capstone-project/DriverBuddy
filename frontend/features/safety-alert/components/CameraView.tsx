@@ -6,7 +6,7 @@ import {
   Camera as VisionCamera,
 } from 'react-native-vision-camera';
 import FaceDetection from '@/features/safety-alert/components/FaceDetection';
-import {Button} from '@rneui/themed';
+import {Button, Icon} from '@rneui/themed';
 
 type Props = {
   isCameraActive: boolean;
@@ -32,12 +32,13 @@ export const CameraView = ({isCameraActive, setIsCameraActive}: Props) => {
   ) : (
     <View style={styles.container}>
       <Button
-        title="Start Detection"
         titleStyle={styles.buttonText}
         buttonStyle={styles.roundButton}
         containerStyle={styles.roundButton}
-        onPress={() => setIsCameraActive(true)}
-      />
+        onPress={() => setIsCameraActive(true)}>
+        <Icon name={'videocam'} color={'white'} size={50} />
+        Start Detection
+      </Button>
     </View>
   );
 };
@@ -54,6 +55,7 @@ const styles = StyleSheet.create({
     borderRadius: 75,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'column',
   },
   buttonText: {
     color: 'white',

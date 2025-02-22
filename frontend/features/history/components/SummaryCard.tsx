@@ -16,7 +16,7 @@ export const SummaryCard = ({data, viewMode}: Props) => {
       <View style={styles.contentContainer}>
         <View style={styles.content}>
           <Text style={styles.contentTitle}>{totalHours}</Text>
-          <Text>hours</Text>
+          <Text>hours with detection</Text>
         </View>
         <View style={styles.content}>
           <Text style={styles.contentTitle}>{totalAlerts}</Text>

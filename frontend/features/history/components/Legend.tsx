@@ -4,6 +4,7 @@ import {View, Text, StyleSheet} from 'react-native';
 type LegendItem = {
   label: string;
   color: string;
+  description: string;
 };
 
 type Props = {
@@ -14,9 +15,12 @@ export const Legend = ({legend}: Props) => {
   return (
     <View style={styles.container}>
       {legend.map((item, index) => (
-        <View key={index} style={styles.itemContainer}>
-          <View style={[styles.colorBox, {backgroundColor: item.color}]} />
-          <Text style={styles.label}>{item.label}</Text>
+        <View key={index}>
+          <View style={styles.itemContainer}>
+            <View style={[styles.colorBox, {backgroundColor: item.color}]} />
+            <Text style={styles.label}>{item.label}</Text>
+          </View>
+          <Text>{item.description}</Text>
         </View>
       ))}
     </View>
@@ -27,7 +31,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   itemContainer: {
     flexDirection: 'row',

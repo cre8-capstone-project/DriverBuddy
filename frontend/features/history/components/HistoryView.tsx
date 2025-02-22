@@ -14,16 +14,19 @@ export const HistoryView = () => {
   const data = useChartDataDummy(viewMode, startDate);
 
   // --- Under development
-  const {alert_data, fd_data} = useChartData(viewMode, startDate);
+  const {data: hourlyData} = useChartData(viewMode, startDate);
   useEffect(() => {
-    console.log('Alert data:', JSON.stringify(alert_data, null, 2));
-    console.log('FD Session data:', JSON.stringify(fd_data, null, 2));
-  }, [alert_data, fd_data]);
+    console.log('Hourly Alert Data:', JSON.stringify(hourlyData, null, 2));
+  }, [hourlyData]);
   // --- Under development
 
   const legendItems = [
-    {label: 'Legend1 TBD', color: '#00C9FF'},
-    {label: 'Legend2 TBD', color: '#FF758C'},
+    {
+      label: 'Alert received/hour',
+      color: '#2089DC',
+      description:
+        'This is calculated by dividing the total daily alerts by the "Hours with Detection" for that day.',
+    },
   ];
 
   return (
@@ -31,12 +34,12 @@ export const HistoryView = () => {
       <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
       <SummaryCard data={data} viewMode={viewMode} />
       <ChartPager viewMode={viewMode} startDate={startDate} setStartDate={setStartDate} />
-      {viewMode !== 'day' && <Chart data={data} viewMode={viewMode} />}
-      {viewMode !== 'day' && <Legend legend={legendItems} />}
+      <Chart data={data} viewMode={viewMode} />
+      <Legend legend={legendItems} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, gap: 10, padding: 10},
+  container: {flex: 1, gap: 20, padding: 20},
 });

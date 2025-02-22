@@ -1,34 +1,24 @@
-import {useRef, useState} from 'react';
-import {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useEffect, useRef} from 'react';
 import {useWindowDimensions} from 'react-native';
 import {Frame} from 'react-native-vision-camera';
 import {Face, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
+import {useFaceBounds} from '@/features/safety-alert/hooks/useFaceBounds';
 import {useSpeech} from '@/hooks/useSpeech';
 import {useOpenAI} from '@/hooks/useOpenAI';
+import {AlertService} from '@/services/AlertService';
+import {useDrowsinessDetection} from '@/features/safety-alert/hooks/useDrowsinessDetection';
+import {useLookAwayDetection} from '@/features/safety-alert/hooks/useLookAwayDetection';
+import {FDSessionService} from '@/services/FDSessionService';
+import uuid from 'react-native-uuid';
 
 export const useFaceDetection = () => {
+  const {width, height} = useWindowDimensions();
   const {speak, isSpeaking} = useSpeech();
   const {generateMessage} = useOpenAI();
   const alertRef = useRef(false);
-
-  const BLINK_COUNT_THRESHOLD = 30; // to be adjusted
-  const OPEN_EYE_PROBABILITY_THRESHOLD = 0.7; // to be adjusted
-  const EYECLOSE_TIME_THRESHOLD = 1500; // to be adjusted
-  const PITCH_DOWN_ANGLE_THRESHOLD = -5; // to be adjusted
-  const PITCH_UP_ANGLE_THRESHOLD = 15; // to be adjusted
-  const LOOKDOWN_TIME_THRESHOLD = 2000; // to be adjusted
-
-  // For drowsiness detection
-  const startTimeDrowsinessRef = useRef<number | null>(null);
-  const [leftEyeStatus, setLeftEyeStatus] = useState(false);
-  const [rightEyeStatus, setRightEyeStatus] = useState(false);
-
-  // For looking away detection
-  const startTimeLookDownRef = useRef<number | null>(null);
-  const [pitchAngleStatus, setPitchAngleStatus] = useState<'up' | 'center' | 'down'>('center');
-
-  // Face detection settings
-  const {width, height} = useWindowDimensions();
+  const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
+  const {checkDrowsiness, leftEyeStatus, rightEyeStatus, blinkCount} = useDrowsinessDetection();
+  const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
@@ -43,29 +33,24 @@ export const useFaceDetection = () => {
     autoScale: true,
   }).current;
 
-  const aFaceW = useSharedValue(0);
-  const aFaceH = useSharedValue(0);
-  const aFaceX = useSharedValue(0);
-  const aFaceY = useSharedValue(0);
-  const borderWidth = useSharedValue(4);
+  const sessionIdRef = useRef<string>(uuid.v4() as string);
 
-  const faceBorderStyle = useAnimatedStyle(() => ({
-    position: 'absolute',
-    borderWidth: borderWidth.value,
-    borderColor: '#00FFFF',
-    width: withTiming(aFaceW.value, {duration: 100}),
-    height: withTiming(aFaceH.value, {duration: 100}),
-    left: withTiming(aFaceX.value, {duration: 100}),
-    top: withTiming(aFaceY.value, {duration: 100}),
-  }));
+  useEffect(() => {
+    const sessionId = sessionIdRef.current;
+    FDSessionService.startFDSession({
+      faceDetectionSessionId: sessionId,
+      userId: '1',
+      startTime: new Date().toISOString(),
+    });
 
-  const hideFaceBorder = () => {
-    borderWidth.value = 0;
-  };
-
-  const showFaceBorder = () => {
-    borderWidth.value = 2;
-  };
+    return () => {
+      FDSessionService.endFDSession({
+        faceDetectionSessionId: sessionId,
+        userId: `1`,
+        endTime: new Date().toISOString(),
+      });
+    };
+  }, []);
 
   const handleFacesDetection = (faces: Face[], frame: Frame) => {
     try {
@@ -77,10 +62,11 @@ export const useFaceDetection = () => {
         const prompt = `Your friend looks sleepy while driving. 
                         Please say something over the phone to wake him up from his drowsiness.
                         The message should be simple and clear.`;
-        checkDrowsiness(face, () => generateMessage(prompt));
-        checkLookingAway(face, () => generateMessage(prompt));
+
+        checkDrowsiness(face, () => triggerAlert(() => generateMessage(prompt)));
+        checkLookingAway(face, () => triggerAlert(() => generateMessage(prompt)));
       } else {
-        console.log('No face detected');
+        // console.log('No face detected');
         hideFaceBorder();
         updateFaceBounds();
       }
@@ -89,92 +75,26 @@ export const useFaceDetection = () => {
     }
   };
 
-  const updateFaceBounds = (face?: Face) => {
-    const PADDING = 10;
-
-    if (face) {
-      const {bounds} = face;
-      const {width, height, x, y} = bounds;
-      aFaceW.value = width + PADDING * 2;
-      aFaceH.value = height + PADDING * 2;
-      aFaceX.value = x - PADDING;
-      aFaceY.value = y - PADDING;
-    } else {
-      aFaceW.value = 0;
-      aFaceH.value = 0;
-      aFaceX.value = 0;
-      aFaceY.value = 0;
-    }
-  };
-
-  const [blinkCount, setBlinkCount] = useState(0);
-  const blinkTimestampsRef = useRef<number[]>([]);
-  const blinkStatusRef = useRef<'closed' | 'open'>('open');
-
-  const checkDrowsiness = (face: Face, alertFunction: () => Promise<string>) => {
-    const isLeftEyeClosed = face.leftEyeOpenProbability < OPEN_EYE_PROBABILITY_THRESHOLD;
-    const isRightEyeClosed = face.rightEyeOpenProbability < OPEN_EYE_PROBABILITY_THRESHOLD;
-    setLeftEyeStatus(isLeftEyeClosed);
-    setRightEyeStatus(isRightEyeClosed);
-
-    if (isLeftEyeClosed && isRightEyeClosed) {
-      blinkStatusRef.current = 'closed';
-      if (alertRef.current) return;
-
-      if (startTimeDrowsinessRef.current === null) {
-        startTimeDrowsinessRef.current = Date.now();
-      } else if (Date.now() - startTimeDrowsinessRef.current > EYECLOSE_TIME_THRESHOLD) {
-        triggerAlert(alertFunction);
-        startTimeDrowsinessRef.current = null;
-      }
-    } else {
-      if (blinkStatusRef.current === 'closed') {
-        recordBlink();
-        if (blinkCount > BLINK_COUNT_THRESHOLD) {
-          triggerAlert(alertFunction);
-          blinkTimestampsRef.current = [];
-        }
-      }
-      blinkStatusRef.current = 'open';
-      startTimeDrowsinessRef.current = null;
-    }
-  };
-
-  const recordBlink = () => {
-    const now = Date.now();
-
-    // Remove timestamps older than 1 minute
-    blinkTimestampsRef.current = blinkTimestampsRef.current.filter(
-      timestamp => now - timestamp <= 60000,
-    );
-    blinkTimestampsRef.current.push(now);
-    setBlinkCount(blinkTimestampsRef.current.length);
-  };
-
-  const checkLookingAway = (face: Face, alertFunction: () => Promise<string>) => {
-    const isLookingDown = face.pitchAngle < PITCH_DOWN_ANGLE_THRESHOLD;
-    const isLookingUp = face.pitchAngle > PITCH_UP_ANGLE_THRESHOLD;
-    setPitchAngleStatus(isLookingUp ? 'up' : isLookingDown ? 'down' : 'center');
-
-    if (pitchAngleStatus !== 'center') {
-      if (alertRef.current) return;
-
-      if (startTimeLookDownRef.current === null) {
-        startTimeLookDownRef.current = Date.now();
-      } else if (Date.now() - startTimeLookDownRef.current > LOOKDOWN_TIME_THRESHOLD) {
-        triggerAlert(alertFunction);
-        startTimeLookDownRef.current = null;
-      }
-    } else {
-      startTimeLookDownRef.current = null;
-    }
-  };
-
   const triggerAlert = async (alertFunction: () => Promise<string>) => {
-    alertRef.current = true;
-    const message = await alertFunction();
-    speak(message);
-    alertRef.current = false;
+    try {
+      alertRef.current = true;
+
+      // Execute text to speech to read out the message
+      const message = await alertFunction();
+      speak(message);
+
+      // Log the alert to SQLite
+      await AlertService.logAlert({
+        alertId: uuid.v4(),
+        faceDetectionSessionId: sessionIdRef.current,
+        userId: '1',
+        timestamp: new Date().toISOString(),
+      });
+
+      alertRef.current = false;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return {

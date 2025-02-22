@@ -12,11 +12,11 @@ const FaceDetection = ({device}: {device: any}) => {
     faceDetectionOptions,
     handleFacesDetection,
     faceBorderStyle,
-    isWarning,
     leftEyeStatus,
     rightEyeStatus,
     pitchAngleStatus,
     blinkCount,
+    isWarning,
   } = useFaceDetection();
 
   return (

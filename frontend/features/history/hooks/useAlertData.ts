@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
-import {AlertType} from '@/features/history/types/AlertType';
-import {AlertService} from '@/features/history/services/AlertService';
+import {AlertType} from '@/types/AlertType';
+import {AlertService} from '@/services/AlertService';
 import {ViewMode} from '@/features/history/types/ViewMode';
 
 export const useAlertData = (viewMode: ViewMode, startDate: Date) => {

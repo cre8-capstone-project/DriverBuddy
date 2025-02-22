@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
-import {FDSessionType} from '../types/FDSessionType';
-import {FDSessionService} from '../services/FDSessionService';
+import {FDSessionType} from '../../../types/FDSessionType';
+import {FDSessionService} from '../../../services/FDSessionService';
 import {ViewMode} from '../types/ViewMode';
 
 export const useFDSessionData = (viewMode: ViewMode, startDate: Date) => {

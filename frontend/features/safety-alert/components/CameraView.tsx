@@ -20,7 +20,7 @@ export const CameraView = ({isCameraActive, setIsCameraActive}: Props) => {
   useEffect(() => {
     (async () => {
       const status = await VisionCamera.requestCameraPermission();
-      console.log({status});
+      console.log(`Camera permission: ${status}`);
     })();
   }, [device]);
 

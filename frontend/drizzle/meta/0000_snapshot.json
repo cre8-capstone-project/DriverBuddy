@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "16c31a6c-2f41-4c8f-8ab6-8a6d158a79e6",
+  "id": "89ff4e66-4f2b-452e-b031-8742c4e218dd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "Alert": {
@@ -85,7 +85,7 @@
           "name": "startTime",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "endTime": {

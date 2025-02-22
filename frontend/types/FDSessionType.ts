@@ -1,7 +1,7 @@
 export type FDSessionType = {
   faceDetectionSessionId: string;
   userId: string;
-  startTime: string;
+  startTime?: string;
   endTime?: string | null;
   sessionDuration?: number | null;
   sessionStartDate?: string | null;

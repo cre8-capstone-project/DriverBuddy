@@ -12,9 +12,13 @@ const axiosClient = axios.create({
 // Define types for driver and history records
 interface Driver {
   id?: string;
+  user_type?: string;
   name: string;
   email: string;
   phone: string;
+  vehicle_type?: string;
+  birthday: {_seconds: number; _nanoseconds: number};
+  picture_url: string;
 }
 
 interface History {
@@ -38,7 +42,17 @@ const getDriverByID = async (id: string) => {
     const response: AxiosResponse<Driver> = await axiosClient.get(`/drivers/${id}`, {
       timeout: 5000,
     });
-    return response.data;
+    //return response.data;
+    return {
+      id: response.data.id,
+      name: response.data.name,
+      email: response.data.email,
+      phone: response.data.phone,
+      user_type: undefined,
+      vehicle_type: undefined,
+      birthday: new Date(response.data.birthday._seconds * 1000).toLocaleDateString(),
+      picture_url: response.data.picture_url,
+    };
   } catch (error) {
     console.error(error);
   }
@@ -181,6 +195,8 @@ const getAllHistoryFromDriver = async (driverId: string): Promise<History[]> => 
   }
 };
 export {
+  Driver,
+  History,
   getDriverByID,
   getAllDrivers,
   createDriver,

@@ -1,50 +1,95 @@
-import React from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  ImageSourcePropType,
+} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
+import {getDriverByID} from '@/api/api';
+import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
 
 export default function ProfileScreen() {
+  const [driver, setDriver] = useState<any>(undefined);
+  const [loading, setLoading] = useState(true);
+  const currentUserID: string = 'EupIJaWMSnitQnIIcWi7';
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const driverInfo = await getDriverByID(currentUserID);
+        //console.log(driverInfo);
+        setDriver(driverInfo);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.editButton}>
-          <MaterialIcons name="edit" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
+    <>
+      {loading ? (
+        <ActivityIndicator size={'large'} />
+      ) : driver ? (
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.editButton}>
+              <MaterialIcons name="edit" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
 
-      <View style={styles.profileImageContainer}>
-        <Image style={styles.profileImage} source={{uri: 'https://via.placeholder.com/150'}} />
-      </View>
+          <View style={styles.profileImageContainer}>
+            <Image
+              style={styles.profileImage}
+              source={
+                driver?.picture_url
+                  ? {uri: driver.picture_url as string}
+                  : (profilePicturePlaceholder as ImageSourcePropType)
+              }
+            />
+          </View>
 
-      {/* 名前 */}
-      <Text style={styles.nameText}>John Doe</Text>
+          <Text style={styles.nameText}>{driver.name}</Text>
 
-      <View style={styles.profileInfoContainer}>
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>User Type:</Text>
-          <Text style={styles.value}>Fleet & Logistics Driver</Text>
+          <View style={styles.profileInfoContainer}>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>User Type:</Text>
+              <Text style={styles.value}>{driver.user_type || '-'}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Vehicle:</Text>
+              <Text style={styles.value}>{driver.vehicle_type || '-'}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Birthday:</Text>
+              <Text style={styles.value}>{driver.birthday || '-'}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Email:</Text>
+              <Text style={styles.value}>{driver.email || '-'}</Text>
+            </View>
+            {/*
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Password:</Text>
+              <Text style={styles.value}>**********</Text>
+            </View>
+            */}
+          </View>
         </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Vehicle:</Text>
-          <Text style={styles.value}>Light Cargo Vehicle</Text>
+      ) : (
+        <View style={styles.container}>
+          <Text style={styles.nameText}>No user information found</Text>
         </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Birthday:</Text>
-          <Text style={styles.value}>April 09, 2000</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Email:</Text>
-          <Text style={styles.value}>sample@gmail.com</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Password:</Text>
-          <Text style={styles.value}>**********</Text>
-        </View>
-      </View>
-    </View>
+      )}
+    </>
   );
 }
 

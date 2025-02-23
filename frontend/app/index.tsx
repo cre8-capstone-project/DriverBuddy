@@ -6,12 +6,12 @@ import {Map} from '@/app/map';
 import {Button, Icon} from '@rneui/themed';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
+type ViewMode = 'cameraView' | 'mapView';
+
 type RootStackParamList = {
   settings: undefined;
   profile: undefined;
 };
-
-type ViewMode = 'cameraView' | 'mapView';
 
 const {width, height} = Dimensions.get('window');
 
@@ -186,12 +186,10 @@ const styles = StyleSheet.create({
   // TODO: NEED MORE INVESTIGATION
   cameraPIP: {
     overflow: 'hidden',
-    // borderColor: 'lightgreen',
-    // borderWidth: 20,
     position: 'absolute',
     borderRadius: 60,
-    top: -140,
-    left: -125,
+    top: -height * 0.5 + (height * 0.2) / 2 + 100,
+    left: -width * 0.5 + (width * 0.2) / 2 + 20,
     width: width * 1,
     height: height * 1,
     transform: [{scale: 0.2}],

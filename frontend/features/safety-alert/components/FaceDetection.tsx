@@ -4,6 +4,7 @@ import {Camera} from 'react-native-vision-camera-face-detector';
 import Animated from 'react-native-reanimated';
 import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
 import {WarningMessage} from '@/features/safety-alert/components/WarningMessage';
+import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
 
 const DEBUG_MODE = true;
 
@@ -30,6 +31,7 @@ const FaceDetection = ({device}: {device: any}) => {
       />
       <Animated.View style={faceBorderStyle} />
       <WarningMessage isWarning={isWarning} />
+      <FaceDetectingLabel />
 
       {DEBUG_MODE && (
         <View style={styles.debugContainer}>
@@ -58,7 +60,7 @@ const styles = StyleSheet.create({
     left: '2%',
   },
   debugText: {
-    color: '#00FFFF',
+    color: 'lightgreen',
     fontSize: 14,
     fontWeight: 'bold',
   },

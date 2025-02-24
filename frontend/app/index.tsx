@@ -4,9 +4,10 @@ import {useNavigation} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
 import {Button, Icon} from '@rneui/themed';
+import {FaceDetectionWindowFrame} from '@/features/safety-alert/components/FaceDetectionWindowFrame';
+import {ConfirmationDialog} from '@/features/safety-alert/components/ConfirmationDialog';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-
-type ViewMode = 'cameraView' | 'mapView';
+import type {ViewMode} from '@/types/ViewMode';
 
 type RootStackParamList = {
   settings: undefined;
@@ -19,10 +20,15 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [viewMode, setViewMode] = useState<ViewMode>('cameraView');
   const [isFaceDetectionActive, setIsFaceDetectionActive] = useState(false);
-  const [cameraKey, setCameraKey] = useState(0);
+  const [dialogStatus, setDialogStatus] = useState(false);
+  const [viewKey, setViewKey] = useState(0);
+
+  const toggleDialog = () => {
+    setDialogStatus(!dialogStatus);
+  };
 
   useEffect(() => {
-    setCameraKey(prevKey => prevKey + 1);
+    setViewKey(prevKey => prevKey + 1);
   }, [viewMode]);
 
   return (
@@ -31,25 +37,29 @@ export default function HomeScreen() {
       <View
         style={[
           styles.componentContainer,
-          // viewMode === 'cameraView' ? styles.visible : styles.hidden,
-          viewMode === 'cameraView'
-            ? styles.visible
-            : isFaceDetectionActive
-              ? styles.cameraPIP
-              : styles.hidden,
+          viewMode === 'mapView' ? styles.visible : styles.hidden,
         ]}>
-        <CameraView
-          key={cameraKey}
-          isCameraActive={isFaceDetectionActive}
-          setIsCameraActive={setIsFaceDetectionActive}
-        />
+        <Map key={`map-${viewKey}`} />
       </View>
       <View
         style={[
           styles.componentContainer,
-          viewMode === 'mapView' ? styles.visible : styles.hidden,
+          // viewMode === 'cameraView' ? styles.visible : styles.hidden,
+          viewMode === 'cameraView'
+            ? styles.visible
+            : isFaceDetectionActive
+              ? styles.faceDetectionFrame
+              : styles.hidden,
         ]}>
-        <Map />
+        <CameraView
+          key={`camera-${viewKey}`}
+          isFaceDetectionActive={isFaceDetectionActive}
+          setIsFaceDetectionActive={setIsFaceDetectionActive}
+        />
+        <FaceDetectionWindowFrame
+          viewMode={viewMode}
+          isFaceDetectionActive={isFaceDetectionActive}
+        />
       </View>
 
       <View style={styles.navContainer}>
@@ -101,11 +111,18 @@ export default function HomeScreen() {
             containerStyle={styles.buttonContainer}
             buttonStyle={styles.button}
             titleStyle={styles.buttonText}
-            onPress={() => setIsFaceDetectionActive(true)}>
+            onPress={toggleDialog}>
             <Icon name="videocam" size={30} color="black" />
             <Text style={styles.buttonText}>Start{'\n'}detection</Text>
           </Button>
         )}
+
+        {/* Start Face Detection Confirmation Dialog */}
+        <ConfirmationDialog
+          dialogStatus={dialogStatus}
+          toggleDialog={toggleDialog}
+          setIsFaceDetectionActive={setIsFaceDetectionActive}
+        />
 
         {/* Map View Button */}
         {viewMode === 'cameraView' && (
@@ -141,8 +158,19 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {flex: 1},
   componentContainer: {flex: 1},
-  visible: {display: 'flex'},
-  hidden: {display: 'none'},
+  // visible: {display: 'flex'},
+  // hidden: {display: 'none'},
+  visible: {
+    opacity: 1,
+    position: 'relative',
+    flex: 1,
+  },
+  hidden: {
+    opacity: 0,
+    position: 'absolute',
+    width: 0,
+    height: 0,
+  },
   navContainer: {
     position: 'absolute',
     bottom: 0,
@@ -184,7 +212,7 @@ const styles = StyleSheet.create({
   },
 
   // TODO: NEED MORE INVESTIGATION
-  cameraPIP: {
+  faceDetectionFrame: {
     overflow: 'hidden',
     position: 'absolute',
     borderRadius: 60,

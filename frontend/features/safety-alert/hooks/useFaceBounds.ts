@@ -10,7 +10,7 @@ export const useFaceBounds = () => {
   const faceBorderStyle = useAnimatedStyle(() => ({
     position: 'absolute',
     borderWidth: borderWidth.value,
-    borderColor: '#00FFFF',
+    borderColor: 'lightgreen',
     width: withTiming(aFaceW.value, {duration: 100}),
     height: withTiming(aFaceH.value, {duration: 100}),
     left: withTiming(aFaceX.value, {duration: 100}),

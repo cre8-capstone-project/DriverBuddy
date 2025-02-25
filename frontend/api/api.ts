@@ -1,11 +1,10 @@
-import axios, {AxiosError, AxiosResponse} from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import {Timestamp} from 'firebase/firestore';
 
-const API_URL = process.env.LANGARA_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
 // Common setting for API requests
 const axiosClient = axios.create({
-  //baseURL: process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.0.0.23:3000', // replace 10.0.0.23 with your own IP
-  baseURL: API_URL, // replace 10.0.0.23 with your own IP
+  baseURL: API_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -50,8 +49,8 @@ const getDriverByID = async (id: string) => {
       name: response.data.name,
       email: response.data.email,
       phone: response.data.phone,
-      user_type: undefined,
-      vehicle_type: undefined,
+      user_type: response.data.user_type,
+      vehicle_type: response.data.vehicle_type,
       birthday: response.data.birthday
         ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
         : null,

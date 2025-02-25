@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {
   useCameraPermission,
@@ -6,15 +6,17 @@ import {
   Camera as VisionCamera,
 } from 'react-native-vision-camera';
 import FaceDetection from '@/features/safety-alert/components/FaceDetection';
+import {ConfirmationDialog} from '@/features/safety-alert/components/ConfirmationDialog';
 import {Button, Icon} from '@rneui/themed';
 
 type Props = {
-  isCameraActive: boolean;
-  setIsCameraActive: (active: boolean) => void;
+  isFaceDetectionActive: boolean;
+  setIsFaceDetectionActive: (active: boolean) => void;
 };
 
-export const CameraView = ({isCameraActive, setIsCameraActive}: Props) => {
+export const CameraView = ({isFaceDetectionActive, setIsFaceDetectionActive}: Props) => {
   const {hasPermission} = useCameraPermission();
+  const [dialogStatus, setDialogStatus] = useState(false);
   const device = useCameraDevice('front');
 
   useEffect(() => {
@@ -27,7 +29,11 @@ export const CameraView = ({isCameraActive, setIsCameraActive}: Props) => {
   if (!hasPermission) return <Text>Permission Error</Text>;
   if (!device) return <Text>Device Not Found Error</Text>;
 
-  return isCameraActive ? (
+  const toggleDialog = () => {
+    setDialogStatus(!dialogStatus);
+  };
+
+  return isFaceDetectionActive ? (
     <FaceDetection device={device} />
   ) : (
     <View style={styles.container}>
@@ -35,10 +41,16 @@ export const CameraView = ({isCameraActive, setIsCameraActive}: Props) => {
         titleStyle={styles.buttonText}
         buttonStyle={styles.roundButton}
         containerStyle={styles.roundButton}
-        onPress={() => setIsCameraActive(true)}>
+        onPress={() => toggleDialog()}>
         <Icon name={'videocam'} color={'white'} size={50} />
         Start Detection
       </Button>
+
+      <ConfirmationDialog
+        dialogStatus={dialogStatus}
+        toggleDialog={toggleDialog}
+        setIsFaceDetectionActive={setIsFaceDetectionActive}
+      />
     </View>
   );
 };
@@ -50,9 +62,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   roundButton: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',

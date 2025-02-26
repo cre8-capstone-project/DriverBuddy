@@ -1,16 +1,29 @@
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import {MaterialIcons} from '@expo/vector-icons';
+import {View, Text, StyleSheet} from 'react-native';
+import {Icon, Button} from '@rneui/themed';
 import {Link} from 'expo-router';
 
 export default function SettingsScreen() {
   return (
     <View style={styles.container}>
-      <Text>Settings Page</Text>
-
       <Link href="/history" asChild>
-        <TouchableOpacity style={styles.settingButton}>
-          <MaterialIcons name="history" size={24} color="black" />
-        </TouchableOpacity>
+        <Button buttonStyle={styles.menuButton} containerStyle={styles.menuButtonContainer}>
+          <Icon name="history" style={styles.icon} />
+          <View style={styles.menuTextContainer}>
+            <Text style={styles.menuText}>Driving History</Text>
+            <Text style={styles.menuSubText}>See how long you've driven</Text>
+          </View>
+          <Icon name="chevron-right" style={styles.icon} />
+        </Button>
+      </Link>
+      <Link href="/history" asChild>
+        <Button buttonStyle={styles.menuButton} containerStyle={styles.menuButtonContainer}>
+          <Icon name="watch" style={styles.icon} />
+          <View style={styles.menuTextContainer}>
+            <Text style={styles.menuText}>Connect Smartwatch</Text>
+            <Text style={styles.menuSubText}>For better detection & reminders</Text>
+          </View>
+          <Icon name="chevron-right" style={styles.icon} />
+        </Button>
       </Link>
     </View>
   );
@@ -18,15 +31,39 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#f8f8f8',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    padding: 20,
+    gap: 20,
   },
-  settingButton: {
-    position: 'absolute',
-    textAlign: 'center',
-    top: 50,
-    // left: 20,
+  menuButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  menuButton: {
+    margin: 0,
+    padding: 20,
+    borderRadius: 15,
+    backgroundColor: '#1E3ABA',
+  },
+  menuTextContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    marginLeft: 10,
+  },
+  menuText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  menuSubText: {
+    fontSize: 14,
+    color: 'white',
+  },
+  icon: {
+    backgroundColor: 'white',
+    borderRadius: 4,
+    padding: 5,
   },
 });

@@ -6,9 +6,10 @@ import {ViewMode} from '@/features/history/types/ViewMode';
 type Props = {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  setStartDate: (date: Date) => void;
 };
 
-export const ViewModeButtons = ({viewMode, setViewMode}: Props) => {
+export const ViewModeButtons = ({viewMode, setViewMode, setStartDate}: Props) => {
   return (
     <ButtonGroup
       containerStyle={styles.container}
@@ -24,6 +25,9 @@ export const ViewModeButtons = ({viewMode, setViewMode}: Props) => {
         else {
           throw new Error('Invalid view mode');
         }
+
+        // Reset the base date when view mode is changed
+        setStartDate(new Date());
       }}
     />
   );

@@ -10,34 +10,71 @@ type ToolTipProps = {
   xCoordinate: SharedValue<number>;
   yCoordinate: SharedValue<number>;
   date: SharedValue<number>;
-  hours: SharedValue<number>;
+  alertPerHour: SharedValue<number>;
+  startDate: string;
+  viewMode: string;
 };
 
-export const Tooltip = ({xCoordinate, yCoordinate, date, hours}: ToolTipProps) => {
-  const font = useFont(interFont, 12);
+export const Tooltip = ({
+  xCoordinate,
+  yCoordinate,
+  date,
+  alertPerHour,
+  startDate,
+  viewMode,
+}: ToolTipProps) => {
+  const font = useFont(interFont, 10);
 
-  const lineStart = useDerivedValue(() => vec(xCoordinate.value, 35), [xCoordinate]);
+  const lineStart = useDerivedValue(() => vec(xCoordinate.value, 30), [xCoordinate]);
   const lineEnd = useDerivedValue(
     () => vec(xCoordinate.value, yCoordinate.value),
     [xCoordinate, yCoordinate],
   );
 
   const xPosition = useDerivedValue(() => {
-    return xCoordinate.value > screenWidth * 0.65 ? xCoordinate.value - 65 : xCoordinate.value + 5;
-  }, [xCoordinate]);
-  const xPositionForBg = useDerivedValue(() => {
-    return xCoordinate.value > screenWidth * 0.65 ? xCoordinate.value - 69 : xCoordinate.value - 1;
+    return xCoordinate.value > screenWidth * 0.65 ? xCoordinate.value - 80 : xCoordinate.value + 5;
   }, [xCoordinate]);
 
-  const xValue = useDerivedValue(() => `Index:${date.value.toString()}`, [date]);
-  const yValue = useDerivedValue(() => `${hours.value.toString()}hrs`, [hours]);
+  const xPositionForBg = useDerivedValue(() => {
+    return xCoordinate.value > screenWidth * 0.65 ? xCoordinate.value - 84 : xCoordinate.value - 1;
+  }, [xCoordinate]);
+
+  // const xValue = useDerivedValue(() => `${date.value.toString()}`, [date]);
+  const xValue = useDerivedValue(() => {
+    const updatedDate = new Date(startDate);
+
+    if (viewMode === 'year') {
+      updatedDate.setMonth(updatedDate.getMonth() + Number(date.value));
+      return updatedDate.toLocaleDateString('en-US', {
+        month: 'short',
+      });
+    } else if (viewMode === 'day') {
+      updatedDate.setHours(Number(date.value));
+      return updatedDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    } else {
+      updatedDate.setDate(updatedDate.getDate() + Number(date.value));
+      return updatedDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+      });
+    }
+  }, [date, startDate, viewMode]);
+
+  const yValue = useDerivedValue(
+    () => `${alertPerHour.value.toString()} alerts/hr`,
+    [alertPerHour],
+  );
 
   return (
     <View>
-      <RoundedRect x={xPositionForBg} y={0} width={70} height={43} r={0} color="#4A4A4A" />
-      <SkiaLine p1={lineStart} p2={lineEnd} strokeWidth={2} style="stroke" color="#4A4A4A" />
-      <SkiaText x={xPosition} y={18} text={xValue} font={font} color="white" />
-      <SkiaText x={xPosition} y={35} text={yValue} font={font} color="white" />
+      <RoundedRect x={xPositionForBg} y={0} width={85} height={30} r={0} color="#1E3ABA" />
+      <SkiaLine p1={lineStart} p2={lineEnd} strokeWidth={2} style="stroke" color="#1E3ABA" />
+      <SkiaText x={xPosition} y={12} text={xValue} font={font} color="white" />
+      <SkiaText x={xPosition} y={24} text={yValue} font={font} color="white" />
     </View>
   );
 };

@@ -1,30 +1,35 @@
 import {View, Text, StyleSheet} from 'react-native';
 import {Icon, Button} from '@rneui/themed';
-import {Link} from 'expo-router';
+import {useRouter} from 'expo-router';
 
 export default function SettingsScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
-      <Link href="/history" asChild>
-        <Button buttonStyle={styles.menuButton} containerStyle={styles.menuButtonContainer}>
-          <Icon name="history" style={styles.icon} />
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuText}>Driving History</Text>
-            <Text style={styles.menuSubText}>See how long you've driven</Text>
-          </View>
-          <Icon name="chevron-right" style={styles.icon} />
-        </Button>
-      </Link>
-      <Link href="/history" asChild>
-        <Button buttonStyle={styles.menuButton} containerStyle={styles.menuButtonContainer}>
-          <Icon name="watch" style={styles.icon} />
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuText}>Connect Smartwatch</Text>
-            <Text style={styles.menuSubText}>For better detection & reminders</Text>
-          </View>
-          <Icon name="chevron-right" style={styles.icon} />
-        </Button>
-      </Link>
+      <Button
+        buttonStyle={styles.menuButton}
+        containerStyle={styles.menuButtonContainer}
+        onPress={() => router.push('/history')}>
+        <Icon name="history" style={styles.icon} />
+        <View style={styles.menuTextContainer}>
+          <Text style={styles.menuText}>Driving History</Text>
+          <Text style={styles.menuSubText}>See how long you've driven</Text>
+        </View>
+        <Icon name="chevron-right" style={styles.icon} />
+      </Button>
+
+      <Button
+        buttonStyle={styles.menuButton}
+        containerStyle={styles.menuButtonContainer}
+        onPress={() => router.push('/')}
+        disabled>
+        <Icon name="watch" style={styles.icon} />
+        <View style={styles.menuTextContainer}>
+          <Text style={styles.menuText}>Connect Smartwatch</Text>
+          <Text style={styles.menuSubText}>For better detection & reminders</Text>
+        </View>
+        <Icon name="chevron-right" style={styles.icon} />
+      </Button>
     </View>
   );
 }

@@ -170,7 +170,7 @@ export const HistoryService = {
 
       const result = await drizzleDb
         .select({
-          date: sql`date(datetime(${faceDetectionSession.sessionStartDate}, ${TIMEZONE.SQL_OFFSET}))`.as(
+          date: sql`date(datetime(${faceDetectionSession.startTime}, ${TIMEZONE.SQL_OFFSET}))`.as(
             'date',
           ),
           totalSessionHours:
@@ -189,13 +189,11 @@ export const HistoryService = {
           sql`${faceDetectionSession.faceDetectionSessionId} = ${alert.faceDetectionSessionId}`,
         )
         .where(
-          sql`date(datetime(${faceDetectionSession.sessionStartDate}, ${TIMEZONE.SQL_OFFSET})) BETWEEN date(${monthDates[0]}) AND date(${monthDates[29]})`,
+          sql`date(datetime(${faceDetectionSession.startTime}, ${TIMEZONE.SQL_OFFSET})) BETWEEN date(${monthDates[0]}) AND date(${monthDates[29]})`,
         )
-        .groupBy(
-          sql`date(datetime(${faceDetectionSession.sessionStartDate}, ${TIMEZONE.SQL_OFFSET}))`,
-        )
+        .groupBy(sql`date(datetime(${faceDetectionSession.startTime}, ${TIMEZONE.SQL_OFFSET}))`)
         .orderBy(
-          sql`date(datetime(${faceDetectionSession.sessionStartDate}, ${TIMEZONE.SQL_OFFSET})) ASC`,
+          sql`date(datetime(${faceDetectionSession.startTime}, ${TIMEZONE.SQL_OFFSET})) ASC`,
         );
       console.log('SQL result (Month):', result);
 
@@ -240,7 +238,7 @@ export const HistoryService = {
 
       const yearMonths = Array.from({length: 12}, (_, i) => {
         const month = String(i + 1).padStart(2, '0');
-        return `${year}-${month}`;
+        return `${year}-${month}-01`;
       });
 
       const result = await drizzleDb

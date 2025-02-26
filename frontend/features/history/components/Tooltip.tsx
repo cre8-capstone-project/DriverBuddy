@@ -32,31 +32,26 @@ export const Tooltip = ({
   );
 
   const xPosition = useDerivedValue(() => {
-    return xCoordinate.value > screenWidth * 0.65 ? xCoordinate.value - 80 : xCoordinate.value + 5;
+    return xCoordinate.value > screenWidth * 0.65 ? xCoordinate.value - 85 : xCoordinate.value + 5;
   }, [xCoordinate]);
 
   const xPositionForBg = useDerivedValue(() => {
-    return xCoordinate.value > screenWidth * 0.65 ? xCoordinate.value - 84 : xCoordinate.value - 1;
+    return xCoordinate.value > screenWidth * 0.65 ? xCoordinate.value - 89 : xCoordinate.value - 1;
   }, [xCoordinate]);
 
-  // const xValue = useDerivedValue(() => `${date.value.toString()}`, [date]);
   const xValue = useDerivedValue(() => {
-    const updatedDate = new Date(startDate);
+    const updatedDate = new Date(startDate + 'T00:00:00');
 
     if (viewMode === 'year') {
-      updatedDate.setMonth(updatedDate.getMonth() + Number(date.value));
+      updatedDate.setMonth(updatedDate.getMonth() + Number(date.value) - 1);
       return updatedDate.toLocaleDateString('en-US', {
         month: 'short',
       });
     } else if (viewMode === 'day') {
-      updatedDate.setHours(Number(date.value));
-      return updatedDate.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      });
+      const hourValue = String(Number(date.value)).padStart(2, '0');
+      return `${hourValue}:00`;
     } else {
-      updatedDate.setDate(updatedDate.getDate() + Number(date.value));
+      updatedDate.setDate(updatedDate.getDate() + Number(date.value) - 1);
       return updatedDate.toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
@@ -71,7 +66,7 @@ export const Tooltip = ({
 
   return (
     <View>
-      <RoundedRect x={xPositionForBg} y={0} width={85} height={30} r={0} color="#1E3ABA" />
+      <RoundedRect x={xPositionForBg} y={0} width={90} height={30} r={0} color="#1E3ABA" />
       <SkiaLine p1={lineStart} p2={lineEnd} strokeWidth={2} style="stroke" color="#1E3ABA" />
       <SkiaText x={xPosition} y={12} text={xValue} font={font} color="white" />
       <SkiaText x={xPosition} y={24} text={yValue} font={font} color="white" />

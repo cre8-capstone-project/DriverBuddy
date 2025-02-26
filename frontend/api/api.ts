@@ -1,8 +1,10 @@
 import axios, {AxiosResponse} from 'axios';
+import {Timestamp} from 'firebase/firestore';
 
+const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
 // Common setting for API requests
 const axiosClient = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_BASE_URL_PRODUCTION || 'http://10.0.0.23:3000', // replace 10.0.0.23 with your own IP
+  baseURL: API_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -12,9 +14,13 @@ const axiosClient = axios.create({
 // Define types for driver and history records
 interface Driver {
   id?: string;
+  user_type?: string;
   name: string;
   email: string;
   phone: string;
+  vehicle_type?: string;
+  birthday: Timestamp;
+  picture_url: string;
 }
 
 interface History {
@@ -38,8 +44,20 @@ const getDriverByID = async (id: string) => {
     const response: AxiosResponse<Driver> = await axiosClient.get(`/drivers/${id}`, {
       timeout: 5000,
     });
-    return response.data;
+    return {
+      id: response.data.id,
+      name: response.data.name,
+      email: response.data.email,
+      phone: response.data.phone,
+      user_type: response.data.user_type,
+      vehicle_type: response.data.vehicle_type,
+      birthday: response.data.birthday
+        ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
+        : null,
+      picture_url: response.data.picture_url,
+    };
   } catch (error) {
+    console.log('Error in api line 62');
     console.error(error);
   }
 };
@@ -78,13 +96,21 @@ const createDriver = async (driverObject: Omit<Driver, 'id'>): Promise<Driver | 
  * @param driverObject - The updated driver data.
  * @returns The updated driver object or undefined if an error occurs.
  */
-const updateDriver = async (
-  driverId: string,
-  driverObject: Partial<Driver>,
-): Promise<Driver | undefined> => {
+const updateDriver = async (driverId: string, driverObject: Partial<Driver>) => {
   try {
     const response = await axiosClient.put<Driver>(`/drivers/${driverId}`, driverObject);
-    return response.data;
+    return {
+      id: response.data.id,
+      name: response.data.name,
+      email: response.data.email,
+      phone: response.data.phone,
+      user_type: response.data.user_type,
+      vehicle_type: response.data.vehicle_type,
+      birthday: response.data.birthday
+        ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
+        : null,
+      picture_url: response.data.picture_url,
+    };
   } catch (error) {
     console.error(error);
   }
@@ -181,6 +207,8 @@ const getAllHistoryFromDriver = async (driverId: string): Promise<History[]> => 
   }
 };
 export {
+  Driver,
+  History,
   getDriverByID,
   getAllDrivers,
   createDriver,

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import express from 'express';
 
 const driverRoutes = driverCollection => {
@@ -5,8 +6,8 @@ const driverRoutes = driverCollection => {
 
   router.post('/', async (req, res) => {
     try {
-      const {name, email, phone} = req.body;
-      const newDriver = {name, email, phone};
+      const {name, email, phone, vehicle_type, user_type} = req.body;
+      const newDriver = {name, email, phone, vehicle_type, user_type};
       const docRef = await driverCollection.add(newDriver);
       res.status(201).send({id: docRef.id, ...newDriver});
     } catch (error) {
@@ -37,9 +38,13 @@ const driverRoutes = driverCollection => {
 
   router.put('/:id', async (req, res) => {
     try {
-      const {name, email, phone} = req.body;
-      await driverCollection.doc(req.params.id).update({name, email, phone});
-      res.status(200).send({id: req.params.id, name, email, phone});
+      const {name, email, phone, birthday, vehicle_type, user_type} = req.body;
+      await driverCollection
+        .doc(req.params.id)
+        .update({name, email, phone, birthday, vehicle_type, user_type});
+      res
+        .status(200)
+        .send({id: req.params.id, name, email, phone, birthday, vehicle_type, user_type});
     } catch (error) {
       res.status(500).send({error: `Failed to update driver: ${error}`});
     }

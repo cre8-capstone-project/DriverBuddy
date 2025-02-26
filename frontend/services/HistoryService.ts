@@ -40,7 +40,7 @@ export const HistoryService = {
           sql`${faceDetectionSession.faceDetectionSessionId} = ${alert.faceDetectionSessionId}`,
         )
         .where(
-          sql`datetime(${faceDetectionSession.startTime}, 'localtime')
+          sql`datetime(${faceDetectionSession.startTime}, ${TIMEZONE.SQL_OFFSET})
              BETWEEN datetime(${dateString + ' 00:00:00'})
              AND datetime(${dateString + ' 23:59:59'})`,
         )
@@ -263,7 +263,7 @@ export const HistoryService = {
           sql`${faceDetectionSession.faceDetectionSessionId} = ${alert.faceDetectionSessionId}`,
         )
         .where(
-          sql`strftime('%Y', datetime(${faceDetectionSession.startTime}, 'localtime')) = ${String(year)}`,
+          sql`strftime('%Y', datetime(${faceDetectionSession.startTime}, ${TIMEZONE.SQL_OFFSET})) = ${String(year)}`,
         )
         .groupBy(sql`month`)
         .orderBy(sql`month ASC`);

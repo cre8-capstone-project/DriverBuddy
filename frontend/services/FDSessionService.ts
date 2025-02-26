@@ -1,6 +1,6 @@
 import {drizzleDb} from '@/db/db';
 import {faceDetectionSession} from '@/db/schema';
-import {FDSessionType} from '@/types/FDSessionType';
+import type {FDSessionType} from '@/types/FDSessionType';
 import {eq} from 'drizzle-orm';
 
 export const FDSessionService = {

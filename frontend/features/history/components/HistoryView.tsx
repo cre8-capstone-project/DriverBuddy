@@ -1,24 +1,37 @@
-import {useEffect, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {useChartDataDummy, useChartData} from '@/features/history/hooks/useChartData';
+import {useState, useMemo} from 'react';
+import {View, StyleSheet, ActivityIndicator} from 'react-native';
+import {useChartData} from '@/features/history/hooks/useChartData';
 import {ViewModeButtons} from '@/features/history/components/ViewModeButtons';
 import {SummaryCard} from '@/features/history/components/SummaryCard';
-import {Chart} from '@/features/history/components/Chart';
+import Chart from '@/features/history/components/Chart';
 import {ChartPager} from '@/features/history/components/ChartPager';
 import {Legend} from '@/features/history/components/Legend';
 import {ViewMode} from '@/features/history/types/ViewMode';
 
 export const HistoryView = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('week');
-  const [startDate, setStartDate] = useState(new Date());
-  const data = useChartDataDummy(viewMode, startDate);
+  const [startDate, setStartDate] = useState(() => {
+    const startDate = new Date();
+    // startDate.setDate(startDate.getDate() - startDate.getDay());
+    startDate.setHours(0, 0, 0, 0);
+    return startDate;
+  });
 
-  // --- Under development
-  const {data: hourlyData} = useChartData(viewMode, startDate);
-  useEffect(() => {
-    console.log('Hourly Alert Data:', JSON.stringify(hourlyData, null, 2));
-  }, [hourlyData]);
-  // --- Under development
+  const {totalSessionHours, totalNumberOfAlert, detailedData, loading} = useChartData(
+    viewMode,
+    startDate,
+  );
+
+  // Note:
+  // Memoize chartProps to prevent the component from re-rendering with outdated detailedData
+  // when only viewMode updates, as detailedData updates are always delayed.
+  const chartProps = useMemo(
+    () => ({
+      data: detailedData,
+      viewMode: viewMode,
+    }),
+    [detailedData],
+  );
 
   const legendItems = [
     {
@@ -29,12 +42,17 @@ export const HistoryView = () => {
     },
   ];
 
-  return (
+  return loading ? (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#0000ff" />
+    </View>
+  ) : (
     <View style={styles.container}>
-      <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
-      <SummaryCard data={data} viewMode={viewMode} />
+      <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} setStartDate={setStartDate} />
+      <SummaryCard data={{totalSessionHours, totalNumberOfAlert}} />
       <ChartPager viewMode={viewMode} startDate={startDate} setStartDate={setStartDate} />
-      <Chart data={data} viewMode={viewMode} />
+      {/* <Chart data={detailedData} viewMode={viewMode} /> */}
+      <Chart {...chartProps} />
       <Legend legend={legendItems} />
     </View>
   );
@@ -42,4 +60,5 @@ export const HistoryView = () => {
 
 const styles = StyleSheet.create({
   container: {flex: 1, gap: 20, padding: 20},
+  loadingContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
 });

@@ -1,27 +1,37 @@
+import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import {CartesianChart, Bar, Line, useChartPressState} from 'victory-native';
+import {CartesianChart, Bar, useChartPressState} from 'victory-native';
 import {LinearGradient, vec} from '@shopify/react-native-skia';
 import {useFont} from '@shopify/react-native-skia';
 import {Tooltip} from './Tooltip';
+import type {DetailedData} from '@/types/HistoryDataType';
 
 const interFont = require('@/assets/fonts/SpaceMono-Regular.ttf');
 
 type Props = {
-  data: {id: number; hours: number; alerts: number}[];
+  data: DetailedData[];
   viewMode: string;
 };
 
-export const Chart = ({data, viewMode}: Props) => {
+const Chart = ({data, viewMode}: Props) => {
   const font = useFont(interFont, 14);
-  const {state, isActive} = useChartPressState({x: 0, y: {alerts: 0}});
+  const {state, isActive} = useChartPressState({x: 0, y: {alertPerHour: 0}});
+  const startDate = data[0].date;
+
+  const indexedData = data.map((item, index) => ({
+    ...item,
+    index: viewMode === 'day' ? index : index + 1,
+  }));
+
+  const maxAlertPerHour = Math.max(...data.map(item => item.alertPerHour));
 
   return (
     <View style={styles.chartContainer}>
       <CartesianChart
         chartPressState={state}
-        data={data}
-        xKey="id"
-        yKeys={['alerts']}
+        data={indexedData}
+        xKey="index"
+        yKeys={['alertPerHour']}
         domainPadding={
           viewMode === 'day'
             ? {left: 5, right: 5, top: 50}
@@ -36,7 +46,7 @@ export const Chart = ({data, viewMode}: Props) => {
           tickCount: data.length,
           formatXLabel(value) {
             if (viewMode === 'day') {
-              return [3, 6, 9, 12, 15, 18, 21].includes(value) ? value.toString() : '';
+              return [0, 3, 6, 9, 12, 15, 18, 21].includes(value) ? value.toString() : '';
             } else if (viewMode === 'week') {
               const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
               return daysOfWeek[(value - 1) % 7];
@@ -50,29 +60,26 @@ export const Chart = ({data, viewMode}: Props) => {
           {
             font,
             axisSide: 'left',
+            domain: [0, maxAlertPerHour + 50],
           },
         ]}>
         {({points, chartBounds}) => (
           <View>
             <Bar
               chartBounds={chartBounds}
-              points={points.alerts}
+              points={points.alertPerHour}
               innerPadding={0.5}
               animate={{type: 'timing', duration: 500}}>
               <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#2089DC', '#155FA2']} />
             </Bar>
-            {/* <Line
-              points={points.alerts}
-              color="#FF758C"
-              strokeWidth={3}
-              animate={{type: 'timing', duration: 500}}
-            /> */}
             {isActive && font && (
               <Tooltip
                 xCoordinate={state.x.position}
-                yCoordinate={state.y.alerts.position}
+                yCoordinate={state.y.alertPerHour.position}
                 date={state.x.value}
-                hours={state.y.alerts.value}
+                alertPerHour={state.y.alertPerHour.value}
+                startDate={startDate}
+                viewMode={viewMode}
               />
             )}
           </View>
@@ -81,6 +88,8 @@ export const Chart = ({data, viewMode}: Props) => {
     </View>
   );
 };
+
+export default React.memo(Chart);
 
 const styles = StyleSheet.create({
   chartContainer: {flex: 1},

@@ -14,6 +14,7 @@ export const useDrowsinessDetection = () => {
   const startTimeDrowsinessRef = useRef<number | null>(null);
   const blinkTimestampsRef = useRef<number[]>([]);
   const blinkStatusRef = useRef<'closed' | 'open'>('open');
+  const blinkRegisteredRef = useRef<boolean>(false);
 
   const recordBlink = () => {
     const now = Date.now();
@@ -33,7 +34,10 @@ export const useDrowsinessDetection = () => {
 
     // Checking eye closure time threshold
     if (isLeftEyeClosed && isRightEyeClosed) {
-      if (blinkStatusRef.current !== 'closed') blinkStatusRef.current = 'closed';
+      if (blinkStatusRef.current !== 'closed') {
+        blinkStatusRef.current = 'closed';
+        blinkRegisteredRef.current = false;
+      }
 
       if (startTimeDrowsinessRef.current === null) {
         startTimeDrowsinessRef.current = Date.now();
@@ -48,8 +52,9 @@ export const useDrowsinessDetection = () => {
     }
 
     // Checking blink count threshold
-    if (blinkStatusRef.current === 'closed') {
+    if (blinkStatusRef.current === 'closed' && !blinkRegisteredRef.current) {
       recordBlink();
+      blinkRegisteredRef.current = true;
       if (blinkTimestampsRef.current.length > BLINK_COUNT_THRESHOLD) {
         blinkTimestampsRef.current = [];
         triggerAlert();

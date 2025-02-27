@@ -34,28 +34,6 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "alertMonth": {
-          "name": "alertMonth",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "generated": {
-            "as": "(substr(timestamp, 1, 7))",
-            "type": "virtual"
-          }
-        },
-        "alertDate": {
-          "name": "alertDate",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "generated": {
-            "as": "(substr(timestamp, 1, 10))",
-            "type": "virtual"
-          }
         }
       },
       "indexes": {},
@@ -103,50 +81,6 @@
           "autoincrement": false,
           "generated": {
             "as": "(strftime('%s', endTime) - strftime('%s', startTime))",
-            "type": "virtual"
-          }
-        },
-        "sessionStartMonth": {
-          "name": "sessionStartMonth",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "generated": {
-            "as": "(substr(startTime, 1, 7))",
-            "type": "virtual"
-          }
-        },
-        "sessionStartDate": {
-          "name": "sessionStartDate",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "generated": {
-            "as": "(substr(startTime, 1, 10))",
-            "type": "virtual"
-          }
-        },
-        "sessionEndMonth": {
-          "name": "sessionEndMonth",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "generated": {
-            "as": "(substr(endTime, 1, 7))",
-            "type": "virtual"
-          }
-        },
-        "sessionEndDate": {
-          "name": "sessionEndDate",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "generated": {
-            "as": "(substr(endTime, 1, 10))",
             "type": "virtual"
           }
         }

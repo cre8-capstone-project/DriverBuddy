@@ -1,17 +1,19 @@
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
 import {Link} from 'expo-router';
+import StopTester from '@/components/StopTester';
 
 export default function SettingsScreen() {
   return (
     <View style={styles.container}>
-      <Text>Settings Page</Text>
-
       <Link href="/history" asChild>
         <TouchableOpacity style={styles.settingButton}>
           <MaterialIcons name="history" size={24} color="black" />
         </TouchableOpacity>
       </Link>
+      <View style={styles.container}>
+        <StopTester />
+      </View>
     </View>
   );
 }

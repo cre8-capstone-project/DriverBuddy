@@ -2,7 +2,7 @@ import {drizzleDb} from '@/db/db';
 import {stops} from '@/db/schema';
 import {StopsType} from '@/types/StopsType';
 
-export const StopsTypeService = {
+export const StopsService = {
   async getAllStops() {
     try {
       const result = await drizzleDb.select().from(stops);

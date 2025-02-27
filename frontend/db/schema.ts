@@ -1,5 +1,5 @@
 import {sql} from 'drizzle-orm';
-import {integer, text, sqliteTable} from 'drizzle-orm/sqlite-core';
+import {integer, text, sqliteTable, real} from 'drizzle-orm/sqlite-core';
 
 export const settings = sqliteTable('settings', {
   id: integer({mode: 'number'}).primaryKey({autoIncrement: true}),
@@ -27,4 +27,17 @@ export const alert = sqliteTable('Alert', {
   timestamp: text('timestamp').notNull(),
   // alertMonth: text('alertMonth').generatedAlwaysAs(sql`substr(timestamp, 1, 7)`),
   // alertDate: text('alertDate').generatedAlwaysAs(sql`substr(timestamp, 1, 10)`),
+});
+
+export const stops = sqliteTable('Stops', {
+  stopId: integer('stopId').primaryKey({autoIncrement: true}),
+  journeyId: text('journeyId').notNull(),
+  latitude: real('latitude').notNull(),
+  longitude: real('longitude').notNull(),
+  address: text('address').notNull(),
+  name: text('name').notNull(),
+  priceLevel: integer('priceLevel'),
+  rating: integer('rating'),
+  isOrigin: integer('isOrigin', {mode: 'boolean'}).$default(() => false),
+  isDestination: integer('isDestination', {mode: 'boolean'}).$default(() => false),
 });

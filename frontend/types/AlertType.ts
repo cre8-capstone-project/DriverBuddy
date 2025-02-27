@@ -3,6 +3,4 @@ export type AlertType = {
   faceDetectionSessionId: string;
   userId: string;
   timestamp: string;
-  alertMonth?: string | null;
-  alertDate?: string | null;
 };

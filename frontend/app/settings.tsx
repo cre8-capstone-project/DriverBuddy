@@ -1,6 +1,7 @@
 import {View, Text, StyleSheet} from 'react-native';
 import {Icon, Button} from '@rneui/themed';
 import {useRouter} from 'expo-router';
+import StopTester from '@/components/StopTester';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -30,12 +31,14 @@ export default function SettingsScreen() {
         </View>
         <Icon name="chevron-right" style={styles.icon} />
       </Button>
+      <StopTester />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     flexDirection: 'column',
     justifyContent: 'flex-start',
     padding: 20,

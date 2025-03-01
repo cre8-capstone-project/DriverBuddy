@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, forwardRef, useImperativeHandle} from 'react';
 import {StyleSheet, View, Alert, Modal, Keyboard} from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import {Button, Input, ListItem, Icon} from '@rneui/themed';
@@ -26,7 +26,7 @@ let savedDestination: {latitude: number; longitude: number} | null = null;
 let savedOriginLabel: string | null = null;
 let savedDestinationLabel: string | null = null;
 
-export const Map = () => {
+export const Map = forwardRef((props, ref) => {
   // Using saved values to persist data even when moving away from mapview
   const [origin, setOrigin] = useState<Region | null>(savedOrigin);
   const [destination, setDestination] = useState<{latitude: number; longitude: number} | null>(
@@ -58,19 +58,21 @@ export const Map = () => {
 
   // NEWER: Handle map ready - explicitly zoom to user's current location when available
   const handleMapReady = () => {
-    console.log('MapView is ready (Map View clicked)'); // NEWER: Log when Map View is ready
+    console.log('MapView is ready'); // NEWER: Log when Map View is ready
     if (mapRef.current && deviceLocation) {
       setTimeout(() => {
-        mapRef.current.animateToRegion(
-          {
-            latitude: deviceLocation.latitude,
-            longitude: deviceLocation.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          },
-          1000,
-        );
-      }, 100);
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(
+            {
+              latitude: deviceLocation.latitude,
+              longitude: deviceLocation.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            },
+            1000,
+          );
+        }
+      }, 3000); // UPDATED 28 FEB: Delay zoom-in after map is fully loaded
       setOrigin(deviceLocation);
     }
   };
@@ -166,15 +168,15 @@ export const Map = () => {
         const newRegion = {
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
+          latitudeDelta: 2,
+          longitudeDelta: 2,
         };
 
         setDeviceLocation(newRegion);
         setOrigin(newRegion);
         savedOrigin = newRegion;
         // Animate to the user's current location
-        mapRef.current?.animateToRegion(newRegion, 1000);
+        // mapRef.current?.animateToRegion(newRegion, 1000);
       })();
     }
   }, []);
@@ -215,6 +217,14 @@ export const Map = () => {
       }
     };
   }, [drivingMode]);
+
+  // Expose the openSearch function to parent via ref
+  useImperativeHandle(ref, () => ({
+    openSearch: (field: 'origin' | 'destination') => {
+      setEditingField(field);
+      setSearchModalVisible(true);
+    },
+  }));
 
   // Open search modal
   const openSearch = (field: 'origin' | 'destination') => {
@@ -302,7 +312,7 @@ export const Map = () => {
         provider={PROVIDER_GOOGLE}
         initialRegion={
           origin || {
-            latitude: 49.2827,
+            latitude: 49.2827, // Defaults to Vancouver
             longitude: -123.1207,
             latitudeDelta: 2,
             longitudeDelta: 2,
@@ -314,7 +324,6 @@ export const Map = () => {
         rotateEnabled={true} // NEWER: Enable rotation
         onMapReady={handleMapReady} // NEWER: Set onMapReady
         onUserLocationChange={handleUserLocationChange} // NEWER: Set onUserLocationChange
-        // (Removed: onRegionChangeComplete prop)
       >
         {destination && origin && (
           <MapViewDirections
@@ -342,7 +351,7 @@ export const Map = () => {
             onPress={() => openSearch('origin')}
           />
         )} */}
-          <Button
+          {/* <Button
             title={destinationLabel || 'Search here to drive'}
             icon={{
               name: 'map-marker',
@@ -354,7 +363,7 @@ export const Map = () => {
             buttonStyle={styles.searchButton}
             titleStyle={styles.buttonText}
             onPress={() => openSearch('destination')}
-          />
+          /> */}
         </View>
       )}
 
@@ -458,7 +467,7 @@ export const Map = () => {
               </ListItem.Content>
             </ListItem>
           )}
-          <ListItem
+          {/* <ListItem
             bottomDivider
             onPress={() => {
               if (deviceLocation) {
@@ -475,7 +484,7 @@ export const Map = () => {
             <ListItem.Content>
               <ListItem.Title>Your location</ListItem.Title>
             </ListItem.Content>
-          </ListItem>
+          </ListItem> */}
         </View>
       </Modal>
 
@@ -486,6 +495,17 @@ export const Map = () => {
             title="End Route"
             onPress={() => {
               console.log('End Route clicked');
+              if (mapRef.current && deviceLocation) {
+                mapRef.current.animateCamera(
+                  {
+                    center: deviceLocation,
+                    pitch: 0, // Set pitch to 0 (top view)
+                    heading: 0,
+                    zoom: 18,
+                  },
+                  {duration: 1000}, // Adjust duration as needed
+                );
+              }
               setDrivingMode(false);
             }}
             buttonStyle={styles.startButton}
@@ -498,7 +518,7 @@ export const Map = () => {
               onPress={() => {
                 console.log('Start Driving clicked');
                 setDrivingMode(true);
-                if (deviceLocation) {
+                if (mapRef.current && deviceLocation) {
                   mapRef.current?.animateCamera(
                     {center: deviceLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
                     {duration: 1000},
@@ -513,7 +533,9 @@ export const Map = () => {
       </View>
     </View>
   );
-};
+});
+
+Map.displayName = 'Map';
 
 const styles = StyleSheet.create({
   container: {
@@ -567,7 +589,7 @@ const styles = StyleSheet.create({
   // NEW: Styles for the Start button container and button in driving mode
   startButtonContainer: {
     position: 'absolute',
-    bottom: 180,
+    bottom: 80,
     left: 0,
     right: 0,
     alignItems: 'center',

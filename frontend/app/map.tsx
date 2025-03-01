@@ -5,7 +5,7 @@ import {Button, Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 
-// Get API key from .env for security
+// Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
 console.log('GOOGLE_MAPS_APIKEY:', GOOGLE_MAPS_APIKEY);
 
@@ -42,6 +42,64 @@ export const Map = () => {
   // State to hold autocomplete suggestions (for both origin and destination)
   const [suggestions, setSuggestions] = useState<{description: string; place_id: string}[]>([]);
   const mapRef = useRef<MapView>(null);
+  // NEWER: Ref for the Input so we can force focus when modal opens
+  const inputRef = useRef<any>(null);
+  // NEWER: State to track if driving mode is active
+  const [drivingMode, setDrivingMode] = useState(false);
+
+  // NEWER: useEffect to force focus on input when searchModalVisible becomes true using requestAnimationFrame
+  useEffect(() => {
+    if (searchModalVisible && inputRef.current) {
+      requestAnimationFrame(() => {
+        inputRef.current.focus();
+      });
+    }
+  }, [searchModalVisible]);
+
+  // NEWER: Handle map ready - explicitly zoom to user's current location when available
+  const handleMapReady = () => {
+    console.log('MapView is ready (Map View clicked)'); // NEWER: Log when Map View is ready
+    if (mapRef.current && deviceLocation) {
+      setTimeout(() => {
+        mapRef.current.animateToRegion(
+          {
+            latitude: deviceLocation.latitude,
+            longitude: deviceLocation.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+          1000,
+        );
+      }, 100);
+      setOrigin(deviceLocation);
+    }
+  };
+
+  // NEWER: onUserLocationChange - animate to user's current location when it changes
+  const handleUserLocationChange = (event: any) => {
+    const {coordinate} = event.nativeEvent;
+    if (mapRef.current && coordinate) {
+      console.log('User location changed:', coordinate); // NEWER: Log user location change
+      // UPDATED 28 FEB: Only animate if not in driving mode to preserve pitch
+      if (!drivingMode) {
+        mapRef.current.animateToRegion(
+          {
+            latitude: coordinate.latitude,
+            longitude: coordinate.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+          1000,
+        );
+      }
+      setOrigin({
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    }
+  };
 
   // Function to geocode a place name using Google Geocoding API
   const geocodePlace = async (place: string) => {
@@ -120,6 +178,43 @@ export const Map = () => {
       })();
     }
   }, []);
+
+  // NEWER: Effect to update the map in driving mode with realtime location updates
+  useEffect(() => {
+    let subscription: any;
+    if (drivingMode) {
+      (async () => {
+        subscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.Highest,
+            distanceInterval: 1,
+            timeInterval: 1000,
+          },
+          location => {
+            const {latitude, longitude, heading} = location.coords;
+            if (mapRef.current) {
+              // UPDATED 28 FEB: Added altitude property to support pitch animation
+              mapRef.current.animateCamera(
+                {
+                  center: {latitude, longitude},
+                  pitch: 45, // Slightly angled view
+                  heading: heading || 0,
+                  zoom: 18, // Adjust zoom level as needed
+                  altitude: 150, // UPDATED 28 FEB: Added altitude to support pitch animation
+                },
+                {duration: 1000},
+              );
+            }
+          },
+        );
+      })();
+    }
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, [drivingMode]);
 
   // Open search modal
   const openSearch = (field: 'origin' | 'destination') => {
@@ -214,7 +309,13 @@ export const Map = () => {
           }
         }
         showsUserLocation
-        showsMyLocationButton>
+        showsMyLocationButton
+        pitchEnabled={true} // NEWER: Enable pitch
+        rotateEnabled={true} // NEWER: Enable rotation
+        onMapReady={handleMapReady} // NEWER: Set onMapReady
+        onUserLocationChange={handleUserLocationChange} // NEWER: Set onUserLocationChange
+        // (Removed: onRegionChangeComplete prop)
+      >
         {destination && origin && (
           <MapViewDirections
             origin={origin}
@@ -231,27 +332,44 @@ export const Map = () => {
       </MapView>
 
       {/* Search Button */}
-      <View style={styles.searchContainer}>
-        {destination && (
+      {!drivingMode && (
+        <View style={styles.searchContainer}>
+          {/* {destination && (
           <Button
             title={originLabel || 'Your location'}
             buttonStyle={styles.searchButton}
             titleStyle={styles.buttonText}
             onPress={() => openSearch('origin')}
           />
-        )}
-        <Button
-          title={destinationLabel || 'Enter destination (e.g. Langara College)'}
-          buttonStyle={styles.searchButton}
-          titleStyle={styles.buttonText}
-          onPress={() => openSearch('destination')}
-        />
-      </View>
+        )} */}
+          <Button
+            title={destinationLabel || 'Search here to drive'}
+            icon={{
+              name: 'map-marker',
+              type: 'font-awesome',
+              color: 'black',
+              size: 20,
+              containerStyle: {marginHorizontal: 10},
+            }}
+            buttonStyle={styles.searchButton}
+            titleStyle={styles.buttonText}
+            onPress={() => openSearch('destination')}
+          />
+        </View>
+      )}
 
       {/* Search Modal */}
-      <Modal visible={searchModalVisible} animationType="slide">
+      <Modal
+        visible={searchModalVisible}
+        animationType="slide"
+        onShow={() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }}>
         <View style={styles.modalContainer}>
           <Input
+            ref={inputRef} // Attach ref for focus control
             placeholder={
               editingField === 'origin'
                 ? 'Enter origin (latitude, longitude or place name)'
@@ -360,11 +478,43 @@ export const Map = () => {
           </ListItem>
         </View>
       </Modal>
+
+      {/* Start button appears only after destination is entered or deviceLocation is available */}
+      <View style={styles.startButtonContainer}>
+        {drivingMode ? (
+          <Button
+            title="End Route"
+            onPress={() => {
+              console.log('End Route clicked');
+              setDrivingMode(false);
+            }}
+            buttonStyle={styles.startButton}
+            titleStyle={styles.startButtonText}
+          />
+        ) : (
+          (destination || deviceLocation) && (
+            <Button
+              title="Start Driving"
+              onPress={() => {
+                console.log('Start Driving clicked');
+                setDrivingMode(true);
+                if (deviceLocation) {
+                  mapRef.current?.animateCamera(
+                    {center: deviceLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
+                    {duration: 1000},
+                  );
+                }
+              }}
+              buttonStyle={styles.startButton}
+              titleStyle={styles.startButtonText}
+            />
+          )
+        )}
+      </View>
     </View>
   );
 };
 
-// Map Page Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -380,16 +530,16 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: 'absolute',
-    top: 50,
-    left: 20,
-    right: 20,
+    bottom: 100,
+    left: 10,
+    right: 10,
     zIndex: 2,
   },
   searchButton: {
     backgroundColor: 'white',
     paddingVertical: 10,
-    marginBottom: 5,
-    borderRadius: 5,
+    paddingHorizontal: 20,
+    borderRadius: 50,
   },
   singleButton: {
     backgroundColor: 'white',
@@ -413,5 +563,23 @@ const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: 'red',
     marginTop: 20,
+  },
+  // NEW: Styles for the Start button container and button in driving mode
+  startButtonContainer: {
+    position: 'absolute',
+    bottom: 180,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  startButton: {
+    backgroundColor: 'blue',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+  },
+  startButtonText: {
+    fontSize: 16,
+    color: 'white',
   },
 });

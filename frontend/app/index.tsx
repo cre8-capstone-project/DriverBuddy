@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {View, StyleSheet, Text, Dimensions, Image, ImageSourcePropType} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
@@ -34,6 +34,9 @@ export default function HomeScreen() {
     setEndDialogStatus(!endDialogStatus);
   };
 
+  // Cocoy's Update: Create a ref for Map component
+  const mapRef = useRef<{openSearch: (field: 'origin' | 'destination') => void} | null>(null);
+
   return (
     <View style={styles.container}>
       {/* Switch View Mode: Camera or Map */}
@@ -48,7 +51,8 @@ export default function HomeScreen() {
               ? styles.miniWindowView
               : styles.invisible,
         ]}>
-        <Map />
+        {/* Cocoy's Update: Pass ref to Map component */}
+        <Map ref={mapRef} />
       </View>
       <View
         onStartShouldSetResponder={() => true}
@@ -95,7 +99,7 @@ export default function HomeScreen() {
             containerStyle={styles.buttonContainer}
             buttonStyle={styles.button}
             titleStyle={styles.buttonText}
-            // onPress={}
+            onPress={() => mapRef.current?.openSearch('destination')} // Cocoy's Update: Call openSearch from mapRef
           >
             <Image source={GoogleMapIcon} />
             <Text style={styles.buttonText}>Search here to drive</Text>

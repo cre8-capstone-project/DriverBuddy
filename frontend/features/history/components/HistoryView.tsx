@@ -36,23 +36,25 @@ export const HistoryView = () => {
   const legendItems = [
     {
       label: 'Alert received/hour',
-      color: '#2089DC',
+      color: '#1E3A8A',
       description:
         'This is calculated by dividing the total daily alerts by the "Hours with Detection" for that day.',
     },
   ];
 
-  return loading ? (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#0000ff" />
-    </View>
-  ) : (
+  return (
     <View style={styles.container}>
       <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} setStartDate={setStartDate} />
       <SummaryCard data={{totalSessionHours, totalNumberOfAlert}} />
       <ChartPager viewMode={viewMode} startDate={startDate} setStartDate={setStartDate} />
       {/* <Chart data={detailedData} viewMode={viewMode} /> */}
-      <Chart {...chartProps} />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : (
+        <Chart {...chartProps} />
+      )}
       <Legend legend={legendItems} />
     </View>
   );

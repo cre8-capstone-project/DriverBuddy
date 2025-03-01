@@ -4,7 +4,7 @@ import {CartesianChart, Bar, useChartPressState} from 'victory-native';
 import {LinearGradient, vec} from '@shopify/react-native-skia';
 import {useFont} from '@shopify/react-native-skia';
 import {Tooltip} from './Tooltip';
-import type {DetailedData} from '@/types/HistoryDataType';
+import type {DetailedData} from '@/types/FDSessionHistoryDataType';
 
 const interFont = require('@/assets/fonts/SpaceMono-Regular.ttf');
 
@@ -60,7 +60,7 @@ const Chart = ({data, viewMode}: Props) => {
           {
             font,
             axisSide: 'left',
-            domain: [0, maxAlertPerHour + 50],
+            domain: [0, maxAlertPerHour + 5],
           },
         ]}>
         {({points, chartBounds}) => (
@@ -69,8 +69,9 @@ const Chart = ({data, viewMode}: Props) => {
               chartBounds={chartBounds}
               points={points.alertPerHour}
               innerPadding={0.5}
-              animate={{type: 'timing', duration: 500}}>
-              <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#2089DC', '#155FA2']} />
+              // animate={{type: 'timing', duration: 500}}
+            >
+              <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#1E3A8A', '#00FFFF']} />
             </Bar>
             {isActive && font && (
               <Tooltip

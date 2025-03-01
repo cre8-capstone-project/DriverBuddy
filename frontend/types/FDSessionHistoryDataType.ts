@@ -1,4 +1,4 @@
-export type HistoryData = {
+export type FDSessionHistoryData = {
   totalSessionHours: number;
   totalNumberOfAlert: number;
   data: DetailedData[];

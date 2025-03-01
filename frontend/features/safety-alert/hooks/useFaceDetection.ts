@@ -9,6 +9,7 @@ import {AlertService} from '@/services/AlertService';
 import {useDrowsinessDetection} from '@/features/safety-alert/hooks/useDrowsinessDetection';
 import {useLookAwayDetection} from '@/features/safety-alert/hooks/useLookAwayDetection';
 import {FDSessionService} from '@/services/FDSessionService';
+import {logFaceDetectionSessionData} from '@/api/api';
 import uuid from 'react-native-uuid';
 
 export const useFaceDetection = () => {
@@ -46,9 +47,25 @@ export const useFaceDetection = () => {
     return () => {
       FDSessionService.endFDSession({
         faceDetectionSessionId: sessionId,
-        userId: `1`,
+        userId: `1`, // ToDo: Get user ID from auth context
         endTime: new Date().toISOString(),
       });
+
+      // Send the session data to the cloud database
+      FDSessionService.getFDSessionDataById(sessionId)
+        .then(session => {
+          return logFaceDetectionSessionData(session);
+        })
+        .then(response => {
+          if (response) {
+            console.log('Session successfully registered to the cloud database:', response);
+          } else {
+            console.error('Failed to register the session to the cloud database.');
+          }
+        })
+        .catch(error => {
+          console.error('An error occurred while registering the session:', error);
+        });
     };
   }, []);
 
@@ -60,7 +77,6 @@ export const useFaceDetection = () => {
         updateFaceBounds(face);
 
         const prompt = `Give a short sentence of encouragement to a drowsy driver.`;
-
         checkDrowsiness(face, () => triggerAlert(() => generateMessage(prompt)));
         checkLookingAway(face, () => triggerAlert(() => generateMessage(prompt)));
       } else {

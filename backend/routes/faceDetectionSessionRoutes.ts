@@ -2,6 +2,7 @@ import express from 'express';
 import admin from 'firebase-admin';
 
 type FaceDetectionSession = {
+  faceDetectionSessionId: string;
   userId: string;
   startTime: admin.firestore.Timestamp;
   endTime: admin.firestore.Timestamp;
@@ -16,7 +17,8 @@ const faceDetectionSessionRoutes = (
 
   router.post('/register', async (req, res) => {
     try {
-      const {userId, startTime, endTime, sessionDuration, alerts} = req.body;
+      const {faceDetectionSessionId, userId, startTime, endTime, sessionDuration, alerts} =
+        req.body;
 
       // Validation
       if (!userId || typeof userId !== 'string') {
@@ -40,6 +42,7 @@ const faceDetectionSessionRoutes = (
         : [];
 
       const sessionData: FaceDetectionSession = {
+        faceDetectionSessionId,
         userId,
         startTime: startTimestamp,
         endTime: endTimestamp,

@@ -1,5 +1,7 @@
 import axios, {AxiosResponse} from 'axios';
 import {Timestamp} from 'firebase/firestore';
+import type {FDSessionDataType} from '../types/FDSessionType';
+import type {FDSessionHistoryData} from '../types/FDSessionHistoryDataType';
 
 const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
 // Common setting for API requests
@@ -34,6 +36,7 @@ interface History {
   driverID: string;
   durationInMinutes: number;
 }
+
 /**
  * Retrieves a driver by their ID.
  * @param id - The ID of the driver.
@@ -206,6 +209,87 @@ const getAllHistoryFromDriver = async (driverId: string): Promise<History[]> => 
     return [];
   }
 };
+
+//ToDo: Plan to do refactoring in the next sprint
+const logFaceDetectionSessionData = async (
+  sessionData: FDSessionDataType,
+): Promise<{message: string; sessionId: string} | null> => {
+  try {
+    const response = await axiosClient.post<{message: string; sessionId: string}>(
+      '/face-detection-session/register',
+      sessionData,
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error logging face detection session:', error);
+    return null;
+  }
+};
+
+// ToDo: Plan to do refactoring in the next sprint
+const getFaceDetectionHistoryDataByDay = async (
+  driverId: string,
+  date: string,
+): Promise<FDSessionHistoryData> => {
+  try {
+    const response = await axiosClient.get<FDSessionHistoryData>(
+      `/face-detection-session/daily/?userId=${driverId}&date=${date}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {} as FDSessionHistoryData;
+  }
+};
+
+// ToDo: Plan to do refactoring in the next sprint
+const getFaceDetectionHistoryDataByWeek = async (
+  driverId: string,
+  date: string,
+): Promise<FDSessionHistoryData> => {
+  try {
+    const response = await axiosClient.get<FDSessionHistoryData>(
+      `/face-detection-session/weekly/?userId=${driverId}&date=${date}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {} as FDSessionHistoryData;
+  }
+};
+
+// ToDo: Plan to do refactoring in the next sprint
+const getFaceDetectionHistoryDataByMonth = async (
+  driverId: string,
+  date: string,
+): Promise<FDSessionHistoryData> => {
+  try {
+    const response = await axiosClient.get<FDSessionHistoryData>(
+      `/face-detection-session/monthly/?userId=${driverId}&date=${date}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {} as FDSessionHistoryData;
+  }
+};
+
+// ToDo: Plan to do refactoring in the next sprint
+const getFaceDetectionHistoryDataByYear = async (
+  driverId: string,
+  date: string,
+): Promise<FDSessionHistoryData> => {
+  try {
+    const response = await axiosClient.get<FDSessionHistoryData>(
+      `/face-detection-session/yearly/?userId=${driverId}&date=${date}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {} as FDSessionHistoryData;
+  }
+};
+
 export {
   Driver,
   History,
@@ -219,4 +303,9 @@ export {
   updateHistoryByID,
   deleteHistoryByID,
   getAllHistoryFromDriver,
+  logFaceDetectionSessionData,
+  getFaceDetectionHistoryDataByDay,
+  getFaceDetectionHistoryDataByWeek,
+  getFaceDetectionHistoryDataByMonth,
+  getFaceDetectionHistoryDataByYear,
 };

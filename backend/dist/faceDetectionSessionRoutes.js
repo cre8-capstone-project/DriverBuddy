@@ -5,7 +5,8 @@ const faceDetectionSessionRoutes = faceDetectionSessionCollection => {
   const router = express.Router();
   router.post('/register', async (req, res) => {
     try {
-      const {userId, startTime, endTime, sessionDuration, alerts} = req.body;
+      const {faceDetectionSessionId, userId, startTime, endTime, sessionDuration, alerts} =
+        req.body;
       // Validation
       if (!userId || typeof userId !== 'string') {
         return res.status(400).json({error: 'Invalid parameter.'});
@@ -26,6 +27,7 @@ const faceDetectionSessionRoutes = faceDetectionSessionCollection => {
         ? alerts.map(alert => admin.firestore.Timestamp.fromDate(new Date(alert)))
         : [];
       const sessionData = {
+        faceDetectionSessionId,
         userId,
         startTime: startTimestamp,
         endTime: endTimestamp,

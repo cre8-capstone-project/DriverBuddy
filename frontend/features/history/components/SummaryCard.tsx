@@ -12,11 +12,11 @@ export const SummaryCard = ({data}: Props) => {
       <View style={styles.contentContainer}>
         <View style={styles.content}>
           <Text style={styles.contentTitle}>{data.totalSessionHours}</Text>
-          <Text>hours with detection</Text>
+          <Text style={styles.contentText}>hours with detection</Text>
         </View>
         <View style={styles.content}>
           <Text style={styles.contentTitle}>{data.totalNumberOfAlert}</Text>
-          <Text>alerts received</Text>
+          <Text style={styles.contentText}>alerts received</Text>
         </View>
       </View>
     </Card>
@@ -25,9 +25,14 @@ export const SummaryCard = ({data}: Props) => {
 
 // Styles will be replaced after the visual design is ready
 const styles = StyleSheet.create({
-  containerStyle: {borderRadius: 20, padding: 0, margin: 0},
-  wrapperStyle: {padding: 15},
-  cardTitle: {textAlign: 'left', fontWeight: 'bold', marginBottom: 10},
+  containerStyle: {
+    borderRadius: 20,
+    padding: 0,
+    margin: 0,
+    backgroundColor: '#1E3A8A',
+  },
+  wrapperStyle: {padding: 20},
+  cardTitle: {textAlign: 'left', fontWeight: 'bold', marginBottom: 10, color: 'white'},
   contentContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -43,5 +48,6 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
   },
-  contentTitle: {textAlign: 'left', fontSize: 32},
+  contentTitle: {textAlign: 'left', fontSize: 32, color: 'white'},
+  contentText: {textAlign: 'left', color: 'white'},
 });

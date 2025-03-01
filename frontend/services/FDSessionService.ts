@@ -1,6 +1,7 @@
 import {drizzleDb} from '@/db/db';
-import {faceDetectionSession} from '@/db/schema';
+import {faceDetectionSession, alert} from '@/db/schema';
 import type {FDSessionType} from '@/types/FDSessionType';
+import type {FDSessionDataType} from '@/types/FDSessionType';
 import {eq} from 'drizzle-orm';
 
 export const FDSessionService = {
@@ -35,5 +36,37 @@ export const FDSessionService = {
       throw error;
     }
     console.log('End FDSession:', session);
+  },
+
+  async getFDSessionDataById(sessionId: string): Promise<FDSessionDataType> {
+    try {
+      const sessionResult = await drizzleDb
+        .select()
+        .from(faceDetectionSession)
+        .where(eq(faceDetectionSession.faceDetectionSessionId, sessionId));
+
+      if (!sessionResult.length) {
+        throw new Error(`Session with ID ${sessionId} not found.`);
+      }
+
+      const alertResults = await drizzleDb
+        .select({timestamp: alert.timestamp})
+        .from(alert)
+        .where(eq(alert.faceDetectionSessionId, sessionId));
+
+      const alertTimestamps = alertResults.map(record => record.timestamp);
+
+      return {
+        faceDetectionSessionId: sessionResult[0].faceDetectionSessionId,
+        userId: sessionResult[0].userId,
+        startTime: sessionResult[0].startTime ?? '',
+        endTime: sessionResult[0].endTime ?? '',
+        sessionDuration: sessionResult[0].sessionDuration ?? 0,
+        alerts: alertTimestamps.length > 0 ? alertTimestamps : undefined,
+      };
+    } catch (error) {
+      console.error('Retrieve FDSession data failed:', error);
+      throw error;
+    }
   },
 };

@@ -5,3 +5,12 @@ export type FDSessionType = {
   endTime?: string | null;
   sessionDuration?: number | null;
 };
+
+export type FDSessionDataType = {
+  faceDetectionSessionId: string;
+  userId: string;
+  startTime: string;
+  endTime: string;
+  sessionDuration: number;
+  alerts?: string[];
+};

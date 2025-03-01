@@ -1,0 +1,69 @@
+import React from 'react';
+import {View, Text, StyleSheet} from 'react-native';
+import {Button, Dialog} from '@rneui/themed';
+import {useSnackBar} from './SnackBar';
+
+type Props = {
+  dialogStatus: boolean;
+  toggleDialog: () => void;
+  setIsFaceDetectionActive: (active: boolean) => void;
+  setViewMode: (mode: 'cameraView' | 'mapView') => void;
+};
+
+export const StartConfirmationDialog = ({
+  dialogStatus,
+  toggleDialog,
+  setIsFaceDetectionActive,
+  setViewMode,
+}: Props) => {
+  const {showSnackBar} = useSnackBar();
+
+  return (
+    <Dialog isVisible={dialogStatus} onBackdropPress={toggleDialog}>
+      <View style={styles.dialogContent}>
+        <Text style={styles.dialogTitle}>Start detection to prevent drowsiness?</Text>
+        <Text style={styles.dialogText}>
+          The camera will activate once you click the start button
+        </Text>
+        <Button
+          title="Start now"
+          type="solid"
+          containerStyle={styles.dialogButtonContainer}
+          buttonStyle={styles.dialogButton}
+          onPress={() => {
+            setIsFaceDetectionActive(true);
+            setViewMode('mapView');
+            showSnackBar('The detection has started');
+            toggleDialog();
+          }}
+        />
+        <Button
+          title="Cancel"
+          type="outline"
+          containerStyle={styles.dialogButtonContainer}
+          buttonStyle={styles.dialogButton}
+          onPress={toggleDialog}
+        />
+      </View>
+    </Dialog>
+  );
+};
+
+const styles = StyleSheet.create({
+  dialogContent: {
+    gap: 20,
+  },
+  dialogTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  dialogText: {
+    fontSize: 16,
+  },
+  dialogButtonContainer: {
+    borderRadius: 20,
+  },
+  dialogButton: {
+    borderRadius: 20,
+  },
+});

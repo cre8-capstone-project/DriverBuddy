@@ -6,15 +6,22 @@ import {
   Camera as VisionCamera,
 } from 'react-native-vision-camera';
 import FaceDetection from '@/features/safety-alert/components/FaceDetection';
-import {ConfirmationDialog} from '@/features/safety-alert/components/ConfirmationDialog';
+import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
 import {Button, Icon} from '@rneui/themed';
 
 type Props = {
   isFaceDetectionActive: boolean;
   setIsFaceDetectionActive: (active: boolean) => void;
+  setViewMode: (mode: 'cameraView' | 'mapView') => void;
+  viewMode: 'cameraView' | 'mapView';
 };
 
-export const CameraView = ({isFaceDetectionActive, setIsFaceDetectionActive}: Props) => {
+export const CameraView = ({
+  isFaceDetectionActive,
+  setIsFaceDetectionActive,
+  setViewMode,
+  viewMode,
+}: Props) => {
   const {hasPermission} = useCameraPermission();
   const [dialogStatus, setDialogStatus] = useState(false);
   const device = useCameraDevice('front');
@@ -34,22 +41,24 @@ export const CameraView = ({isFaceDetectionActive, setIsFaceDetectionActive}: Pr
   };
 
   return isFaceDetectionActive ? (
-    <FaceDetection device={device} />
+    <FaceDetection device={device} viewMode={viewMode} />
   ) : (
     <View style={styles.container}>
       <Button
-        titleStyle={styles.buttonText}
         buttonStyle={styles.roundButton}
         containerStyle={styles.roundButton}
-        onPress={() => toggleDialog()}>
+        onPress={() => {
+          toggleDialog();
+        }}>
         <Icon name={'videocam'} color={'white'} size={50} />
-        Start Detection
+        <Text style={styles.buttonText}>Start your{'\n'}journey</Text>
       </Button>
 
-      <ConfirmationDialog
+      <StartConfirmationDialog
         dialogStatus={dialogStatus}
         toggleDialog={toggleDialog}
         setIsFaceDetectionActive={setIsFaceDetectionActive}
+        setViewMode={setViewMode}
       />
     </View>
   );
@@ -70,7 +79,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   buttonText: {
+    fontSize: 20,
     color: 'white',
     fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

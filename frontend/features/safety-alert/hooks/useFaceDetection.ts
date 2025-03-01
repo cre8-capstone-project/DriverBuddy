@@ -59,9 +59,7 @@ export const useFaceDetection = () => {
         showFaceBorder();
         updateFaceBounds(face);
 
-        const prompt = `Your friend looks sleepy while driving. 
-                        Please say something over the phone to wake him up from his drowsiness.
-                        The message should be simple and clear.`;
+        const prompt = `Give a short sentence of encouragement to a drowsy driver.`;
 
         checkDrowsiness(face, () => triggerAlert(() => generateMessage(prompt)));
         checkLookingAway(face, () => triggerAlert(() => generateMessage(prompt)));

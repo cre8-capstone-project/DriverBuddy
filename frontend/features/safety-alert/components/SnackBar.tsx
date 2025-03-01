@@ -1,5 +1,6 @@
 import {useRef} from 'react';
 import Toast from 'react-native-root-toast';
+import {Dimensions} from 'react-native';
 
 type SnackBarOption = {
   duration: number;
@@ -11,9 +12,12 @@ export const useSnackBar = () => {
 
   const showSnackBar = (
     message: string,
-    options: SnackBarOption = {duration: Toast.durations.SHORT, position: Toast.positions.BOTTOM},
+    options: SnackBarOption = {
+      duration: Toast.durations.SHORT,
+      position: Dimensions.get('window').height - 140,
+    },
   ) => {
-    if (toastRef.current !== null) {
+    if (toastRef.current) {
       Toast.hide(toastRef.current);
     }
 

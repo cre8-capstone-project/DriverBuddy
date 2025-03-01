@@ -1,38 +1,45 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Button, Dialog} from '@rneui/themed';
-import {useSnackBar} from './SnackBar';
+// import {useSnackBar} from './SnackBar';
 
 type Props = {
   dialogStatus: boolean;
   toggleDialog: () => void;
   setIsFaceDetectionActive: (active: boolean) => void;
+  setViewMode: (mode: 'cameraView' | 'mapView') => void;
 };
 
-export const ConfirmationDialog = ({
+export const EndConfirmationDialog = ({
   dialogStatus,
   toggleDialog,
   setIsFaceDetectionActive,
+  setViewMode,
 }: Props) => {
-  const {showSnackBar} = useSnackBar();
+  // const {showSnackBar} = useSnackBar();
 
   return (
     <Dialog isVisible={dialogStatus} onBackdropPress={toggleDialog}>
       <View style={styles.dialogContent}>
-        <Text style={styles.dialogText}>Ready to start detection?</Text>
+        {/* <Text style={styles.dialogTitle}>Start detection to prevent drowsiness?</Text> */}
+        <Text style={styles.dialogText}>
+          The detection will be turn off once you return to the homepage
+        </Text>
         <Button
-          title="Start now"
+          title="Back to home"
           type="solid"
+          containerStyle={styles.dialogButtonContainer}
           buttonStyle={styles.dialogButton}
           onPress={() => {
-            setIsFaceDetectionActive(true);
-            showSnackBar('The detection has started');
+            setIsFaceDetectionActive(false);
+            setViewMode('cameraView');
             toggleDialog();
           }}
         />
         <Button
           title="Cancel"
           type="outline"
+          containerStyle={styles.dialogButtonContainer}
           buttonStyle={styles.dialogButton}
           onPress={toggleDialog}
         />
@@ -45,8 +52,15 @@ const styles = StyleSheet.create({
   dialogContent: {
     gap: 20,
   },
+  dialogTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   dialogText: {
     fontSize: 16,
+  },
+  dialogButtonContainer: {
+    borderRadius: 20,
   },
   dialogButton: {
     borderRadius: 20,

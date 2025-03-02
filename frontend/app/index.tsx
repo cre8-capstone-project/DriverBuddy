@@ -9,6 +9,10 @@ import {ConfirmationDialog} from '@/features/safety-alert/components/Confirmatio
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {ViewMode} from '@/types/ViewMode';
 
+import {useTheme} from '@rneui/themed';
+import {TouchableOpacity} from 'react-native';
+import {size} from '@shopify/react-native-skia';
+
 type RootStackParamList = {
   settings: undefined;
   profile: undefined;
@@ -22,6 +26,8 @@ export default function HomeScreen() {
   const [isFaceDetectionActive, setIsFaceDetectionActive] = useState(false);
   const [dialogStatus, setDialogStatus] = useState(false);
   const [viewKey, setViewKey] = useState(0);
+
+  const {theme} = useTheme();
 
   const toggleDialog = () => {
     setDialogStatus(!dialogStatus);
@@ -65,30 +71,43 @@ export default function HomeScreen() {
       <View style={styles.navContainer}>
         {/* Back Button */}
         {viewMode === 'mapView' && (
-          <Button
-            type="clear"
-            containerStyle={styles.backButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'west', size: 30, color: 'black'}}
-            onPress={() => setViewMode('cameraView')}>
-            <Text style={styles.buttonText}>Back</Text>
-          </Button>
+          <TouchableOpacity
+            onPress={() => setViewMode('cameraView')}
+            activeOpacity={0.7}
+            style={[
+              theme.components.Button.containerStyle,
+              {
+                width: 88,
+                height: 88,
+                borderRadius: 44,
+                borderWidth: 2,
+                borderColor: theme.colors.white,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.colors.white,
+                shadowColor: theme.colors.black,
+                shadowOffset: {width: 0, height: 4},
+                shadowOpacity: 0.25,
+                shadowRadius: 3,
+                elevation: 3,
+              },
+            ]}>
+            <Icon name="west" type="material" color={'black'} />
+            <Text style={[theme.components.Text.style, {fontSize: 15, color: 'black'}]}>Back</Text>
+          </TouchableOpacity>
         )}
 
         {/* Setting Button */}
         {viewMode === 'cameraView' && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.navButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'settings', size: 30, color: 'black'}}
-            onPress={() => navigation.navigate('settings')}>
-            <Text style={styles.buttonText}>Settings</Text>
-          </Button>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('settings')}
+            style={{
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
+            <Icon name="settings" type="material" style={theme.components.Icon} />
+            <Text style={[theme.components.Text.style, {marginTop: 4}]}>Settings</Text>
+          </TouchableOpacity>
         )}
 
         {/* Turn Off Face Detection Button */}
@@ -99,7 +118,7 @@ export default function HomeScreen() {
             buttonStyle={styles.button}
             titleStyle={styles.buttonText}
             onPress={() => setIsFaceDetectionActive(false)}>
-            <Icon name="videocam-off" size={30} color="black" />
+            <Icon name="videocam-off" size={40} color="black" />
             <Text style={styles.buttonText}>Turn off{'\n'}detection</Text>
           </Button>
         )}
@@ -112,8 +131,8 @@ export default function HomeScreen() {
             buttonStyle={styles.button}
             titleStyle={styles.buttonText}
             onPress={toggleDialog}>
-            <Icon name="videocam" size={30} color="black" />
-            <Text style={styles.buttonText}>Start{'\n'}detection</Text>
+            <Icon name="videocam" size={40} color="black" />
+            <Text style={styles.buttonText}>Start{'\n'}your journey</Text>
           </Button>
         )}
 
@@ -128,27 +147,29 @@ export default function HomeScreen() {
         {viewMode === 'cameraView' && (
           <Button
             type="outline"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
+            style={[theme.components.Button.buttonStyle, theme.components.Button.containerStyle]}
             onPress={() => setViewMode('mapView')}>
-            <Icon name="location-on" size={30} color="black" />
-            <Text style={styles.buttonText}>Map View</Text>
+            <Icon name="location-on" type="material" style={theme.components.Icon} />
+            <Text style={theme.components.Text.style}>Map View</Text>
           </Button>
         )}
 
         {/* Profile Button */}
         {viewMode === 'cameraView' && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.navButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'person', size: 30, color: 'black'}}
-            onPress={() => navigation.navigate('profile')}>
-            <Text style={styles.buttonText}>Profile</Text>
-          </Button>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('profile')}
+            style={{
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
+            <Icon
+              name="person"
+              type="material"
+              style={theme.components.Icon}
+              // color={theme.components?.Icon?.color || theme.colors.primary}
+            />
+            <Text style={[theme.components.Text.style, {marginTop: 4}]}>Profile</Text>
+          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -186,10 +207,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignSelf: 'center',
-    borderWidth: 1,
+    borderWidth: 2,
     borderRadius: 30,
-    tintColor: 'black',
-    width: '45%',
+    borderColor: '#1E3A8A',
   },
   backButtonContainer: {
     alignSelf: 'center',
@@ -208,7 +228,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     textAlign: 'center',
-    color: 'black',
   },
 
   // TODO: NEED MORE INVESTIGATION

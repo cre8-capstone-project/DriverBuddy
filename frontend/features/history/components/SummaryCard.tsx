@@ -6,16 +6,19 @@ type Props = {
 };
 
 export const SummaryCard = ({data}: Props) => {
+  const totalSessionHours = data?.totalSessionHours ?? 'N/A';
+  const totalNumberOfAlert = data?.totalNumberOfAlert ?? 'N/A';
+
   return (
     <Card wrapperStyle={styles.wrapperStyle} containerStyle={styles.containerStyle}>
       <Card.Title style={styles.cardTitle}>Driving Time Overview</Card.Title>
       <View style={styles.contentContainer}>
         <View style={styles.content}>
-          <Text style={styles.contentTitle}>{data.totalSessionHours}</Text>
+          <Text style={styles.contentTitle}>{totalSessionHours}</Text>
           <Text style={styles.contentText}>hours with detection</Text>
         </View>
         <View style={styles.content}>
-          <Text style={styles.contentTitle}>{data.totalNumberOfAlert}</Text>
+          <Text style={styles.contentTitle}>{totalNumberOfAlert}</Text>
           <Text style={styles.contentText}>alerts received</Text>
         </View>
       </View>

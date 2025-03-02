@@ -1,64 +1,57 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {Button, Dialog} from '@rneui/themed';
+import {Dialog, Button} from '@rneui/themed';
+import {useNavigation} from '@react-navigation/native';
 
 type Props = {
   dialogStatus: boolean;
   toggleDialog: () => void;
   setIsFaceDetectionActive: (active: boolean) => void;
-  setViewMode: (mode: 'cameraView' | 'mapView') => void;
 };
 
 export const EndConfirmationDialog = ({
   dialogStatus,
   toggleDialog,
   setIsFaceDetectionActive,
-  setViewMode,
 }: Props) => {
+  const navigation = useNavigation<any>();
   return (
     <Dialog isVisible={dialogStatus} onBackdropPress={toggleDialog}>
-      <View style={styles.dialogContent}>
-        <Text style={styles.dialogText}>
+      <View style={styles.container}>
+        <Text style={styles.dialogTitle}>
           The detection will be turn off once you return to the homepage
         </Text>
-        <Button
-          title="Back to home"
-          type="solid"
-          containerStyle={styles.dialogButtonContainer}
-          buttonStyle={styles.dialogButton}
-          onPress={() => {
-            setIsFaceDetectionActive(false);
-            setViewMode('cameraView');
-            toggleDialog();
-          }}
-        />
-        <Button
-          title="Cancel"
-          type="outline"
-          containerStyle={styles.dialogButtonContainer}
-          buttonStyle={styles.dialogButton}
-          onPress={toggleDialog}
-        />
+        <View>
+          <Button
+            title="Back to home"
+            type="solid"
+            buttonStyle={styles.buttonStyle}
+            containerStyle={styles.buttonContainer}
+            onPress={() => {
+              navigation.navigate('(tabs)');
+              toggleDialog();
+              setIsFaceDetectionActive(false);
+            }}
+          />
+          <Button
+            title="Cancel"
+            type="outline"
+            buttonStyle={styles.buttonStyle}
+            containerStyle={styles.buttonContainer}
+            onPress={toggleDialog}
+          />
+        </View>
       </View>
     </Dialog>
   );
 };
 
 const styles = StyleSheet.create({
-  dialogContent: {
-    gap: 20,
+  container: {
+    flexDirection: 'column',
+    gap: 15,
   },
-  dialogTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  dialogText: {
-    fontSize: 16,
-  },
-  dialogButtonContainer: {
-    borderRadius: 20,
-  },
-  dialogButton: {
-    borderRadius: 20,
-  },
+  dialogTitle: {fontWeight: 'bold', fontSize: 20},
+  buttonStyle: {},
+  buttonContainer: {width: '100%', justifyContent: 'center'},
 });

@@ -1,6 +1,6 @@
 import 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
+import {DarkTheme, DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import {useFonts} from 'expo-font';
 import {Stack} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -17,12 +17,28 @@ import {RootSiblingParent} from 'react-native-root-siblings';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from 'expo-router';
 
+import {ThemeProvider, useTheme} from '@rneui/themed';
+import theme from '../components/Theme';
+
 SplashScreen.preventAutoHideAsync();
+
+/**
+ * Function to use Theme.tsx
+ */
+function ThemeUpdater() {
+  const {updateTheme} = useTheme();
+
+  useEffect(() => {
+    updateTheme(theme);
+  }, []);
+
+  return null;
+}
 
 export default function RootLayout() {
   const {success, error} = useMigrations(drizzleDb, migrations);
   // const [settings, setSettings] = useState<any>({});
-  const colorScheme = useColorScheme();
+  // const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -70,10 +86,11 @@ export default function RootLayout() {
   }, [success, error]);
 
   return (
-    <SafeAreaView style={{flex: 1}} edges={['top']}>
-      <Suspense fallback={<ActivityIndicator size="large" />}>
-        <RootSiblingParent>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider theme={theme}>
+      <ThemeUpdater />
+      <SafeAreaView style={{flex: 1}} edges={['top']}>
+        <Suspense fallback={<ActivityIndicator size="large" />}>
+          <RootSiblingParent>
             <Stack>
               <Stack.Screen name="index" options={{title: 'Index', headerShown: false}} />
               <Stack.Screen name="+not-found" />
@@ -91,10 +108,27 @@ export default function RootLayout() {
               ))}
             </Stack>
             <StatusBar style="auto" />
-          </ThemeProvider>
-        </RootSiblingParent>
-      </Suspense>
-    </SafeAreaView>
+          </RootSiblingParent>
+        </Suspense>
+      </SafeAreaView>
+    </ThemeProvider>
+
+    // <SafeAreaView style={{flex: 1}} edges={['top']}>
+    //   <Suspense fallback={<ActivityIndicator size="large" />}>
+    //     <RootSiblingParent>
+    //       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    //         <Stack>
+    //           <Stack.Screen name="index" options={{title: 'Index', headerShown: false}} />
+    //           <Stack.Screen name="settings" options={{title: 'Settings'}} />
+    //           <Stack.Screen name="profile" options={{title: 'Profile'}} />
+    //           <Stack.Screen name="history" options={{title: 'History'}} />
+    //           <Stack.Screen name="+not-found" />
+    //         </Stack>
+    //         <StatusBar style="auto" />
+    //       </ThemeProvider>
+    //     </RootSiblingParent>
+    //   </Suspense>
+    // </SafeAreaView>
   );
 }
 

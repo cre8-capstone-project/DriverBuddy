@@ -24,6 +24,11 @@ const theme = createTheme({
     disabled: '#CCCCCC',
     divider: '#CCCCCC',
   },
+  darkColors: {
+    primary: '#bb86fc',
+    secondary: '#03dac6',
+    background: '#121212',
+  },
 
   /****************************************/
   /*           COMPONENT STYLES           */
@@ -35,20 +40,27 @@ const theme = createTheme({
     Text: {
       style: {
         fontFamily: 'Montserrat, Arial, sans-serif', // Default font
+        fontSize: 18, //Base
+        color: '#1E3A8A',
       },
       h1Style: {
         fontFamily: 'Urbanist, Arial, sans-serif',
-        fontSize: 48, // React Nativeでは `px/rem` を使わずに整数で指定
+        fontSize: 48,
         fontWeight: '400',
       },
       h2Style: {
         fontFamily: 'Urbanist, Arial, sans-serif',
-        fontSize: 32,
+        fontSize: 40,
         fontWeight: '400',
       },
       h3Style: {
         fontFamily: 'Urbanist, Arial, sans-serif',
-        fontSize: 28,
+        fontSize: 32,
+        fontWeight: '400',
+      },
+      h4Style: {
+        fontFamily: 'Urbanist, Arial, sans-serif',
+        fontSize: 26,
         fontWeight: '400',
       },
     },
@@ -58,7 +70,6 @@ const theme = createTheme({
     /****************************************/
     Button: {
       buttonStyle: {
-        borderRadius: 10,
         minHeight: 42,
         paddingVertical: 10,
         paddingHorizontal: 20,
@@ -66,10 +77,14 @@ const theme = createTheme({
       },
       containerStyle: {
         marginVertical: 5,
+        alignSelf: 'center',
+        borderWidth: 2,
+        borderRadius: 30,
+        borderColor: '#1E3A8A',
       },
       titleStyle: {
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 18,
+        // fontWeight: 'bold',
         textTransform: 'none',
       },
       disabledStyle: {
@@ -149,6 +164,10 @@ const theme = createTheme({
         shadowRadius: 4,
         elevation: 3,
       },
+    },
+    Icon: {
+      color: '#1E3A8A',
+      size: 40,
     },
   },
 });

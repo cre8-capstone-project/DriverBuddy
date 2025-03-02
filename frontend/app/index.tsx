@@ -3,13 +3,16 @@ import {View, StyleSheet, Text, Dimensions, Image, ImageSourcePropType} from 're
 import {useNavigation} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
-import {Button} from '@rneui/themed';
+import {Button, Icon} from '@rneui/themed';
 import {FaceDetectionWindowFrame} from '@/features/safety-alert/components/FaceDetectionWindowFrame';
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
 import {EndConfirmationDialog} from '@/features/safety-alert/components/EndConfirmationDialog';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {ViewMode} from '@/types/ViewMode';
 
+import {useTheme} from '@rneui/themed';
+import {TouchableOpacity} from 'react-native';
+import {size} from '@shopify/react-native-skia';
 import GoogleMapImage from '@/assets/images/google-map.png';
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
@@ -26,6 +29,8 @@ export default function HomeScreen() {
   const [isFaceDetectionActive, setIsFaceDetectionActive] = useState(false);
   const [startDialogStatus, setStartDialogStatus] = useState(false);
   const [endDialogStatus, setEndDialogStatus] = useState(false);
+
+  const {theme} = useTheme();
 
   const toggleStartDialog = () => {
     setStartDialogStatus(!startDialogStatus);
@@ -124,43 +129,54 @@ export default function HomeScreen() {
 
         {/* Home Button */}
         {viewMode === 'cameraView' && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.navButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'home', size: 30, color: 'black'}}>
-            <Text style={styles.buttonText}>Home</Text>
-          </Button>
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.navButtonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   iconPosition="top"
+          //   icon={{name: 'home', size: 30, color: 'black'}}>
+          //   <Text style={styles.buttonText}>Home</Text>
+          // </Button>
+          <TouchableOpacity
+            style={{
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
+            <Icon name="home" type="material" style={theme.components.Icon} />
+            <Text style={[theme.components.Text.style, {marginTop: 4}]}>Home</Text>
+          </TouchableOpacity>
         )}
 
         {/* Setting Button */}
         {viewMode === 'cameraView' && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.navButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'settings', size: 30, color: 'black'}}
-            onPress={() => navigation.navigate('settings')}>
-            <Text style={styles.buttonText}>Settings</Text>
-          </Button>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('settings')}
+            style={{
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
+            <Icon name="settings" type="material" style={theme.components.Icon} />
+            <Text style={[theme.components.Text.style, {marginTop: 4}]}>Settings</Text>
+          </TouchableOpacity>
         )}
 
         {/* Profile Button */}
         {viewMode === 'cameraView' && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.navButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'person', size: 30, color: 'black'}}
-            onPress={() => navigation.navigate('profile')}>
-            <Text style={styles.buttonText}>Profile</Text>
-          </Button>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('profile')}
+            style={{
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
+            <Icon
+              name="person"
+              type="material"
+              style={theme.components.Icon}
+              // color={theme.components?.Icon?.color || theme.colors.primary}
+            />
+            <Text style={[theme.components.Text.style, {marginTop: 4}]}>Profile</Text>
+          </TouchableOpacity>
         )}
 
         {/* Turn Off Face Detection Button -> This will be used in navigation mode. TBD */}
@@ -246,11 +262,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignSelf: 'center',
-    borderWidth: 1,
+    borderWidth: 2,
     borderRadius: 30,
-    tintColor: 'black',
-    flex: 1,
-    marginVertical: 10,
+    borderColor: '#1E3A8A',
   },
   backButtonContainer: {
     alignSelf: 'center',
@@ -268,7 +282,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     textAlign: 'center',
-    color: 'black',
   },
 
   // TODO: NEED MORE INVESTIGATION

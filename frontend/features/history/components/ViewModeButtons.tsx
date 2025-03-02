@@ -1,15 +1,15 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {ButtonGroup} from '@rneui/themed';
-import {ViewMode} from '@/features/history/types/ViewMode';
+import type {DisplayModeType} from '@/features/history/types/DisplayModeType';
 
 type Props = {
-  viewMode: ViewMode;
-  setViewMode: (mode: ViewMode) => void;
+  displayMode: DisplayModeType;
+  setDisplayMode: (mode: DisplayModeType) => void;
   setStartDate: (date: Date) => void;
 };
 
-export const ViewModeButtons = ({viewMode, setViewMode, setStartDate}: Props) => {
+export const ViewModeButtons = ({displayMode, setDisplayMode, setStartDate}: Props) => {
   return (
     <ButtonGroup
       containerStyle={styles.container}
@@ -18,12 +18,12 @@ export const ViewModeButtons = ({viewMode, setViewMode, setStartDate}: Props) =>
       selectedTextStyle={styles.selectedButtonText}
       textStyle={styles.buttonText}
       buttons={['Day', 'Week', 'Month', 'Year']}
-      selectedIndex={['day', 'week', 'month', 'year'].indexOf(viewMode)}
+      selectedIndex={['day', 'week', 'month', 'year'].indexOf(displayMode)}
       onPress={value => {
-        if (value === 0) setViewMode('day');
-        else if (value === 1) setViewMode('week');
-        else if (value === 2) setViewMode('month');
-        else if (value === 3) setViewMode('year');
+        if (value === 0) setDisplayMode('day');
+        else if (value === 1) setDisplayMode('week');
+        else if (value === 2) setDisplayMode('month');
+        else if (value === 3) setDisplayMode('year');
         else {
           throw new Error('Invalid view mode');
         }

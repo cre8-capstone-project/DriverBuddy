@@ -1,10 +1,10 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Icon} from '@rneui/themed';
-import type {ViewMode} from '@/types/ViewMode';
+import type {ViewModeType} from '@/types/ViewModeType';
 
 type Props = {
-  viewMode: ViewMode;
+  viewMode: ViewModeType;
   isFaceDetectionActive: boolean;
 };
 

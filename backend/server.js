@@ -4,7 +4,7 @@ import cors from 'cors';
 import admin from 'firebase-admin';
 import fs from 'fs';
 import driverRoutes from './routes/driverRoutes.js';
-import historyRoutes from './routes/historyRoutes.js';
+// import historyRoutes from './routes/historyRoutes.js';
 import faceDetectionSessionRoutes from './dist/faceDetectionSessionRoutes.js'; // Need to be revised later
 // import faceDetectionSessionRoutes from './routes/faceDetectionSessionRoutes.ts';
 
@@ -17,7 +17,7 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const driverCollection = db.collection('driver');
-const historyCollection = db.collection('history');
+// const historyCollection = db.collection('history');
 const faceDetectionSessionCollection = db.collection('face_detection_session');
 
 const app = express();
@@ -32,6 +32,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/drivers', driverRoutes(driverCollection));
-app.use('/history', historyRoutes(historyCollection, driverCollection, admin));
+// app.use('/history', historyRoutes(historyCollection, driverCollection, admin));
 app.use('/face-detection-session', faceDetectionSessionRoutes(faceDetectionSessionCollection));
 app.listen(PORT, '0.0.0.0', () => console.log(`Server is running on port ${PORT}`));

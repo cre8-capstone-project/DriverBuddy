@@ -1,23 +1,24 @@
 import {View, Text, StyleSheet} from 'react-native';
 import {Icon} from '@rneui/base';
+import type {DisplayModeType} from '../types/DisplayModeType';
 
 type Props = {
-  viewMode: string;
+  displayMode: DisplayModeType;
   startDate: Date;
   setStartDate: (updateFunc: (prevDate: Date) => Date) => void;
 };
 
-export const ChartPager = ({viewMode, startDate, setStartDate}: Props) => {
+export const ChartPager = ({displayMode, startDate, setStartDate}: Props) => {
   const handlePrev = () => {
     setStartDate(prevDate => {
       const newDate = new Date(prevDate);
-      if (viewMode === 'day') {
+      if (displayMode === 'day') {
         newDate.setDate(newDate.getDate() - 1);
-      } else if (viewMode === 'week') {
+      } else if (displayMode === 'week') {
         newDate.setDate(newDate.getDate() - 7);
-      } else if (viewMode === 'month') {
+      } else if (displayMode === 'month') {
         newDate.setMonth(newDate.getMonth() - 1);
-      } else if (viewMode === 'year') {
+      } else if (displayMode === 'year') {
         newDate.setFullYear(newDate.getFullYear() - 1);
       }
       return newDate;
@@ -27,13 +28,13 @@ export const ChartPager = ({viewMode, startDate, setStartDate}: Props) => {
   const handleNext = () => {
     setStartDate(prevDate => {
       const newDate = new Date(prevDate);
-      if (viewMode === 'day') {
+      if (displayMode === 'day') {
         newDate.setDate(newDate.getDate() + 1);
-      } else if (viewMode === 'week') {
+      } else if (displayMode === 'week') {
         newDate.setDate(newDate.getDate() + 7);
-      } else if (viewMode === 'month') {
+      } else if (displayMode === 'month') {
         newDate.setMonth(newDate.getMonth() + 1);
-      } else if (viewMode === 'year') {
+      } else if (displayMode === 'year') {
         newDate.setFullYear(newDate.getFullYear() + 1);
       }
       return newDate;
@@ -44,15 +45,15 @@ export const ChartPager = ({viewMode, startDate, setStartDate}: Props) => {
     const date = new Date(startDate);
     const options: Intl.DateTimeFormatOptions = {year: 'numeric', month: 'short', day: 'numeric'};
 
-    if (viewMode === 'week') {
+    if (displayMode === 'week') {
       const startOfWeek = new Date(date);
       startOfWeek.setDate(date.getDate() - date.getDay());
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
       return `${startOfWeek.toLocaleDateString('en-US', options)} - ${endOfWeek.toLocaleDateString('en-US', options)}`;
-    } else if (viewMode === 'month') {
+    } else if (displayMode === 'month') {
       return date.toLocaleString('en-US', {month: 'long', year: 'numeric'});
-    } else if (viewMode === 'year') {
+    } else if (displayMode === 'year') {
       return date.getFullYear().toString();
     }
     return startDate.toLocaleDateString('en-US', options);

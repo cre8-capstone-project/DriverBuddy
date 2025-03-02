@@ -15,6 +15,7 @@ const faceDetectionSessionRoutes = (
 ) => {
   const router = express.Router();
 
+  // POST: /face-detection-session/register
   router.post('/register', async (req, res) => {
     try {
       const {faceDetectionSessionId, userId, startTime, endTime, sessionDuration, alerts} =
@@ -60,7 +61,7 @@ const faceDetectionSessionRoutes = (
     }
   });
 
-  // GET: /daily?userId=xxx&date=YYYY-MM-DD
+  // GET: /face-detection-session/daily?userId=xxx&date=YYYY-MM-DD
   router.get('/daily', async (req, res) => {
     try {
       const {userId, date} = req.query;
@@ -159,7 +160,7 @@ const faceDetectionSessionRoutes = (
     }
   });
 
-  // GET: /weekly?userId=xxx&date=YYYY-MM-DD
+  // GET: /face-detection-session/weekly?userId=xxx&date=YYYY-MM-DD
   router.get('/weekly', async (req, res) => {
     try {
       // TODO: userID needs to be retrieved from JWT.
@@ -243,7 +244,7 @@ const faceDetectionSessionRoutes = (
     }
   });
 
-  // GET: /monthly?userId=xxx&date=YYYY-MM-DD
+  // GET: /face-detection-session/monthly?userId=xxx&date=YYYY-MM-DD
   router.get('/monthly', async (req, res) => {
     try {
       // TODO: userID needs to be retrieved from JWT.
@@ -331,7 +332,7 @@ const faceDetectionSessionRoutes = (
     }
   });
 
-  // GET: /yearly?userId=xxx&date=YYYY-MM-DD
+  // GET: /face-detection-session/yearly?userId=xxx&date=YYYY-MM-DD
   router.get('/yearly', async (req, res) => {
     try {
       // TODO: userID needs to be retrieved from JWT.

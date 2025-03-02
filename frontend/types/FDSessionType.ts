@@ -4,13 +4,18 @@ export type FDSessionType = {
   startTime?: string | null;
   endTime?: string | null;
   sessionDuration?: number | null;
+  alerts?: string[];
 };
 
-export type FDSessionDataType = {
-  faceDetectionSessionId: string;
-  userId: string;
-  startTime: string;
-  endTime: string;
-  sessionDuration: number;
-  alerts?: string[];
+export type FDSessionHistoryType = {
+  totalSessionHours: number;
+  totalNumberOfAlert: number;
+  data: FDSessionHistoryDetailedType[];
+};
+
+export type FDSessionHistoryDetailedType = {
+  date: string;
+  totalSessionHours: number;
+  totalNumberOfAlert: number;
+  alertPerHour: number;
 };

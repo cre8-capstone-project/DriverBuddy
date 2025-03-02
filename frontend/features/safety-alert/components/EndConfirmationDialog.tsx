@@ -1,7 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Button, Dialog} from '@rneui/themed';
-// import {useSnackBar} from './SnackBar';
 
 type Props = {
   dialogStatus: boolean;
@@ -16,12 +15,9 @@ export const EndConfirmationDialog = ({
   setIsFaceDetectionActive,
   setViewMode,
 }: Props) => {
-  // const {showSnackBar} = useSnackBar();
-
   return (
     <Dialog isVisible={dialogStatus} onBackdropPress={toggleDialog}>
       <View style={styles.dialogContent}>
-        {/* <Text style={styles.dialogTitle}>Start detection to prevent drowsiness?</Text> */}
         <Text style={styles.dialogText}>
           The detection will be turn off once you return to the homepage
         </Text>

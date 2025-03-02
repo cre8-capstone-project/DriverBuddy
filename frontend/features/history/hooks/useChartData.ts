@@ -1,7 +1,6 @@
 import {useState, useEffect} from 'react';
-import {ViewMode} from '@/features/history/types/ViewMode';
-// import {HistoryService} from '@/services/HistoryService';
-import type {FDSessionHistoryData, DetailedData} from '@/types/FDSessionHistoryDataType';
+import {DisplayModeType} from '@/features/history/types/DisplayModeType';
+import type {FDSessionHistoryType, FDSessionHistoryDetailedType} from '@/types/FDSessionType';
 import {
   getFaceDetectionHistoryDataByDay,
   getFaceDetectionHistoryDataByWeek,
@@ -9,10 +8,13 @@ import {
   getFaceDetectionHistoryDataByYear,
 } from '@/api/api';
 
-export const useChartData = (viewMode: ViewMode, startDate: Date) => {
+// TODO: For Offline mode (Get data from SQLite)
+// import {FDSessionHistoryService} from '@/services/FDSessionHistoryService';
+
+export const useChartData = (displayMode: DisplayModeType, startDate: Date) => {
   const [totalSessionHours, setTotalSessionHours] = useState(0);
   const [totalNumberOfAlert, setTotalNumberOfAlert] = useState(0);
-  const [detailedData, setDetailedData] = useState<DetailedData[]>([]);
+  const [detailedData, setDetailedData] = useState<FDSessionHistoryDetailedType[]>([]);
   const [loading, setLoading] = useState(true);
 
   const formatDate = (date: Date): string => {
@@ -27,28 +29,32 @@ export const useChartData = (viewMode: ViewMode, startDate: Date) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        let data: FDSessionHistoryData = {totalSessionHours: 0, totalNumberOfAlert: 0, data: []};
+        let data: FDSessionHistoryType = {totalSessionHours: 0, totalNumberOfAlert: 0, data: []};
 
-        if (viewMode === 'day') {
+        if (displayMode === 'day') {
           // Retrieve data from cloud database
           data = await getFaceDetectionHistoryDataByDay('1', formatDate(startDate));
-          // Retrieve data from local database
-          // data = await HistoryService.getDataByDay(new Date(startDate));
-        } else if (viewMode === 'week') {
+
+          // TODO: For Offline mode (Get data from SQLite)
+          // data = await FDSessionHistoryService.getDataByDay(new Date(startDate));
+        } else if (displayMode === 'week') {
           // Retrieve data from cloud database
           data = await getFaceDetectionHistoryDataByWeek('1', formatDate(startDate));
-          // Retrieve data from local database
-          // data = await HistoryService.getDataByWeek(new Date(startDate));
-        } else if (viewMode === 'month') {
+
+          // TODO: For Offline mode (Get data from SQLite)
+          // data = await FDSessionHistoryService.getDataByWeek(new Date(startDate));
+        } else if (displayMode === 'month') {
           // Retrieve data from cloud database
           data = await getFaceDetectionHistoryDataByMonth('1', formatDate(startDate));
-          // Retrieve data from local database
-          // data = await HistoryService.getDataByMonth(new Date(startDate));
-        } else if (viewMode === 'year') {
+
+          // TODO: For Offline mode (Get data from SQLite)
+          // data = await FDSessionHistoryService.getDataByMonth(new Date(startDate));
+        } else if (displayMode === 'year') {
           // Retrieve data from cloud database
           data = await getFaceDetectionHistoryDataByYear('1', formatDate(startDate));
-          // Retrieve data from local database
-          // data = await HistoryService.getDataByYear(new Date(startDate));
+
+          // TODO: For Offline mode (Get data from SQLite)
+          // data = await FDSessionHistoryService.getDataByYear(new Date(startDate));
         }
         setTotalSessionHours(data.totalSessionHours);
         setTotalNumberOfAlert(data.totalNumberOfAlert);
@@ -60,7 +66,7 @@ export const useChartData = (viewMode: ViewMode, startDate: Date) => {
       }
     };
     fetchData();
-  }, [viewMode, startDate]);
+  }, [displayMode, startDate]);
 
   return {totalSessionHours, totalNumberOfAlert, detailedData, loading};
 };

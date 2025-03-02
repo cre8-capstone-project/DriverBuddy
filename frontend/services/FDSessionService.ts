@@ -1,19 +1,18 @@
 import {drizzleDb} from '@/db/db';
 import {faceDetectionSession, alert} from '@/db/schema';
 import type {FDSessionType} from '@/types/FDSessionType';
-import type {FDSessionDataType} from '@/types/FDSessionType';
 import {eq} from 'drizzle-orm';
 
 export const FDSessionService = {
-  async getAllFDSessions() {
-    try {
-      const result = await drizzleDb.select().from(faceDetectionSession);
-      return result;
-    } catch (error) {
-      console.error('Retrieve FDSession data failed:', error);
-      throw error;
-    }
-  },
+  // async getAllFDSessions() {
+  //   try {
+  //     const result = await drizzleDb.select().from(faceDetectionSession);
+  //     return result;
+  //   } catch (error) {
+  //     console.error('Retrieve FDSession data failed:', error);
+  //     throw error;
+  //   }
+  // },
 
   async startFDSession(session: FDSessionType) {
     try {
@@ -38,7 +37,7 @@ export const FDSessionService = {
     console.log('End FDSession:', session);
   },
 
-  async getFDSessionDataById(sessionId: string): Promise<FDSessionDataType> {
+  async getFDSessionDataById(sessionId: string): Promise<FDSessionType> {
     try {
       const sessionResult = await drizzleDb
         .select()

@@ -2,6 +2,7 @@ import {View, Dimensions} from 'react-native';
 import {vec} from '@shopify/react-native-skia';
 import {useFont, RoundedRect, Text as SkiaText, Line as SkiaLine} from '@shopify/react-native-skia';
 import {SharedValue, useDerivedValue} from 'react-native-reanimated';
+import type {DisplayModeType} from '../types/DisplayModeType';
 
 const interFont = require('@/assets/fonts/SpaceMono-Regular.ttf');
 const screenWidth = Dimensions.get('window').width;
@@ -12,7 +13,7 @@ type ToolTipProps = {
   date: SharedValue<number>;
   alertPerHour: SharedValue<number>;
   startDate: string;
-  viewMode: string;
+  displayMode: DisplayModeType;
 };
 
 export const Tooltip = ({
@@ -21,7 +22,7 @@ export const Tooltip = ({
   date,
   alertPerHour,
   startDate,
-  viewMode,
+  displayMode,
 }: ToolTipProps) => {
   const font = useFont(interFont, 10);
 
@@ -42,12 +43,12 @@ export const Tooltip = ({
   const xValue = useDerivedValue(() => {
     const updatedDate = new Date(startDate + 'T00:00:00');
 
-    if (viewMode === 'year') {
+    if (displayMode === 'year') {
       updatedDate.setMonth(updatedDate.getMonth() + Number(date.value) - 1);
       return updatedDate.toLocaleDateString('en-US', {
         month: 'short',
       });
-    } else if (viewMode === 'day') {
+    } else if (displayMode === 'day') {
       const hourValue = String(Number(date.value)).padStart(2, '0');
       return `${hourValue}:00`;
     } else {
@@ -57,7 +58,7 @@ export const Tooltip = ({
         day: '2-digit',
       });
     }
-  }, [date, startDate, viewMode]);
+  }, [date, startDate, displayMode]);
 
   const yValue = useDerivedValue(
     () => `${alertPerHour.value.toString()} alerts/hr`,

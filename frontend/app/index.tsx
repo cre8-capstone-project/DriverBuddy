@@ -1,17 +1,20 @@
-import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, Text, Dimensions} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {View, StyleSheet, Text, Dimensions, Image, ImageSourcePropType} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
 import {Button, Icon} from '@rneui/themed';
 import {FaceDetectionWindowFrame} from '@/features/safety-alert/components/FaceDetectionWindowFrame';
-import {ConfirmationDialog} from '@/features/safety-alert/components/ConfirmationDialog';
+import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
+import {EndConfirmationDialog} from '@/features/safety-alert/components/EndConfirmationDialog';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {ViewMode} from '@/types/ViewMode';
 
 import {useTheme} from '@rneui/themed';
 import {TouchableOpacity} from 'react-native';
 import {size} from '@shopify/react-native-skia';
+import GoogleMapImage from '@/assets/images/google-map.png';
+const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
 type RootStackParamList = {
   settings: undefined;
@@ -24,43 +27,54 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [viewMode, setViewMode] = useState<ViewMode>('cameraView');
   const [isFaceDetectionActive, setIsFaceDetectionActive] = useState(false);
-  const [dialogStatus, setDialogStatus] = useState(false);
-  const [viewKey, setViewKey] = useState(0);
+  const [startDialogStatus, setStartDialogStatus] = useState(false);
+  const [endDialogStatus, setEndDialogStatus] = useState(false);
 
   const {theme} = useTheme();
 
-  const toggleDialog = () => {
-    setDialogStatus(!dialogStatus);
+  const toggleStartDialog = () => {
+    setStartDialogStatus(!startDialogStatus);
+  };
+  const toggleEndDialog = () => {
+    setEndDialogStatus(!endDialogStatus);
   };
 
-  useEffect(() => {
-    setViewKey(prevKey => prevKey + 1);
-  }, [viewMode]);
+  // Cocoy's Update: Create a ref for Map component
+  const mapRef = useRef<{openSearch: (field: 'origin' | 'destination') => void} | null>(null);
 
   return (
     <View style={styles.container}>
       {/* Switch View Mode: Camera or Map */}
       <View
+        onStartShouldSetResponder={() => true}
+        onResponderRelease={() => setViewMode('mapView')}
         style={[
-          styles.componentContainer,
-          viewMode === 'mapView' ? styles.visible : styles.hidden,
+          styles.mapComponentContainer,
+          viewMode === 'mapView'
+            ? styles.visible
+            : isFaceDetectionActive
+              ? styles.miniWindowView
+              : styles.invisible,
         ]}>
-        <Map key={`map-${viewKey}`} />
+        {/* Cocoy's Update: Pass ref to Map component */}
+        <Map ref={mapRef} />
       </View>
       <View
+        onStartShouldSetResponder={() => true}
+        onResponderRelease={() => setViewMode('cameraView')}
         style={[
-          styles.componentContainer,
-          // viewMode === 'cameraView' ? styles.visible : styles.hidden,
+          styles.cameraComponentContainer,
           viewMode === 'cameraView'
             ? styles.visible
             : isFaceDetectionActive
-              ? styles.faceDetectionFrame
-              : styles.hidden,
+              ? styles.miniWindowView
+              : styles.invisible,
         ]}>
         <CameraView
-          key={`camera-${viewKey}`}
           isFaceDetectionActive={isFaceDetectionActive}
           setIsFaceDetectionActive={setIsFaceDetectionActive}
+          setViewMode={setViewMode}
+          viewMode={viewMode}
         />
         <FaceDetectionWindowFrame
           viewMode={viewMode}
@@ -69,32 +83,61 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.navContainer}>
-        {/* Back Button */}
-        {viewMode === 'mapView' && (
-          <TouchableOpacity
-            onPress={() => setViewMode('cameraView')}
-            activeOpacity={0.7}
-            style={[
-              theme.components.Button.containerStyle,
-              {
-                width: 88,
-                height: 88,
-                borderRadius: 44,
-                borderWidth: 2,
-                borderColor: theme.colors.white,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: theme.colors.white,
-                shadowColor: theme.colors.black,
-                shadowOffset: {width: 0, height: 4},
-                shadowOpacity: 0.25,
-                shadowRadius: 3,
-                elevation: 3,
-              },
-            ]}>
-            <Icon name="west" type="material" color={'black'} />
-            <Text style={[theme.components.Text.style, {fontSize: 15, color: 'black'}]}>Back</Text>
-          </TouchableOpacity>
+        {/* Back Home Button */}
+        {isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.backButtonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            iconPosition="top"
+            icon={{name: 'west', size: 20, color: 'black'}}
+            onPress={() => toggleEndDialog()}>
+            <Text style={styles.buttonText}>Back</Text>
+          </Button>
+        )}
+
+        {/* Search Here to Drive  Button */}
+        {isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={() => mapRef.current?.openSearch('destination')} // Cocoy's Update: Call openSearch from mapRef
+          >
+            <Image source={GoogleMapIcon} />
+            <Text style={styles.buttonText}>Search here to drive</Text>
+          </Button>
+        )}
+
+        {/* Start Face Detection Confirmation Dialog */}
+        <StartConfirmationDialog
+          dialogStatus={startDialogStatus}
+          toggleDialog={toggleStartDialog}
+          setIsFaceDetectionActive={setIsFaceDetectionActive}
+          setViewMode={setViewMode}
+        />
+
+        {/* Turn off Face Detection Confirmation Dialog */}
+        <EndConfirmationDialog
+          dialogStatus={endDialogStatus}
+          toggleDialog={toggleEndDialog}
+          setIsFaceDetectionActive={setIsFaceDetectionActive}
+          setViewMode={setViewMode}
+        />
+
+        {/* Home Button */}
+        {viewMode === 'cameraView' && !isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.navButtonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            iconPosition="top"
+            icon={{name: 'home', size: 30, color: 'black'}}>
+            <Text style={styles.buttonText}>Home</Text>
+          </Button>
         )}
 
         {/* Setting Button */}
@@ -108,50 +151,6 @@ export default function HomeScreen() {
             <Icon name="settings" type="material" style={theme.components.Icon} />
             <Text style={[theme.components.Text.style, {marginTop: 4}]}>Settings</Text>
           </TouchableOpacity>
-        )}
-
-        {/* Turn Off Face Detection Button */}
-        {isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={() => setIsFaceDetectionActive(false)}>
-            <Icon name="videocam-off" size={40} color="black" />
-            <Text style={styles.buttonText}>Turn off{'\n'}detection</Text>
-          </Button>
-        )}
-
-        {/* Start Face Detection Button */}
-        {viewMode === 'mapView' && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={toggleDialog}>
-            <Icon name="videocam" size={40} color="black" />
-            <Text style={styles.buttonText}>Start{'\n'}your journey</Text>
-          </Button>
-        )}
-
-        {/* Start Face Detection Confirmation Dialog */}
-        <ConfirmationDialog
-          dialogStatus={dialogStatus}
-          toggleDialog={toggleDialog}
-          setIsFaceDetectionActive={setIsFaceDetectionActive}
-        />
-
-        {/* Map View Button */}
-        {viewMode === 'cameraView' && (
-          <Button
-            type="outline"
-            style={[theme.components.Button.buttonStyle, theme.components.Button.containerStyle]}
-            onPress={() => setViewMode('mapView')}>
-            <Icon name="location-on" type="material" style={theme.components.Icon} />
-            <Text style={theme.components.Text.style}>Map View</Text>
-          </Button>
         )}
 
         {/* Profile Button */}
@@ -171,6 +170,45 @@ export default function HomeScreen() {
             <Text style={[theme.components.Text.style, {marginTop: 4}]}>Profile</Text>
           </TouchableOpacity>
         )}
+
+        {/* Turn Off Face Detection Button -> This will be used in navigation mode. TBD */}
+        {/* {isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={() => setIsFaceDetectionActive(false)}>
+            <Icon name="videocam-off" size={30} color="black" />
+            <Text style={styles.buttonText}>Turn off{'\n'}detection</Text>
+          </Button>
+        )} */}
+
+        {/* Start Face Detection Button */}
+        {/* {viewMode === 'mapView' && !isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={toggleDialog}>
+            <Icon name="videocam" size={30} color="black" />
+            <Text style={styles.buttonText}>Start{'\n'}detection</Text>
+          </Button>
+        )} */}
+
+        {/* Map View Button */}
+        {/* {viewMode === 'cameraView' && (
+          <Button
+            type="outline"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={() => setViewMode('mapView')}>
+            <Icon name="location-on" size={30} color="black" />
+            <Text style={styles.buttonText}>Map View</Text>
+          </Button>
+        )} */}
       </View>
     </View>
   );
@@ -178,7 +216,8 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  componentContainer: {flex: 1},
+  mapComponentContainer: {flex: 1},
+  cameraComponentContainer: {flex: 1},
   // visible: {display: 'flex'},
   // hidden: {display: 'none'},
   visible: {
@@ -192,18 +231,26 @@ const styles = StyleSheet.create({
     width: 0,
     height: 0,
   },
+  invisible: {
+    opacity: 0,
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
   navContainer: {
     position: 'absolute',
     bottom: 0,
     width: '100%',
     backgroundColor: 'white',
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    gap: 20,
   },
   navButtonContainer: {
     flexDirection: 'column',
     borderRadius: 30,
+    marginVertical: 5,
   },
   buttonContainer: {
     alignSelf: 'center',
@@ -224,14 +271,13 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingVertical: 5,
     paddingHorizontal: 10,
-    height: 60,
   },
   buttonText: {
     textAlign: 'center',
   },
 
   // TODO: NEED MORE INVESTIGATION
-  faceDetectionFrame: {
+  miniWindowView: {
     overflow: 'hidden',
     position: 'absolute',
     borderRadius: 60,

@@ -2,7 +2,7 @@ import {sql} from 'drizzle-orm';
 import {drizzleDb} from '@/db/db';
 import {alert} from '@/db/schema';
 import {faceDetectionSession} from '@/db/schema';
-import type {HistoryData} from '@/types/HistoryDataType';
+import type {HistoryData} from '@/types/FDSessionHistoryDataType';
 
 const TIMEZONE = {
   NAME: 'America/Vancouver',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {Camera} from 'react-native-vision-camera-face-detector';
 import Animated from 'react-native-reanimated';
@@ -8,7 +8,12 @@ import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetecti
 
 const DEBUG_MODE = true;
 
-const FaceDetection = ({device}: {device: any}) => {
+type Props = {
+  device: any;
+  viewMode: 'cameraView' | 'mapView';
+};
+
+const FaceDetection = ({device, viewMode}: Props) => {
   const {
     faceDetectionOptions,
     handleFacesDetection,
@@ -20,9 +25,16 @@ const FaceDetection = ({device}: {device: any}) => {
     isWarning,
   } = useFaceDetection();
 
+  useEffect(() => {
+    return () => {
+      console.log('FaceDetection component is unmounting, cleaning up...');
+    };
+  }, []);
+
   return (
     <View style={styles.container}>
       <Camera
+        key={viewMode}
         style={styles.camera}
         device={device}
         isActive={true}
@@ -57,7 +69,7 @@ const styles = StyleSheet.create({
   debugContainer: {
     position: 'absolute',
     top: '5%',
-    left: '2%',
+    right: '2%',
   },
   debugText: {
     color: 'lightgreen',

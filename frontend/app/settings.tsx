@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     margin: 0,
     padding: 20,
     borderRadius: 15,
-    backgroundColor: '#1E3ABA',
+    backgroundColor: '#1E3A8A',
   },
   menuTextContainer: {
     flex: 1,

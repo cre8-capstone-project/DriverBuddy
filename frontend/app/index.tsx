@@ -129,15 +129,23 @@ export default function HomeScreen() {
 
         {/* Home Button */}
         {viewMode === 'cameraView' && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.navButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'home', size: 30, color: 'black'}}>
-            <Text style={styles.buttonText}>Home</Text>
-          </Button>
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.navButtonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   iconPosition="top"
+          //   icon={{name: 'home', size: 30, color: 'black'}}>
+          //   <Text style={styles.buttonText}>Home</Text>
+          // </Button>
+          <TouchableOpacity
+            style={{
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
+            <Icon name="home" type="material" style={theme.components.Icon} />
+            <Text style={[theme.components.Text.style, {marginTop: 4}]}>Home</Text>
+          </TouchableOpacity>
         )}
 
         {/* Setting Button */}

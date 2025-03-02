@@ -1,7 +1,5 @@
 import {HistoryView} from '@/features/history/components/HistoryView';
 
-const App = () => {
+export default function HistoryScreen() {
   return <HistoryView />;
-};
-
-export default App;
+}

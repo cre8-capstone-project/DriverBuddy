@@ -1,69 +1,55 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {Button, Dialog} from '@rneui/themed';
+import {Dialog, Button} from '@rneui/themed';
 import {useSnackBar} from './SnackBar';
+import {useNavigation} from '@react-navigation/native';
 
 type Props = {
   dialogStatus: boolean;
   toggleDialog: () => void;
-  setIsFaceDetectionActive: (active: boolean) => void;
-  setViewMode: (mode: 'cameraView' | 'mapView') => void;
 };
 
-export const StartConfirmationDialog = ({
-  dialogStatus,
-  toggleDialog,
-  setIsFaceDetectionActive,
-  setViewMode,
-}: Props) => {
+export const StartConfirmationDialog = ({dialogStatus, toggleDialog}: Props) => {
   const {showSnackBar} = useSnackBar();
+  const navigation = useNavigation<any>();
 
   return (
     <Dialog isVisible={dialogStatus} onBackdropPress={toggleDialog}>
-      <View style={styles.dialogContent}>
+      <View style={styles.container}>
         <Text style={styles.dialogTitle}>Start detection to prevent drowsiness?</Text>
-        <Text style={styles.dialogText}>
-          The camera will activate once you click the start button
-        </Text>
-        <Button
-          title="Start now"
-          type="solid"
-          containerStyle={styles.dialogButtonContainer}
-          buttonStyle={styles.dialogButton}
-          onPress={() => {
-            setIsFaceDetectionActive(true);
-            setViewMode('mapView');
-            showSnackBar('The detection has started');
-            toggleDialog();
-          }}
-        />
-        <Button
-          title="Cancel"
-          type="outline"
-          containerStyle={styles.dialogButtonContainer}
-          buttonStyle={styles.dialogButton}
-          onPress={toggleDialog}
-        />
+        <Text>The camera will activate once you click the start button</Text>
+        <View>
+          <Button
+            title="Start now"
+            type="solid"
+            buttonStyle={styles.buttonStyle}
+            containerStyle={styles.buttonContainer}
+            onPress={() => {
+              const FaceDetectionStatus = true;
+              navigation.navigate('journey', {FaceDetectionStatus});
+              toggleDialog();
+              showSnackBar('The detection has started');
+            }}
+          />
+          <Button
+            title="Cancel"
+            type="outline"
+            buttonStyle={styles.buttonStyle}
+            containerStyle={styles.buttonContainer}
+            onPress={toggleDialog}
+          />
+        </View>
       </View>
     </Dialog>
   );
 };
 
 const styles = StyleSheet.create({
-  dialogContent: {
-    gap: 20,
+  container: {
+    flexDirection: 'column',
+    gap: 15,
   },
-  dialogTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  dialogText: {
-    fontSize: 16,
-  },
-  dialogButtonContainer: {
-    borderRadius: 20,
-  },
-  dialogButton: {
-    borderRadius: 20,
-  },
+  dialogTitle: {fontWeight: 'bold', fontSize: 20},
+  buttonStyle: {},
+  buttonContainer: {width: '100%', justifyContent: 'center'},
 });

@@ -1,21 +1,31 @@
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Text} from 'react-native';
 import {CartesianChart, Bar, useChartPressState} from 'victory-native';
 import {LinearGradient, vec} from '@shopify/react-native-skia';
 import {useFont} from '@shopify/react-native-skia';
 import {Tooltip} from './Tooltip';
 import type {FDSessionHistoryDetailedType} from '@/types/FDSessionType';
+import type {DisplayModeType} from '@/features/history/types/DisplayModeType';
 
 const interFont = require('@/assets/fonts/SpaceMono-Regular.ttf');
 
 type Props = {
   data: FDSessionHistoryDetailedType[];
-  displayMode: string;
+  displayMode: DisplayModeType;
 };
 
 const Chart = ({data, displayMode}: Props) => {
   const font = useFont(interFont, 14);
   const {state, isActive} = useChartPressState({x: 0, y: {alertPerHour: 0}});
+
+  if (data.length === 0) {
+    return (
+      <View style={styles.chartContainer}>
+        <Text>No data available</Text>
+      </View>
+    );
+  }
+
   const startDate = data[0].date;
 
   const indexedData = data.map((item, index) => ({
@@ -69,8 +79,7 @@ const Chart = ({data, displayMode}: Props) => {
               chartBounds={chartBounds}
               points={points.alertPerHour}
               innerPadding={0.5}
-              // animate={{type: 'timing', duration: 500}}
-            >
+              animate={{type: 'timing', duration: 500}}>
               <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#1E3A8A', '#00FFFF']} />
             </Bar>
             {isActive && font && (

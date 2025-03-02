@@ -8,7 +8,7 @@ import {FaceDetectionWindowFrame} from '@/features/safety-alert/components/FaceD
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
 import {EndConfirmationDialog} from '@/features/safety-alert/components/EndConfirmationDialog';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {ViewMode} from '@/types/ViewMode';
+import type {ViewModeType} from '@/types/ViewModeType';
 
 import GoogleMapImage from '@/assets/images/google-map.png';
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
@@ -22,7 +22,7 @@ const {width, height} = Dimensions.get('window');
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [viewMode, setViewMode] = useState<ViewMode>('cameraView');
+  const [viewMode, setViewMode] = useState<ViewModeType>('cameraView');
   const [isFaceDetectionActive, setIsFaceDetectionActive] = useState(false);
   const [startDialogStatus, setStartDialogStatus] = useState(false);
   const [endDialogStatus, setEndDialogStatus] = useState(false);

@@ -2,15 +2,16 @@ import {sql} from 'drizzle-orm';
 import {drizzleDb} from '@/db/db';
 import {alert} from '@/db/schema';
 import {faceDetectionSession} from '@/db/schema';
-import type {HistoryData} from '@/types/FDSessionHistoryDataType';
+import type {FDSessionHistoryType} from '@/types/FDSessionType';
 
 const TIMEZONE = {
   NAME: 'America/Vancouver',
   SQL_OFFSET: '-8 hours',
 };
 
-export const HistoryService = {
-  async getDataByDay(date: Date): Promise<HistoryData> {
+// TODO: For Offline mode (Get data from SQLite)
+export const FDSessionHistoryService = {
+  async getDataByDay(date: Date): Promise<FDSessionHistoryType> {
     try {
       const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
@@ -85,7 +86,7 @@ export const HistoryService = {
     }
   },
 
-  async getDataByWeek(date: Date): Promise<HistoryData> {
+  async getDataByWeek(date: Date): Promise<FDSessionHistoryType> {
     try {
       const weekDates = Array.from({length: 7}, (_, i) => {
         date.setDate(date.getDate() - date.getDay() + i);
@@ -156,7 +157,7 @@ export const HistoryService = {
     }
   },
 
-  async getDataByMonth(date: Date): Promise<HistoryData> {
+  async getDataByMonth(date: Date): Promise<FDSessionHistoryType> {
     try {
       const monthDates = Array.from(
         {
@@ -232,7 +233,7 @@ export const HistoryService = {
     }
   },
 
-  async getDataByYear(date: Date): Promise<HistoryData> {
+  async getDataByYear(date: Date): Promise<FDSessionHistoryType> {
     try {
       const year = date.getFullYear();
 

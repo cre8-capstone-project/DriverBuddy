@@ -6,19 +6,18 @@ import {SummaryCard} from '@/features/history/components/SummaryCard';
 import Chart from '@/features/history/components/Chart';
 import {ChartPager} from '@/features/history/components/ChartPager';
 import {Legend} from '@/features/history/components/Legend';
-import {ViewMode} from '@/features/history/types/ViewMode';
+import {DisplayModeType} from '@/features/history/types/DisplayModeType';
 
 export const HistoryView = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const [displayMode, setDisplayMode] = useState<DisplayModeType>('day');
   const [startDate, setStartDate] = useState(() => {
     const startDate = new Date();
-    // startDate.setDate(startDate.getDate() - startDate.getDay());
     startDate.setHours(0, 0, 0, 0);
     return startDate;
   });
 
   const {totalSessionHours, totalNumberOfAlert, detailedData, loading} = useChartData(
-    viewMode,
+    displayMode,
     startDate,
   );
 
@@ -28,8 +27,9 @@ export const HistoryView = () => {
   const chartProps = useMemo(
     () => ({
       data: detailedData,
-      viewMode: viewMode,
+      displayMode: displayMode,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [detailedData],
   );
 
@@ -44,9 +44,13 @@ export const HistoryView = () => {
 
   return (
     <View style={styles.container}>
-      <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} setStartDate={setStartDate} />
+      <ViewModeButtons
+        displayMode={displayMode}
+        setDisplayMode={setDisplayMode}
+        setStartDate={setStartDate}
+      />
       <SummaryCard data={{totalSessionHours, totalNumberOfAlert}} />
-      <ChartPager viewMode={viewMode} startDate={startDate} setStartDate={setStartDate} />
+      <ChartPager displayMode={displayMode} startDate={startDate} setStartDate={setStartDate} />
       {/* <Chart data={detailedData} viewMode={viewMode} /> */}
       {loading ? (
         <View style={styles.loadingContainer}>

@@ -1,7 +1,7 @@
 import axios, {AxiosResponse} from 'axios';
 import {Timestamp} from 'firebase/firestore';
-import type {FDSessionDataType} from '../types/FDSessionType';
-import type {FDSessionHistoryData} from '../types/FDSessionHistoryDataType';
+import type {FDSessionType} from '../types/FDSessionType';
+import type {FDSessionHistoryType} from '../types/FDSessionType';
 
 const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
 // Common setting for API requests
@@ -25,17 +25,17 @@ interface Driver {
   picture_url: string;
 }
 
-interface History {
-  id?: string;
-  numberOfAlerts: number;
-  startingPointName: string;
-  startingPointCoordinates: string;
-  destinationName: string;
-  destinationCoordinates: string;
-  distanceInKm: number;
-  driverID: string;
-  durationInMinutes: number;
-}
+// interface History {
+//   id?: string;
+//   numberOfAlerts: number;
+//   startingPointName: string;
+//   startingPointCoordinates: string;
+//   destinationName: string;
+//   destinationCoordinates: string;
+//   distanceInKm: number;
+//   driverID: string;
+//   durationInMinutes: number;
+// }
 
 /**
  * Retrieves a driver by their ID.
@@ -138,30 +138,30 @@ const deleteDriver = async (driverId: string): Promise<{message: string} | undef
  * @param historyId - The ID of the history record.
  * @returns The history object or undefined if an error occurs.
  */
-const getHistoryByID = async (historyId: string): Promise<History | undefined> => {
-  try {
-    const response = await axiosClient.get<History>(`/history/${historyId}`);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
+// const getHistoryByID = async (historyId: string): Promise<History | undefined> => {
+//   try {
+//     const response = await axiosClient.get<History>(`/history/${historyId}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 /**
  * Creates a new history record for a driver.
  * @param historyObject - The history data excluding the ID.
  * @returns The created history object or undefined if an error occurs.
  */
-const createHistoryByDriverID = async (
-  historyObject: Omit<History, 'id'>,
-): Promise<History | undefined> => {
-  try {
-    const response = await axiosClient.post<History>('/history', historyObject);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
+// const createHistoryByDriverID = async (
+//   historyObject: Omit<History, 'id'>,
+// ): Promise<History | undefined> => {
+//   try {
+//     const response = await axiosClient.post<History>('/history', historyObject);
+//     return response.data;
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 /**
  * Updates an existing history record by ID.
@@ -169,50 +169,50 @@ const createHistoryByDriverID = async (
  * @param updateObject - The updated history data.
  * @returns The updated history object or undefined if an error occurs.
  */
-const updateHistoryByID = async (
-  historyId: string,
-  updateObject: Partial<History>,
-): Promise<History | undefined> => {
-  try {
-    const response = await axiosClient.put<History>(`/history/${historyId}`, updateObject);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
+// const updateHistoryByID = async (
+//   historyId: string,
+//   updateObject: Partial<History>,
+// ): Promise<History | undefined> => {
+//   try {
+//     const response = await axiosClient.put<History>(`/history/${historyId}`, updateObject);
+//     return response.data;
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 /**
  * Deletes a history record by its ID.
  * @param historyId - The ID of the history record to delete.
  * @returns A success message or undefined if an error occurs.
  */
-const deleteHistoryByID = async (historyId: string): Promise<{message: string} | undefined> => {
-  try {
-    const response = await axiosClient.delete<{message: string}>(`/history/${historyId}`);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
+// const deleteHistoryByID = async (historyId: string): Promise<{message: string} | undefined> => {
+//   try {
+//     const response = await axiosClient.delete<{message: string}>(`/history/${historyId}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 /**
  * Retrieves all history records for a specific driver.
  * @param driverId - The ID of the driver.
  * @returns An array of history records or an empty array if an error occurs.
  */
-const getAllHistoryFromDriver = async (driverId: string): Promise<History[]> => {
-  try {
-    const response = await axiosClient.get<History[]>(`/history/driver/${driverId}`);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
+// const getAllHistoryFromDriver = async (driverId: string): Promise<History[]> => {
+//   try {
+//     const response = await axiosClient.get<History[]>(`/history/driver/${driverId}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error(error);
+//     return [];
+//   }
+// };
 
 //ToDo: Plan to do refactoring in the next sprint
 const logFaceDetectionSessionData = async (
-  sessionData: FDSessionDataType,
+  sessionData: FDSessionType,
 ): Promise<{message: string; sessionId: string} | null> => {
   try {
     const response = await axiosClient.post<{message: string; sessionId: string}>(
@@ -230,15 +230,15 @@ const logFaceDetectionSessionData = async (
 const getFaceDetectionHistoryDataByDay = async (
   driverId: string,
   date: string,
-): Promise<FDSessionHistoryData> => {
+): Promise<FDSessionHistoryType> => {
   try {
-    const response = await axiosClient.get<FDSessionHistoryData>(
+    const response = await axiosClient.get<FDSessionHistoryType>(
       `/face-detection-session/daily/?userId=${driverId}&date=${date}`,
     );
     return response.data;
   } catch (error) {
     console.error(error);
-    return {} as FDSessionHistoryData;
+    return {} as FDSessionHistoryType;
   }
 };
 
@@ -246,15 +246,15 @@ const getFaceDetectionHistoryDataByDay = async (
 const getFaceDetectionHistoryDataByWeek = async (
   driverId: string,
   date: string,
-): Promise<FDSessionHistoryData> => {
+): Promise<FDSessionHistoryType> => {
   try {
-    const response = await axiosClient.get<FDSessionHistoryData>(
+    const response = await axiosClient.get<FDSessionHistoryType>(
       `/face-detection-session/weekly/?userId=${driverId}&date=${date}`,
     );
     return response.data;
   } catch (error) {
     console.error(error);
-    return {} as FDSessionHistoryData;
+    return {} as FDSessionHistoryType;
   }
 };
 
@@ -262,15 +262,15 @@ const getFaceDetectionHistoryDataByWeek = async (
 const getFaceDetectionHistoryDataByMonth = async (
   driverId: string,
   date: string,
-): Promise<FDSessionHistoryData> => {
+): Promise<FDSessionHistoryType> => {
   try {
-    const response = await axiosClient.get<FDSessionHistoryData>(
+    const response = await axiosClient.get<FDSessionHistoryType>(
       `/face-detection-session/monthly/?userId=${driverId}&date=${date}`,
     );
     return response.data;
   } catch (error) {
     console.error(error);
-    return {} as FDSessionHistoryData;
+    return {} as FDSessionHistoryType;
   }
 };
 
@@ -278,31 +278,31 @@ const getFaceDetectionHistoryDataByMonth = async (
 const getFaceDetectionHistoryDataByYear = async (
   driverId: string,
   date: string,
-): Promise<FDSessionHistoryData> => {
+): Promise<FDSessionHistoryType> => {
   try {
-    const response = await axiosClient.get<FDSessionHistoryData>(
+    const response = await axiosClient.get<FDSessionHistoryType>(
       `/face-detection-session/yearly/?userId=${driverId}&date=${date}`,
     );
     return response.data;
   } catch (error) {
     console.error(error);
-    return {} as FDSessionHistoryData;
+    return {} as FDSessionHistoryType;
   }
 };
 
 export {
   Driver,
-  History,
+  // History,
   getDriverByID,
   getAllDrivers,
   createDriver,
   updateDriver,
   deleteDriver,
-  getHistoryByID,
-  createHistoryByDriverID,
-  updateHistoryByID,
-  deleteHistoryByID,
-  getAllHistoryFromDriver,
+  // getHistoryByID,
+  // createHistoryByDriverID,
+  // updateHistoryByID,
+  // deleteHistoryByID,
+  // getAllHistoryFromDriver,
   logFaceDetectionSessionData,
   getFaceDetectionHistoryDataByDay,
   getFaceDetectionHistoryDataByWeek,

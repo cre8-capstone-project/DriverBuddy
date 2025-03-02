@@ -4,23 +4,23 @@ import {CartesianChart, Bar, useChartPressState} from 'victory-native';
 import {LinearGradient, vec} from '@shopify/react-native-skia';
 import {useFont} from '@shopify/react-native-skia';
 import {Tooltip} from './Tooltip';
-import type {DetailedData} from '@/types/FDSessionHistoryDataType';
+import type {FDSessionHistoryDetailedType} from '@/types/FDSessionType';
 
 const interFont = require('@/assets/fonts/SpaceMono-Regular.ttf');
 
 type Props = {
-  data: DetailedData[];
-  viewMode: string;
+  data: FDSessionHistoryDetailedType[];
+  displayMode: string;
 };
 
-const Chart = ({data, viewMode}: Props) => {
+const Chart = ({data, displayMode}: Props) => {
   const font = useFont(interFont, 14);
   const {state, isActive} = useChartPressState({x: 0, y: {alertPerHour: 0}});
   const startDate = data[0].date;
 
   const indexedData = data.map((item, index) => ({
     ...item,
-    index: viewMode === 'day' ? index : index + 1,
+    index: displayMode === 'day' ? index : index + 1,
   }));
 
   const maxAlertPerHour = Math.max(...data.map(item => item.alertPerHour));
@@ -33,11 +33,11 @@ const Chart = ({data, viewMode}: Props) => {
         xKey="index"
         yKeys={['alertPerHour']}
         domainPadding={
-          viewMode === 'day'
+          displayMode === 'day'
             ? {left: 5, right: 5, top: 50}
-            : viewMode === 'week'
+            : displayMode === 'week'
               ? {left: 25, right: 25, top: 50}
-              : viewMode === 'month'
+              : displayMode === 'month'
                 ? {left: 5, right: 5, top: 50}
                 : {left: 15, right: 15, top: 50}
         }
@@ -45,12 +45,12 @@ const Chart = ({data, viewMode}: Props) => {
           font,
           tickCount: data.length,
           formatXLabel(value) {
-            if (viewMode === 'day') {
+            if (displayMode === 'day') {
               return [0, 3, 6, 9, 12, 15, 18, 21].includes(value) ? value.toString() : '';
-            } else if (viewMode === 'week') {
+            } else if (displayMode === 'week') {
               const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
               return daysOfWeek[(value - 1) % 7];
-            } else if (viewMode === 'month') {
+            } else if (displayMode === 'month') {
               return [5, 10, 15, 20, 25, 30].includes(value) ? value.toString() : '';
             }
             return value.toString();
@@ -80,7 +80,7 @@ const Chart = ({data, viewMode}: Props) => {
                 date={state.x.value}
                 alertPerHour={state.y.alertPerHour.value}
                 startDate={startDate}
-                viewMode={viewMode}
+                displayMode={displayMode}
               />
             )}
           </View>

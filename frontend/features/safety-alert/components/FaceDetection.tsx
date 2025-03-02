@@ -5,12 +5,13 @@ import Animated from 'react-native-reanimated';
 import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
 import {WarningMessage} from '@/features/safety-alert/components/WarningMessage';
 import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
+import type {ViewModeType} from '@/types/ViewModeType';
 
 const DEBUG_MODE = true;
 
 type Props = {
   device: any;
-  viewMode: 'cameraView' | 'mapView';
+  viewMode: ViewModeType;
 };
 
 const FaceDetection = ({device, viewMode}: Props) => {

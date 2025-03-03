@@ -7,27 +7,34 @@ type Props = {
   dialogStatus: boolean;
   toggleDialog: () => void;
   setIsFaceDetectionActive: (active: boolean) => void;
+  driveMode: boolean;
+  setEndDrive: (endDrive: boolean) => void;
 };
 
 export const EndConfirmationDialog = ({
   dialogStatus,
   toggleDialog,
   setIsFaceDetectionActive,
+  driveMode,
+  setEndDrive,
 }: Props) => {
   const navigation = useNavigation<any>();
   return (
     <Dialog isVisible={dialogStatus} onBackdropPress={toggleDialog}>
       <View style={styles.container}>
         <Text style={styles.dialogTitle}>
-          The detection will be turn off once you return to the homepage
+          {driveMode
+            ? 'Do you want to end the route?'
+            : 'The detection will be turned off once you return to the homepage'}
         </Text>
         <View>
           <Button
-            title="Back to home"
+            title={driveMode ? 'End' : 'Back to home'}
             type="solid"
             buttonStyle={styles.buttonStyle}
             containerStyle={styles.buttonContainer}
             onPress={() => {
+              setEndDrive(true);
               navigation.navigate('(tabs)');
               toggleDialog();
               setIsFaceDetectionActive(false);

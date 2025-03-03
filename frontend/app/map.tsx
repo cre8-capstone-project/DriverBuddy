@@ -20,13 +20,20 @@ type Region = {
   longitudeDelta: number;
 };
 
+type Props = {
+  setDriveDestinationStatus: (destination: boolean) => void;
+  setDriveModeStatus: (mode: boolean) => void;
+  startDriveStatus: boolean;
+  endDriveStatus: boolean;
+};
+
 // Save values temporarily so they can be used later even if the app is closed or reloaded
 let savedOrigin: Region | null = null;
 let savedDestination: {latitude: number; longitude: number} | null = null;
 let savedOriginLabel: string | null = null;
 let savedDestinationLabel: string | null = null;
 
-export const Map = forwardRef((props, ref) => {
+export const Map = forwardRef((props: Props, ref) => {
   // Using saved values to persist data even when moving away from mapview
   const [origin, setOrigin] = useState<Region | null>(savedOrigin);
   const [destination, setDestination] = useState<{latitude: number; longitude: number} | null>(
@@ -56,6 +63,52 @@ export const Map = forwardRef((props, ref) => {
     }
   }, [searchModalVisible]);
 
+  const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
+  useEffect(() => {
+    setDriveDestinationStatus(destination ? true : false);
+    setDriveModeStatus(drivingMode ? true : false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destination, drivingMode]);
+
+  useEffect(() => {
+    if (startDriveStatus) handleDriveStart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDriveStatus]);
+
+  useEffect(() => {
+    if (endDriveStatus) handleDriveEnd();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endDriveStatus]);
+
+  const handleDriveStart = () => {
+    console.log('Start Driving clicked');
+    if (mapRef.current && deviceLocation) {
+      mapRef.current?.animateCamera(
+        {center: deviceLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
+        {duration: 1000},
+      );
+    }
+    setDrivingMode(true);
+  };
+  const handleDriveEnd = () => {
+    console.log('End Route clicked');
+    if (mapRef.current && deviceLocation) {
+      mapRef.current.animateCamera(
+        {
+          center: deviceLocation,
+          pitch: 0, // Set pitch to 0 (top view)
+          heading: 0,
+          zoom: 18,
+        },
+        {duration: 1000}, // Adjust duration as needed
+      );
+    }
+    setDestination(null);
+    setDeviceLocation(null);
+    setDrivingMode(false);
+    savedDestination = null;
+  };
+
   // NEWER: Handle map ready - explicitly zoom to user's current location when available
   const handleMapReady = () => {
     console.log('MapView is ready'); // NEWER: Log when Map View is ready
@@ -81,7 +134,7 @@ export const Map = forwardRef((props, ref) => {
   const handleUserLocationChange = (event: any) => {
     const {coordinate} = event.nativeEvent;
     if (mapRef.current && coordinate) {
-      console.log('User location changed:', coordinate); // NEWER: Log user location change
+      // console.log('User location changed:', coordinate); // NEWER: Log user location change
       // UPDATED 28 FEB: Only animate if not in driving mode to preserve pitch
       if (!drivingMode) {
         mapRef.current.animateToRegion(
@@ -223,6 +276,9 @@ export const Map = forwardRef((props, ref) => {
     openSearch: (field: 'origin' | 'destination') => {
       setEditingField(field);
       setSearchModalVisible(true);
+    },
+    clearSearch: () => {
+      setDestination(null);
     },
   }));
 
@@ -489,7 +545,7 @@ export const Map = forwardRef((props, ref) => {
       </Modal>
 
       {/* Start button appears only after destination is entered or deviceLocation is available */}
-      <View style={styles.startButtonContainer}>
+      {/* <View style={styles.startButtonContainer}>
         {drivingMode ? (
           <Button
             title="End Route"
@@ -530,7 +586,7 @@ export const Map = forwardRef((props, ref) => {
             />
           )
         )}
-      </View>
+      </View> */}
     </View>
   );
 });

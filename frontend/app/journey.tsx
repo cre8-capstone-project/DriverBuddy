@@ -3,7 +3,7 @@ import {View, StyleSheet, Text, Dimensions, Image, ImageSourcePropType} from 're
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
-import {Button} from '@rneui/themed';
+import {Button, Icon} from '@rneui/themed';
 import {FaceDetectionWindowFrame} from '@/features/safety-alert/components/FaceDetectionWindowFrame';
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
 import {EndConfirmationDialog} from '@/features/safety-alert/components/EndConfirmationDialog';
@@ -15,6 +15,10 @@ const {width, height} = Dimensions.get('window');
 
 export default function HomeScreen() {
   const [viewMode, setViewMode] = useState<ViewModeType>('mapView');
+  const [driveDestinationStatus, setDriveDestinationStatus] = useState(false);
+  const [driveModeStatus, setDriveModeStatus] = useState(false);
+  const [startDriveStatus, setStartDriveStatus] = useState(false);
+  const [endDriveStatus, setEndDriveStatus] = useState(false);
   const [isFaceDetectionActive, setIsFaceDetectionActive] = useState(true);
   const [startDialogStatus, setStartDialogStatus] = useState(false);
   const [endDialogStatus, setEndDialogStatus] = useState(false);
@@ -24,9 +28,6 @@ export default function HomeScreen() {
     useCallback(() => {
       console.log(`[DEBUG] Journey Screen is focused`);
       setIsFaceDetectionActive(true);
-
-      // To Cocoy: Reset map key to re-render the map component
-      // Please delete this line if it's not necessary
       setMapKey(prev => prev + 1);
     }, []),
   );
@@ -39,7 +40,10 @@ export default function HomeScreen() {
   };
 
   // Cocoy's Update: Create a ref for Map component
-  const mapRef = useRef<{openSearch: (field: 'origin' | 'destination') => void} | null>(null);
+  const mapRef = useRef<{
+    openSearch: (field: 'origin' | 'destination') => void;
+    clearSearch: () => void;
+  } | null>(null);
 
   return (
     <View style={styles.container}>
@@ -49,14 +53,17 @@ export default function HomeScreen() {
         onResponderRelease={() => setViewMode('mapView')}
         style={[
           styles.mapComponentContainer,
-          viewMode === 'mapView'
-            ? styles.visible
-            : isFaceDetectionActive
-              ? styles.miniWindowView
-              : styles.invisible,
+          viewMode === 'mapView' ? styles.visible : styles.miniWindowView,
         ]}>
         {/* Cocoy's Update: Pass ref to Map component */}
-        <Map key={mapKey} ref={mapRef} />
+        <Map
+          key={mapKey}
+          ref={mapRef}
+          setDriveDestinationStatus={setDriveDestinationStatus}
+          setDriveModeStatus={setDriveModeStatus}
+          startDriveStatus={startDriveStatus}
+          endDriveStatus={endDriveStatus}
+        />
       </View>
       <View
         onStartShouldSetResponder={() => true}
@@ -83,30 +90,95 @@ export default function HomeScreen() {
 
       <View style={styles.navContainer}>
         {/* Back Home Button */}
-        {isFaceDetectionActive && (
+        {!driveModeStatus && !driveDestinationStatus && isFaceDetectionActive && (
           <Button
             type="clear"
             containerStyle={styles.backButtonContainer}
             buttonStyle={styles.button}
             titleStyle={styles.buttonText}
             iconPosition="top"
-            icon={{name: 'west', size: 20, color: 'black'}}
+            icon={{name: 'west', size: 16, color: 'black'}}
             onPress={() => toggleEndDialog()}>
-            <Text style={styles.buttonText}>Back</Text>
+            {/* <Text style={styles.buttonText}>Back</Text> */}
           </Button>
         )}
 
-        {/* Search Here to Drive  Button */}
-        {isFaceDetectionActive && (
+        {/* Destination Clear Button */}
+        {!driveModeStatus && driveDestinationStatus && (
           <Button
             type="clear"
-            containerStyle={styles.searchButtonContainer}
+            containerStyle={styles.backButtonContainer}
             buttonStyle={styles.button}
             titleStyle={styles.buttonText}
-            onPress={() => mapRef.current?.openSearch('destination')} // Cocoy's Update: Call openSearch from mapRef
-          >
-            <Image source={GoogleMapIcon} />
+            iconPosition="top"
+            icon={{name: 'west', size: 16, color: 'black'}}
+            onPress={() => {
+              mapRef.current?.clearSearch();
+            }}>
+            {/* <Text style={styles.buttonText}>Back</Text> */}
+          </Button>
+        )}
+
+        {/* Turn Off Face Detection Button  */}
+        {driveModeStatus && isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={() => setIsFaceDetectionActive(false)}>
+            <Icon name="videocam-off" size={28} color="black" />
+            <Text style={styles.buttonText}>Turn off{'\n'}detection</Text>
+          </Button>
+        )}
+
+        {/* Start Face Detection Button　*/}
+        {driveModeStatus && !isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={() => setIsFaceDetectionActive(true)}>
+            <Icon name="videocam" size={28} color="black" />
+            <Text style={styles.buttonText}>Start{'\n'}detection</Text>
+          </Button>
+        )}
+
+        {/* Search Here to Drive Button */}
+        {!driveModeStatus && !driveDestinationStatus && isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={() => mapRef.current?.openSearch('destination')}>
+            <Image source={GoogleMapIcon} style={{height: 36, width: 36}} />
             <Text style={styles.buttonText}>Search here to drive</Text>
+          </Button>
+        )}
+
+        {/* Start Driving Button */}
+        {!driveModeStatus && driveDestinationStatus && isFaceDetectionActive && (
+          <Button
+            type="clear"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={() => setStartDriveStatus(true)}>
+            <Text style={styles.buttonText}>Start Driving</Text>
+          </Button>
+        )}
+
+        {/* End Route Button */}
+        {driveModeStatus && (
+          <Button
+            type="clear"
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+            onPress={() => toggleEndDialog()}>
+            <Text style={styles.buttonText}>End Route</Text>
           </Button>
         )}
 
@@ -121,33 +193,9 @@ export default function HomeScreen() {
           dialogStatus={endDialogStatus}
           toggleDialog={toggleEndDialog}
           setIsFaceDetectionActive={setIsFaceDetectionActive}
+          driveMode={driveModeStatus}
+          setEndDrive={setEndDriveStatus}
         />
-
-        {/* Turn Off Face Detection Button -> This will be used in navigation mode. TBD */}
-        {/* {isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={() => setIsFaceDetectionActive(false)}>
-            <Icon name="videocam-off" size={30} color="black" />
-            <Text style={styles.buttonText}>Turn off{'\n'}detection</Text>
-          </Button>
-        )} */}
-
-        {/* Start Face Detection Button　-> This will be used in navigation mode. TBD */}
-        {/* {viewMode === 'mapView' && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={toggleDialog}>
-            <Icon name="videocam" size={30} color="black" />
-            <Text style={styles.buttonText}>Start{'\n'}detection</Text>
-          </Button>
-        )} */}
       </View>
     </View>
   );
@@ -184,14 +232,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 20,
   },
-  searchButtonContainer: {
-    flex: 1,
-  },
-  buttonContainer: {},
+  buttonContainer: {flex: 1},
   backButtonContainer: {},
   button: {
     paddingVertical: 5,
     paddingHorizontal: 10,
+    gap: 10,
   },
   buttonText: {
     textAlign: 'center',

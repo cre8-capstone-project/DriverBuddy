@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef, forwardRef, useImperativeHandle} from 'react';
 import {StyleSheet, View, Alert, Modal, Keyboard} from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
-import {Button, Input, ListItem, Icon} from '@rneui/themed';
+import {Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 
@@ -54,16 +54,8 @@ export const Map = forwardRef((props: Props, ref) => {
   // NEWER: State to track if driving mode is active
   const [drivingMode, setDrivingMode] = useState(false);
 
-  // NEWER: useEffect to force focus on input when searchModalVisible becomes true using requestAnimationFrame
-  useEffect(() => {
-    if (searchModalVisible && inputRef.current) {
-      requestAnimationFrame(() => {
-        inputRef.current.focus();
-      });
-    }
-  }, [searchModalVisible]);
-
   const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
+
   useEffect(() => {
     setDriveDestinationStatus(destination ? true : false);
     setDriveModeStatus(drivingMode ? true : false);
@@ -90,17 +82,18 @@ export const Map = forwardRef((props: Props, ref) => {
     }
     setDrivingMode(true);
   };
+
   const handleDriveEnd = () => {
     console.log('End Route clicked');
     if (mapRef.current && deviceLocation) {
       mapRef.current.animateCamera(
         {
           center: deviceLocation,
-          pitch: 0, // Set pitch to 0 (top view)
+          pitch: 0,
           heading: 0,
           zoom: 18,
         },
-        {duration: 1000}, // Adjust duration as needed
+        {duration: 1000},
       );
     }
     setDestination(null);
@@ -108,6 +101,15 @@ export const Map = forwardRef((props: Props, ref) => {
     setDrivingMode(false);
     savedDestination = null;
   };
+
+  // NEWER: useEffect to force focus on input when searchModalVisible becomes true using requestAnimationFrame
+  useEffect(() => {
+    if (searchModalVisible && inputRef.current) {
+      requestAnimationFrame(() => {
+        inputRef.current.focus();
+      });
+    }
+  }, [searchModalVisible]);
 
   // NEWER: Handle map ready - explicitly zoom to user's current location when available
   const handleMapReady = () => {
@@ -278,6 +280,7 @@ export const Map = forwardRef((props: Props, ref) => {
       setSearchModalVisible(true);
     },
     clearSearch: () => {
+      setCoordinateInput('');
       setDestination(null);
     },
   }));
@@ -543,50 +546,6 @@ export const Map = forwardRef((props: Props, ref) => {
           </ListItem> */}
         </View>
       </Modal>
-
-      {/* Start button appears only after destination is entered or deviceLocation is available */}
-      {/* <View style={styles.startButtonContainer}>
-        {drivingMode ? (
-          <Button
-            title="End Route"
-            onPress={() => {
-              console.log('End Route clicked');
-              if (mapRef.current && deviceLocation) {
-                mapRef.current.animateCamera(
-                  {
-                    center: deviceLocation,
-                    pitch: 0, // Set pitch to 0 (top view)
-                    heading: 0,
-                    zoom: 18,
-                  },
-                  {duration: 1000}, // Adjust duration as needed
-                );
-              }
-              setDrivingMode(false);
-            }}
-            buttonStyle={styles.startButton}
-            titleStyle={styles.startButtonText}
-          />
-        ) : (
-          (destination || deviceLocation) && (
-            <Button
-              title="Start Driving"
-              onPress={() => {
-                console.log('Start Driving clicked');
-                setDrivingMode(true);
-                if (mapRef.current && deviceLocation) {
-                  mapRef.current?.animateCamera(
-                    {center: deviceLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
-                    {duration: 1000},
-                  );
-                }
-              }}
-              buttonStyle={styles.startButton}
-              titleStyle={styles.startButtonText}
-            />
-          )
-        )}
-      </View> */}
     </View>
   );
 });
@@ -661,3 +620,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
+
+export const clearSavedMapValues = () => {
+  savedOrigin = null;
+  savedDestination = null;
+  savedOriginLabel = null;
+  savedDestinationLabel = null;
+};

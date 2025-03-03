@@ -2,7 +2,7 @@ import React, {useCallback, useRef, useState} from 'react';
 import {View, StyleSheet, Text, Dimensions, Image, ImageSourcePropType} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
-import {Map} from '@/app/map';
+import {Map, clearSavedMapValues} from '@/app/map';
 import {Button, Icon} from '@rneui/themed';
 import {FaceDetectionWindowFrame} from '@/features/safety-alert/components/FaceDetectionWindowFrame';
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';

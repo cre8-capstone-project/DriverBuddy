@@ -4,6 +4,8 @@ import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import {Button, Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
+// UPDATED MAR 3: Import EndRouteDialog
+import {EndRouteDialog} from '@/features/map/components/EndRouteDialog';
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -46,6 +48,38 @@ export const Map = forwardRef((props, ref) => {
   const inputRef = useRef<any>(null);
   // NEWER: State to track if driving mode is active
   const [drivingMode, setDrivingMode] = useState(false);
+
+  // UPDATED MAR 3: State for EndRouteDialog
+  const [endDialogStatus, setEndDialogStatus] = useState(false);
+
+  // UPDATED MAR 3: Toggle EndRouteDialog
+  const toggleEndRouteDialog = () => {
+    setEndDialogStatus(!endDialogStatus);
+  };
+
+  // UPDATED MAR 3: Function to handle ending the route
+  const handleEndRoute = () => {
+    if (mapRef.current && deviceLocation) {
+      mapRef.current.animateCamera(
+        {
+          center: deviceLocation,
+          pitch: 0, // Set pitch to 0 (top view)
+          heading: 0,
+          zoom: 18,
+        },
+        {duration: 1000},
+      );
+    }
+    setDrivingMode(false);
+
+    // Clear saved values so that a remount starts fresh
+    savedOrigin = null;
+    savedDestination = null;
+    savedOriginLabel = null;
+    savedDestinationLabel = null;
+
+    toggleEndRouteDialog();
+  };
 
   // NEWER: useEffect to force focus on input when searchModalVisible becomes true using requestAnimationFrame
   useEffect(() => {
@@ -495,18 +529,7 @@ export const Map = forwardRef((props, ref) => {
             title="End Route"
             onPress={() => {
               console.log('End Route clicked');
-              if (mapRef.current && deviceLocation) {
-                mapRef.current.animateCamera(
-                  {
-                    center: deviceLocation,
-                    pitch: 0, // Set pitch to 0 (top view)
-                    heading: 0,
-                    zoom: 18,
-                  },
-                  {duration: 1000}, // Adjust duration as needed
-                );
-              }
-              setDrivingMode(false);
+              toggleEndRouteDialog(); // UPDATED MAR 3: Open the confirmation dialog
             }}
             buttonStyle={styles.startButton}
             titleStyle={styles.startButtonText}
@@ -531,6 +554,13 @@ export const Map = forwardRef((props, ref) => {
           )
         )}
       </View>
+
+      {/* UPDATED MAR 3: Render EndRouteDialog */}
+      <EndRouteDialog
+        dialogStatus={endDialogStatus}
+        toggleDialog={toggleEndRouteDialog}
+        onConfirmEndRoute={handleEndRoute} // Callback when user confirms ending the route
+      />
     </View>
   );
 });
@@ -605,3 +635,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
+
+export const clearSavedMapValues = () => {
+  savedOrigin = null;
+  savedDestination = null;
+  savedOriginLabel = null;
+  savedDestinationLabel = null;
+};

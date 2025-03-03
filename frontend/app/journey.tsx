@@ -2,7 +2,7 @@ import React, {useCallback, useRef, useState} from 'react';
 import {View, StyleSheet, Text, Dimensions, Image, ImageSourcePropType} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
-import {Map} from '@/app/map';
+import {Map, clearSavedMapValues} from '@/app/map';
 import {Button} from '@rneui/themed';
 import {FaceDetectionWindowFrame} from '@/features/safety-alert/components/FaceDetectionWindowFrame';
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
@@ -91,7 +91,10 @@ export default function HomeScreen() {
             titleStyle={styles.buttonText}
             iconPosition="top"
             icon={{name: 'west', size: 20, color: 'black'}}
-            onPress={() => toggleEndDialog()}>
+            onPress={() => {
+              clearSavedMapValues(); // Cocoy's Update: Reset the map by clearing saved data
+              toggleEndDialog();
+            }}>
             <Text style={styles.buttonText}>Back</Text>
           </Button>
         )}

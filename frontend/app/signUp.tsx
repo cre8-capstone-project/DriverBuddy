@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Image,
   Pressable,
+  Dimensions,
   ImageSourcePropType,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
@@ -17,8 +18,9 @@ import {createDriver, Driver, getInvitationCode, updateInvitationStatus} from '@
 import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
 import * as ImagePicker from 'expo-image-picker';
 import {MaterialIcons} from '@expo/vector-icons';
-import {Camera, useCameraDevice} from 'react-native-vision-camera';
+import {Camera} from 'react-native-vision-camera';
 import {InvitationCodeType} from '@/types/InvitationCodeType';
+import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -32,16 +34,6 @@ export default function SignUpScreen() {
   const cameraRef = useRef<Camera>(null);
 
   const handleAuth = async () => {
-    try {
-      const codeIsValid = await validateCode(code.toUpperCase());
-      if (codeIsValid) {
-        setValidCode(true);
-      }
-    } catch (error: any) {
-      Alert.alert('Authentication Error', error.message);
-    }
-  };
-  const createAccount = async () => {
     try {
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       const newDriverObj: Driver = {
@@ -63,20 +55,17 @@ export default function SignUpScreen() {
       console.error(e);
     }
   };
-  const validateCode = async (code: string) => {
+  const validateCode = async () => {
     try {
       const response = await getInvitationCode(code);
       if (response) {
-        console.log(response);
-        if (response.status !== 'pending') return false;
+        if (response.status !== 'pending') return;
         setName(response.recipient_name);
         setInvitation(response);
-        return true;
+        setValidCode(true);
       }
-      return false;
     } catch (e) {
       console.error(e);
-      return false;
     }
   };
   const openCamera = async () => {
@@ -95,7 +84,7 @@ export default function SignUpScreen() {
       const photo = await cameraRef.current.takePhoto();
 
       setPhotoUri(`file://${photo.path}`);
-      Alert.alert('Success', 'Selfie captured!');
+      console.log('Success: Selfie captured!');
     } catch (e) {
       console.error('Error capturing selfie:', e);
       Alert.alert('Error', 'Failed to take selfie.');
@@ -114,7 +103,7 @@ export default function SignUpScreen() {
     }
   };
   return (
-    <View style={{flex: 1, justifyContent: 'center', padding: 20}}>
+    <View style={styles.container}>
       {validCode ? (
         <>
           <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 20}}>{name}</Text>
@@ -137,15 +126,22 @@ export default function SignUpScreen() {
             </Pressable>
           </View>
           <View style={styles.buttonsContainer}>
-            <Button title="Skip this for now" onPress={createAccount} />
+            <Button title="Skip this for now" onPress={handleAuth} />
             <Button title="Take a photo with the camera" onPress={openCamera} />
             <Button title="Upload photo from phone" onPress={pickImage} />
-            {photoUri !== '' ? <Button title="Complete" onPress={createAccount} /> : ''}
+            {photoUri !== '' ? <Button title="Complete" onPress={handleAuth} /> : ''}
           </View>
         </>
       ) : (
-        <View>
-          <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 20}}>Sign Up</Text>
+        <View style={{width: '100%', justifyContent: 'center'}}>
+          {/* Logo Container */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={DriveBuddyLogo as ImageSourcePropType}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
           <TextInput
             placeholder="Email"
             value={email}
@@ -170,7 +166,7 @@ export default function SignUpScreen() {
             style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
           />
           <View style={styles.buttonsContainer}>
-            <Button title="Sign Up" onPress={handleAuth} />
+            <Button title="Create an account" onPress={validateCode} />
             <Button title="Have an account? Sign In" onPress={() => router.replace('/signIn')} />
           </View>
         </View>
@@ -178,6 +174,8 @@ export default function SignUpScreen() {
     </View>
   );
 }
+const {width} = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   buttonsContainer: {
     gap: 10,
@@ -210,5 +208,28 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    padding: 20,
+  },
+  logoContainer: {
+    width: width / 3, // 1/3 of the screen width
+    aspectRatio: 1, // Maintain aspect ratio
+    marginBottom: 20,
+    marginTop: 20,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
+  logo: {
+    width: '100%',
+    height: '100%',
+  },
+  title: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginBottom: 20,
   },
 });

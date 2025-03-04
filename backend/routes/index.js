@@ -4,6 +4,7 @@ import express from 'express';
 import fs from 'fs';
 import driverRoutes from './driverRoutes.js';
 import historyRoutes from './historyRoutes.js';
+import invitationsRoutes from './invitationsRoutes.js';
 
 const router = express.Router();
 // Initialize Firebase Admin SDK
@@ -16,8 +17,10 @@ admin.initializeApp({
 const db = admin.firestore();
 const driverCollection = db.collection('driver');
 const historyCollection = db.collection('history');
+const invitationsCollection = db.collection('invitations');
 
 router.use('/drivers', driverRoutes(driverCollection));
 router.use('/history', historyRoutes(historyCollection, driverCollection, admin));
+router.use('/invitations', invitationsRoutes(invitationsCollection, db));
 
 export default router;

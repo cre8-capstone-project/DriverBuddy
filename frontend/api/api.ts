@@ -2,8 +2,10 @@ import axios, {AxiosResponse} from 'axios';
 import {Timestamp} from 'firebase/firestore';
 import type {FDSessionType} from '../types/FDSessionType';
 import type {FDSessionHistoryType} from '../types/FDSessionType';
+import type {InvitationCodeType} from '../types/InvitationCodeType';
 
-const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
+//const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
+const API_URL = 'http://10.0.0.23:3000'; // replace with your own IP
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,
@@ -24,7 +26,16 @@ interface Driver {
   birthday: Timestamp;
   picture_url: string;
 }
-
+interface InvitationCode {
+  id?: string;
+  user_type?: string;
+  name: string;
+  email: string;
+  phone: string;
+  vehicle_type?: string;
+  birthday: Timestamp;
+  picture_url: string;
+}
 // interface History {
 //   id?: string;
 //   numberOfAlerts: number;
@@ -60,7 +71,6 @@ const getDriverByID = async (id: string) => {
       picture_url: response.data.picture_url,
     };
   } catch (error) {
-    console.log('Error in api line 62');
     console.error(error);
   }
 };
@@ -84,7 +94,7 @@ const getAllDrivers = async (): Promise<Driver[]> => {
  * @param driverObject - The driver data excluding the ID.
  * @returns The created driver object or undefined if an error occurs.
  */
-const createDriver = async (driverObject: Omit<Driver, 'id'>): Promise<Driver | undefined> => {
+const createDriver = async (driverObject: Driver): Promise<Driver | undefined> => {
   try {
     const response = await axiosClient.post<Driver>('/drivers', driverObject);
     return response.data;
@@ -290,6 +300,79 @@ const getFaceDetectionHistoryDataByYear = async (
   }
 };
 
+const getInvitationCode = async (code: string): Promise<InvitationCodeType | null> => {
+  try {
+    const response = await axiosClient.get<InvitationCodeType>(`/invitations/${code}`);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      // Handle Axios-specific errors
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        console.error('Error response:', error.response.data);
+
+        // You can handle specific status codes if needed
+        if (error.response.status === 404) {
+          console.error('Invitation not found');
+        }
+
+        throw new Error(error.response.data.error || 'Error retrieving invitation');
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+        throw new Error('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request
+        console.error('Request setup error:', error.message);
+        throw new Error(`Request failed: ${error.message}`);
+      }
+    } else {
+      // Handle non-Axios errors
+      console.error('Unexpected error:', error);
+      throw new Error('An unexpected error occurred');
+    }
+  }
+};
+
+const updateInvitationStatus = async (
+  updatedInvitationObj: InvitationCodeType,
+): Promise<InvitationCodeType> => {
+  try {
+    const response = await axiosClient.put<InvitationCodeType>(
+      `/invitations/${updatedInvitationObj.id}`,
+      updatedInvitationObj,
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      // Handle Axios-specific errors
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        console.error('Error response:', error.response.data);
+
+        // You can handle specific status codes if needed
+        if (error.response.status === 404) {
+          console.error('Invitation not found');
+        }
+
+        throw new Error(error.response.data.error || 'Error retrieving invitation');
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+        throw new Error('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request
+        console.error('Request setup error:', error.message);
+        throw new Error(`Request failed: ${error.message}`);
+      }
+    } else {
+      // Handle non-Axios errors
+      console.error('Unexpected error:', error);
+      throw new Error('An unexpected error occurred');
+    }
+  }
+};
+
 export {
   Driver,
   // History,
@@ -308,4 +391,6 @@ export {
   getFaceDetectionHistoryDataByWeek,
   getFaceDetectionHistoryDataByMonth,
   getFaceDetectionHistoryDataByYear,
+  getInvitationCode,
+  updateInvitationStatus,
 };

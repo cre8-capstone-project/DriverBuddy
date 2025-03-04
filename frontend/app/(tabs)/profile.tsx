@@ -21,8 +21,13 @@ import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_
 import {updateDriver} from '@/api/api';
 import {Button} from '@rneui/base';
 import * as ImagePicker from 'expo-image-picker';
+import {useAuth} from '@/contexts/AuthProvider';
+import auth from '@react-native-firebase/auth';
+import {useRouter} from 'expo-router';
 
 export default function ProfileScreen() {
+  const {loading, user} = useAuth();
+  const router = useRouter();
   const [driver, setDriver] = useState<any>(undefined);
   const [driverName, setDriverName] = useState<string>('');
   const [driverUserType, setDriverUserType] = useState<string>('');
@@ -34,13 +39,14 @@ export default function ProfileScreen() {
   // Add this new state to control date picker visibility
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
-  const currentUserID: string = 'EupIJaWMSnitQnIIcWi7'; //get current user ID
 
   useEffect(() => {
     const loadData = async () => {
       try {
+        //const currentUserID: string = 'EupIJaWMSnitQnIIcWi7'; //get current user ID
+        console.log(user?.uid);
+        const currentUserID: string = user ? user.uid : ''; //get current user ID
         const driverInfo = await getDriverByID(currentUserID);
         setDriver(driverInfo);
         if (driverInfo?.picture_url) {
@@ -49,13 +55,11 @@ export default function ProfileScreen() {
         resetEditFields();
       } catch (e) {
         console.error(e);
-      } finally {
-        setLoading(false);
       }
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     (async () => {
@@ -141,6 +145,15 @@ export default function ProfileScreen() {
     setShowDatePicker(false);
     if (selectedDate) {
       setDriverBirthday(selectedDate);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await auth().signOut();
+      router.replace('/signIn'); // Redirect to auth screen after sign out
+    } catch (error) {
+      console.error('Sign out error:', error);
     }
   };
 
@@ -279,11 +292,13 @@ export default function ProfileScreen() {
                 </View>
               )}
             </View>
+            <Button onPress={handleSignOut}>Sign out</Button>
           </ScrollView>
         </KeyboardAvoidingView>
       ) : (
         <View style={styles.container}>
           <Text style={styles.nameText}>No user information found</Text>
+          <Button onPress={handleSignOut}>Sign out</Button>
         </View>
       )}
     </>

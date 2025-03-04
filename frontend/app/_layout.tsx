@@ -1,17 +1,17 @@
+import {Suspense, useEffect, useState} from 'react';
 import 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useFonts} from 'expo-font';
-import {Stack} from 'expo-router';
+import {Stack, useSegments, useRouter} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import {Suspense, useEffect} from 'react';
 import {useMigrations} from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations';
-import {ActivityIndicator} from 'react-native';
+import {ActivityIndicator, View} from 'react-native';
 import {db, drizzleDb} from '@/db/db';
 import * as FileSystem from 'expo-file-system';
 import {useDrizzleStudio} from 'expo-drizzle-studio-plugin';
-import {RootSiblingParent} from 'react-native-root-siblings';
 import {ThemeProvider, useTheme} from '@rneui/themed';
+import {AuthProvider, useAuth} from '@/contexts/AuthProvider';
 import theme from '../components/Theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -65,19 +65,54 @@ export default function RootLayout() {
     }
   }, [success, error]);
 
+  // Auth check component that handles routing
+  function AuthenticationGuard({children}: {children: React.ReactNode}) {
+    const {user, loading} = useAuth();
+    const segments = useSegments();
+    const router = useRouter();
+
+    useEffect(() => {
+      if (loading) return; // Don't do anything while still loading
+
+      const inAuthGroup = segments[0] === 'signIn' || segments[0] === 'signUp';
+
+      if (!user && !inAuthGroup) {
+        // If no user and not on an auth screen, redirect to sign in page
+        router.replace('/signIn');
+      } else if (user && inAuthGroup) {
+        // If user is logged in and on sign in/up screen, redirect to home
+        router.replace('/');
+      }
+    }, [user, loading, segments]);
+
+    if (loading) {
+      return (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size="large" />
+        </View>
+      );
+    }
+
+    return <>{children}</>;
+  }
+
   return (
-    <ThemeProvider theme={theme}>
-      <ThemeUpdater />
-      <SafeAreaView style={{flex: 1}} edges={['top']}>
-        <Suspense fallback={<ActivityIndicator size="large" />}>
-          <RootSiblingParent>
-            <Stack screenOptions={{headerShown: false}}>
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="journey" />
-            </Stack>
-          </RootSiblingParent>
-        </Suspense>
-      </SafeAreaView>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <ThemeUpdater />
+        <SafeAreaView style={{flex: 1}} edges={['top']}>
+          <Suspense fallback={<ActivityIndicator size="large" />}>
+            <AuthenticationGuard>
+              <Stack screenOptions={{headerShown: false}}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="journey" />
+                <Stack.Screen name="signIn" />
+                <Stack.Screen name="signUp" />
+              </Stack>
+            </AuthenticationGuard>
+          </Suspense>
+        </SafeAreaView>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

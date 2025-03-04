@@ -1,15 +1,15 @@
 /* eslint-disable camelcase */
 import express from 'express';
 
-const driverRoutes = driverCollection => {
+const driverRoutes = (driverCollection, storage) => {
   const router = express.Router();
 
   router.post('/', async (req, res) => {
     try {
-      const {name, email, phone, vehicle_type, user_type} = req.body;
-      const newDriver = {name, email, phone, vehicle_type, user_type};
-      const docRef = await driverCollection.add(newDriver);
-      res.status(201).send({id: docRef.id, ...newDriver});
+      const {id, name, email, phone, vehicle_type, user_type} = req.body;
+      const newDriver = {id, name, email, phone, vehicle_type, user_type};
+      await driverCollection.doc(id).set(newDriver);
+      res.status(201).send({id, ...newDriver});
     } catch (error) {
       res.status(500).send({error: `Failed to create driver: ${error}`});
     }

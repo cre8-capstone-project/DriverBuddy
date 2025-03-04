@@ -63,16 +63,16 @@ export const Map = forwardRef((props: Props, ref) => {
   }, [destination, drivingMode]);
 
   useEffect(() => {
-    if (startDriveStatus) handleDriveStart();
+    if (startDriveStatus) handleStartDriving();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDriveStatus]);
 
   useEffect(() => {
-    if (endDriveStatus) handleDriveEnd();
+    if (endDriveStatus) handleEndDriving();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endDriveStatus]);
 
-  const handleDriveStart = () => {
+  const handleStartDriving = () => {
     console.log('Start Driving clicked');
     if (mapRef.current && deviceLocation) {
       mapRef.current?.animateCamera(
@@ -83,7 +83,7 @@ export const Map = forwardRef((props: Props, ref) => {
     setDrivingMode(true);
   };
 
-  const handleDriveEnd = () => {
+  const handleEndDriving = () => {
     console.log('End Route clicked');
     if (mapRef.current && deviceLocation) {
       mapRef.current.animateCamera(
@@ -398,33 +398,6 @@ export const Map = forwardRef((props: Props, ref) => {
           <Marker coordinate={destination} title="Destination" description={destinationLabel} />
         )}
       </MapView>
-
-      {/* Search Button */}
-      {!drivingMode && (
-        <View style={styles.searchContainer}>
-          {/* {destination && (
-          <Button
-            title={originLabel || 'Your location'}
-            buttonStyle={styles.searchButton}
-            titleStyle={styles.buttonText}
-            onPress={() => openSearch('origin')}
-          />
-        )} */}
-          {/* <Button
-            title={destinationLabel || 'Search here to drive'}
-            icon={{
-              name: 'map-marker',
-              type: 'font-awesome',
-              color: 'black',
-              size: 20,
-              containerStyle: {marginHorizontal: 10},
-            }}
-            buttonStyle={styles.searchButton}
-            titleStyle={styles.buttonText}
-            onPress={() => openSearch('destination')}
-          /> */}
-        </View>
-      )}
 
       {/* Search Modal */}
       <Modal

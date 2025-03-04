@@ -1,11 +1,9 @@
 import React, {useState, useEffect, useRef, forwardRef, useImperativeHandle} from 'react';
 import {StyleSheet, View, Alert, Modal, Keyboard} from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
-import {Button, Input, ListItem, Icon} from '@rneui/themed';
+import {Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-// UPDATED MAR 3: Import EndRouteDialog
-import {EndRouteDialog} from '@/features/map/components/EndRouteDialog';
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -22,13 +20,20 @@ type Region = {
   longitudeDelta: number;
 };
 
+type Props = {
+  setDriveDestinationStatus: (destination: boolean) => void;
+  setDriveModeStatus: (mode: boolean) => void;
+  startDriveStatus: boolean;
+  endDriveStatus: boolean;
+};
+
 // Save values temporarily so they can be used later even if the app is closed or reloaded
 let savedOrigin: Region | null = null;
 let savedDestination: {latitude: number; longitude: number} | null = null;
 let savedOriginLabel: string | null = null;
 let savedDestinationLabel: string | null = null;
 
-export const Map = forwardRef((props, ref) => {
+export const Map = forwardRef((props: Props, ref) => {
   // Using saved values to persist data even when moving away from mapview
   const [origin, setOrigin] = useState<Region | null>(savedOrigin);
   const [destination, setDestination] = useState<{latitude: number; longitude: number} | null>(
@@ -49,36 +54,52 @@ export const Map = forwardRef((props, ref) => {
   // NEWER: State to track if driving mode is active
   const [drivingMode, setDrivingMode] = useState(false);
 
-  // UPDATED MAR 3: State for EndRouteDialog
-  const [endDialogStatus, setEndDialogStatus] = useState(false);
+  const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
 
-  // UPDATED MAR 3: Toggle EndRouteDialog
-  const toggleEndRouteDialog = () => {
-    setEndDialogStatus(!endDialogStatus);
+  useEffect(() => {
+    setDriveDestinationStatus(destination ? true : false);
+    setDriveModeStatus(drivingMode ? true : false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destination, drivingMode]);
+
+  useEffect(() => {
+    if (startDriveStatus) handleStartDriving();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDriveStatus]);
+
+  useEffect(() => {
+    if (endDriveStatus) handleEndDriving();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endDriveStatus]);
+
+  const handleStartDriving = () => {
+    console.log('Start Driving clicked');
+    if (mapRef.current && deviceLocation) {
+      mapRef.current?.animateCamera(
+        {center: deviceLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
+        {duration: 1000},
+      );
+    }
+    setDrivingMode(true);
   };
 
-  // UPDATED MAR 3: Function to handle ending the route
-  const handleEndRoute = () => {
+  const handleEndDriving = () => {
+    console.log('End Route clicked');
     if (mapRef.current && deviceLocation) {
       mapRef.current.animateCamera(
         {
           center: deviceLocation,
-          pitch: 0, // Set pitch to 0 (top view)
+          pitch: 0,
           heading: 0,
           zoom: 18,
         },
         {duration: 1000},
       );
     }
+    setDestination(null);
+    setDeviceLocation(null);
     setDrivingMode(false);
-
-    // Clear saved values so that a remount starts fresh
-    savedOrigin = null;
     savedDestination = null;
-    savedOriginLabel = null;
-    savedDestinationLabel = null;
-
-    toggleEndRouteDialog();
   };
 
   // NEWER: useEffect to force focus on input when searchModalVisible becomes true using requestAnimationFrame
@@ -115,7 +136,7 @@ export const Map = forwardRef((props, ref) => {
   const handleUserLocationChange = (event: any) => {
     const {coordinate} = event.nativeEvent;
     if (mapRef.current && coordinate) {
-      console.log('User location changed:', coordinate); // NEWER: Log user location change
+      // console.log('User location changed:', coordinate); // NEWER: Log user location change
       // UPDATED 28 FEB: Only animate if not in driving mode to preserve pitch
       if (!drivingMode) {
         mapRef.current.animateToRegion(
@@ -258,6 +279,10 @@ export const Map = forwardRef((props, ref) => {
       setEditingField(field);
       setSearchModalVisible(true);
     },
+    clearSearch: () => {
+      setCoordinateInput('');
+      setDestination(null);
+    },
   }));
 
   // Open search modal
@@ -373,33 +398,6 @@ export const Map = forwardRef((props, ref) => {
           <Marker coordinate={destination} title="Destination" description={destinationLabel} />
         )}
       </MapView>
-
-      {/* Search Button */}
-      {!drivingMode && (
-        <View style={styles.searchContainer}>
-          {/* {destination && (
-          <Button
-            title={originLabel || 'Your location'}
-            buttonStyle={styles.searchButton}
-            titleStyle={styles.buttonText}
-            onPress={() => openSearch('origin')}
-          />
-        )} */}
-          {/* <Button
-            title={destinationLabel || 'Search here to drive'}
-            icon={{
-              name: 'map-marker',
-              type: 'font-awesome',
-              color: 'black',
-              size: 20,
-              containerStyle: {marginHorizontal: 10},
-            }}
-            buttonStyle={styles.searchButton}
-            titleStyle={styles.buttonText}
-            onPress={() => openSearch('destination')}
-          /> */}
-        </View>
-      )}
 
       {/* Search Modal */}
       <Modal
@@ -521,46 +519,6 @@ export const Map = forwardRef((props, ref) => {
           </ListItem> */}
         </View>
       </Modal>
-
-      {/* Start button appears only after destination is entered or deviceLocation is available */}
-      <View style={styles.startButtonContainer}>
-        {drivingMode ? (
-          <Button
-            title="End Route"
-            onPress={() => {
-              console.log('End Route clicked');
-              toggleEndRouteDialog(); // UPDATED MAR 3: Open the confirmation dialog
-            }}
-            buttonStyle={styles.startButton}
-            titleStyle={styles.startButtonText}
-          />
-        ) : (
-          (destination || deviceLocation) && (
-            <Button
-              title="Start Driving"
-              onPress={() => {
-                console.log('Start Driving clicked');
-                setDrivingMode(true);
-                if (mapRef.current && deviceLocation) {
-                  mapRef.current?.animateCamera(
-                    {center: deviceLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
-                    {duration: 1000},
-                  );
-                }
-              }}
-              buttonStyle={styles.startButton}
-              titleStyle={styles.startButtonText}
-            />
-          )
-        )}
-      </View>
-
-      {/* UPDATED MAR 3: Render EndRouteDialog */}
-      <EndRouteDialog
-        dialogStatus={endDialogStatus}
-        toggleDialog={toggleEndRouteDialog}
-        onConfirmEndRoute={handleEndRoute} // Callback when user confirms ending the route
-      />
     </View>
   );
 });

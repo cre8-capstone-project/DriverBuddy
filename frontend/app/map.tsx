@@ -20,6 +20,7 @@ type Region = {
   longitudeDelta: number;
 };
 
+// Props for managing driving state and status
 type Props = {
   setDriveDestinationStatus: (destination: boolean) => void;
   setDriveModeStatus: (mode: boolean) => void;
@@ -48,34 +49,38 @@ export const Map = forwardRef((props: Props, ref) => {
   const [editingField, setEditingField] = useState<'origin' | 'destination' | null>(null);
   // State to hold autocomplete suggestions (for both origin and destination)
   const [suggestions, setSuggestions] = useState<{description: string; place_id: string}[]>([]);
+  // Ref for the MapView instance to control camera
   const mapRef = useRef<MapView>(null);
-  // NEWER: Ref for the Input so we can force focus when modal opens
+  // Ref for the Input so we can force focus when modal opens
   const inputRef = useRef<any>(null);
-  // NEWER: State to track if driving mode is active
+  // State to track if driving mode is active
   const [drivingMode, setDrivingMode] = useState(false);
-
+  // UPDATED 04 MAR: Flag to ensure initial zoom only happens once after the map loads
+  const [initialZoom, setInitialZoom] = useState(false);
+  // Extracting properties from props related to drive status
   const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
 
+  // Updates drive status when destination or driving mode changes
   useEffect(() => {
     setDriveDestinationStatus(destination ? true : false);
     setDriveModeStatus(drivingMode ? true : false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [destination, drivingMode]);
 
+  // Starts the driving process when status is true
   useEffect(() => {
     if (startDriveStatus) handleStartDriving();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDriveStatus]);
 
+  // Ends the driving process if status is true
   useEffect(() => {
     if (endDriveStatus) handleEndDriving();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endDriveStatus]);
 
+  // Starts driving mode
   const handleStartDriving = () => {
     console.log('Start Driving clicked');
     if (mapRef.current && deviceLocation) {
-      mapRef.current?.animateCamera(
+      mapRef.current.animateCamera(
         {center: deviceLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
         {duration: 1000},
       );
@@ -83,6 +88,7 @@ export const Map = forwardRef((props: Props, ref) => {
     setDrivingMode(true);
   };
 
+  // Ends driving mode
   const handleEndDriving = () => {
     console.log('End Route clicked');
     if (mapRef.current && deviceLocation) {
@@ -100,9 +106,11 @@ export const Map = forwardRef((props: Props, ref) => {
     setDeviceLocation(null);
     setDrivingMode(false);
     savedDestination = null;
+    setOrigin(null); // UPDATED 04 MAR: Clear origin state
+    savedOrigin = null; // UPDATED 04 MAR: Clear persisted origin
   };
 
-  // NEWER: useEffect to force focus on input when searchModalVisible becomes true using requestAnimationFrame
+  // useEffect to force focus on input when searchModalVisible becomes true using requestAnimationFrame
   useEffect(() => {
     if (searchModalVisible && inputRef.current) {
       requestAnimationFrame(() => {
@@ -111,50 +119,46 @@ export const Map = forwardRef((props: Props, ref) => {
     }
   }, [searchModalVisible]);
 
-  // NEWER: Handle map ready - explicitly zoom to user's current location when available
+  // Handle map ready, do nothing to the origin state
   const handleMapReady = () => {
-    console.log('MapView is ready'); // NEWER: Log when Map View is ready
-    if (mapRef.current && deviceLocation) {
-      setTimeout(() => {
-        if (mapRef.current) {
-          mapRef.current.animateToRegion(
-            {
-              latitude: deviceLocation.latitude,
-              longitude: deviceLocation.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            },
-            1000,
-          );
-        }
-      }, 3000); // UPDATED 28 FEB: Delay zoom-in after map is fully loaded
-      setOrigin(deviceLocation);
-    }
+    console.log('MapView is ready'); // Log when Map View is ready
+    setOrigin(prev => prev);
   };
 
-  // NEWER: onUserLocationChange - animate to user's current location when it changes
+  // onUserLocationChange - animate to user's current location when it changes
   const handleUserLocationChange = (event: any) => {
     const {coordinate} = event.nativeEvent;
-    if (mapRef.current && coordinate) {
-      // console.log('User location changed:', coordinate); // NEWER: Log user location change
-      // UPDATED 28 FEB: Only animate if not in driving mode to preserve pitch
-      if (!drivingMode) {
-        mapRef.current.animateToRegion(
+    if (coordinate) {
+      // UPDATED 04 MAR: If driving mode is active, update and log the location.
+      if (drivingMode) {
+        console.log('User location changed'); // Log user location change
+        setOrigin({
+          latitude: coordinate.latitude,
+          longitude: coordinate.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
+      }
+      // UPDATED 04 MAR: If not in driving mode and initial zoom hasn't been done, perform initial zoom.
+      else if (!initialZoom) {
+        console.log('Zoom to user current location'); // Log the first user location change
+        setOrigin({
+          latitude: coordinate.latitude,
+          longitude: coordinate.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
+        mapRef.current?.animateToRegion(
           {
             latitude: coordinate.latitude,
             longitude: coordinate.longitude,
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
           },
-          1000,
+          1500,
         );
+        setInitialZoom(true);
       }
-      setOrigin({
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
     }
   };
 
@@ -206,8 +210,8 @@ export const Map = forwardRef((props: Props, ref) => {
     }
   }, [coordinateInput, editingField]);
 
+  // Only request location if origin is not already set (to persist state between navigations)
   useEffect(() => {
-    // Only request location if origin is not already set (to persist state between navigations)
     if (!origin) {
       (async () => {
         let {status} = await Location.requestForegroundPermissionsAsync();
@@ -218,7 +222,6 @@ export const Map = forwardRef((props: Props, ref) => {
           );
           return;
         }
-
         let currentLocation = await Location.getCurrentPositionAsync({});
         const newRegion = {
           latitude: currentLocation.coords.latitude,
@@ -226,17 +229,14 @@ export const Map = forwardRef((props: Props, ref) => {
           latitudeDelta: 2,
           longitudeDelta: 2,
         };
-
         setDeviceLocation(newRegion);
         setOrigin(newRegion);
         savedOrigin = newRegion;
-        // Animate to the user's current location
-        // mapRef.current?.animateToRegion(newRegion, 1000);
       })();
     }
   }, []);
 
-  // NEWER: Effect to update the map in driving mode with realtime location updates
+  // Effect to update the map in driving mode with realtime location updates
   useEffect(() => {
     let subscription: any;
     if (drivingMode) {
@@ -250,14 +250,13 @@ export const Map = forwardRef((props: Props, ref) => {
           location => {
             const {latitude, longitude, heading} = location.coords;
             if (mapRef.current) {
-              // UPDATED 28 FEB: Added altitude property to support pitch animation
               mapRef.current.animateCamera(
                 {
                   center: {latitude, longitude},
                   pitch: 45, // Slightly angled view
                   heading: heading || 0,
                   zoom: 18, // Adjust zoom level as needed
-                  altitude: 150, // UPDATED 28 FEB: Added altitude to support pitch animation
+                  altitude: 150, // Added altitude to support pitch animation
                 },
                 {duration: 1000},
               );
@@ -313,7 +312,6 @@ export const Map = forwardRef((props: Props, ref) => {
       const newOrigin = {latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01};
       setOrigin(newOrigin);
       savedOrigin = newOrigin;
-
       // If user selects "Your location", update label
       if (isDevice) {
         setOriginLabel('Your location');
@@ -324,13 +322,11 @@ export const Map = forwardRef((props: Props, ref) => {
         savedOriginLabel = label;
       }
     }
-
     if (field === 'destination') {
       // Set new destination coordinates
       const newDestination = {latitude, longitude};
       setDestination(newDestination);
       savedDestination = newDestination;
-
       // If user selects "Your location", update label
       if (isDevice) {
         setDestinationLabel('Your location');
@@ -344,22 +340,38 @@ export const Map = forwardRef((props: Props, ref) => {
         savedDestinationLabel = label;
       }
     }
-
     // Close search modal
     closeSearch();
 
-    // Adjust the map to fit both origin and destination on the screen
+    // UPDATED 04 MAR: Calculate region based on origin and destination
+    // then animate to display entire route on map
     if (field === 'origin' && destination) {
-      mapRef.current?.fitToCoordinates([{latitude, longitude}, destination], {
-        edgePadding: {top: 120, right: 20, bottom: 80, left: 20},
-        animated: true,
-      });
+      const midLat = (latitude + destination.latitude) / 2;
+      const midLng = (longitude + destination.longitude) / 2;
+      const latDiff = Math.abs(latitude - destination.latitude);
+      const lngDiff = Math.abs(longitude - destination.longitude);
+      const region = {
+        latitude: midLat,
+        longitude: midLng,
+        latitudeDelta: latDiff * 1.5 || 0.05,
+        longitudeDelta: lngDiff * 1.5 || 0.05,
+      };
+      console.log('Showing recommended route');
+      mapRef.current?.animateToRegion(region, 1000);
     }
     if (field === 'destination' && origin) {
-      mapRef.current?.fitToCoordinates([origin, {latitude, longitude}], {
-        edgePadding: {top: 120, right: 20, bottom: 80, left: 20},
-        animated: true,
-      });
+      const midLat = (origin.latitude + latitude) / 2;
+      const midLng = (origin.longitude + longitude) / 2;
+      const latDiff = Math.abs(origin.latitude - latitude);
+      const lngDiff = Math.abs(origin.longitude - longitude);
+      const region = {
+        latitude: midLat,
+        longitude: midLng,
+        latitudeDelta: latDiff * 1.5 || 0.05,
+        longitudeDelta: lngDiff * 1.5 || 0.05,
+      };
+      console.log('Showing recommended route');
+      mapRef.current?.animateToRegion(region, 1000);
     }
   };
 
@@ -379,10 +391,10 @@ export const Map = forwardRef((props: Props, ref) => {
         }
         showsUserLocation
         showsMyLocationButton
-        pitchEnabled={true} // NEWER: Enable pitch
-        rotateEnabled={true} // NEWER: Enable rotation
-        onMapReady={handleMapReady} // NEWER: Set onMapReady
-        onUserLocationChange={handleUserLocationChange} // NEWER: Set onUserLocationChange
+        pitchEnabled={true} // Enable pitch
+        rotateEnabled={true} // Enable rotation
+        onMapReady={handleMapReady} // Set onMapReady
+        onUserLocationChange={handleUserLocationChange} // Set onUserLocationChange
       >
         {destination && origin && (
           <MapViewDirections
@@ -523,8 +535,10 @@ export const Map = forwardRef((props: Props, ref) => {
   );
 });
 
+// Set display name for Map component to avoid errors during debugging
 Map.displayName = 'Map';
 
+// Map styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -574,7 +588,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     marginTop: 20,
   },
-  // NEW: Styles for the Start button container and button in driving mode
   startButtonContainer: {
     position: 'absolute',
     bottom: 80,
@@ -593,10 +606,3 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
-
-export const clearSavedMapValues = () => {
-  savedOrigin = null;
-  savedDestination = null;
-  savedOriginLabel = null;
-  savedDestinationLabel = null;
-};

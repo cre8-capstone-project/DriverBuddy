@@ -79,11 +79,14 @@ export const Map = forwardRef((props: Props, ref) => {
   // Starts driving mode
   const handleStartDriving = () => {
     console.log('Start Driving clicked');
-    if (mapRef.current && deviceLocation) {
-      mapRef.current.animateCamera(
-        {center: deviceLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
-        {duration: 1000},
-      );
+    if (mapRef.current) {
+      const currentLocation = deviceLocation || origin; // UPDATED 04 MAR: If deviceLocation is not ready, fallback to origin
+      if (currentLocation) {
+        mapRef.current.animateCamera(
+          {center: currentLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
+          {duration: 1000},
+        );
+      }
     }
     setDrivingMode(true);
   };

@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: 10,
     backgroundColor: 'white',
   },
   inputContainer: {

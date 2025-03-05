@@ -59,6 +59,8 @@ export const Map = forwardRef((props: Props, ref) => {
   const [initialZoom, setInitialZoom] = useState(false);
   // Extracting properties from props related to drive status
   const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
+  // UPDATED 04 MAR: Static polyline to prevent the it from blinking when handleUserLocationChange executes
+  const [routeOrigin, setRouteOrigin] = useState<Region | null>(null);
 
   // Updates drive status when destination or driving mode changes
   useEffect(() => {
@@ -151,6 +153,15 @@ export const Map = forwardRef((props: Props, ref) => {
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         });
+        // UPDATED 04 MAR: Set static route origin once to prevent blinking of polyline when handleUserLocationChange executes
+        if (!routeOrigin) {
+          setRouteOrigin({
+            latitude: coordinate.latitude,
+            longitude: coordinate.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        }
         mapRef.current?.animateToRegion(
           {
             latitude: coordinate.latitude,
@@ -346,6 +357,11 @@ export const Map = forwardRef((props: Props, ref) => {
     // Close search modal
     closeSearch();
 
+    // UPDATED 04 MAR: When a destination is selected, if no static route origin has been set yet, store the current origin
+    if (!routeOrigin && origin) {
+      setRouteOrigin(origin);
+    }
+
     // UPDATED 04 MAR: Calculate region based on origin and destination
     // then animate to display entire route on map
     if (field === 'origin' && destination) {
@@ -401,7 +417,7 @@ export const Map = forwardRef((props: Props, ref) => {
       >
         {destination && origin && (
           <MapViewDirections
-            origin={origin}
+            origin={routeOrigin || origin} // UPDATED 04 MAR: Use static route origin if available
             destination={destination}
             apikey={GOOGLE_MAPS_APIKEY}
             strokeWidth={4}

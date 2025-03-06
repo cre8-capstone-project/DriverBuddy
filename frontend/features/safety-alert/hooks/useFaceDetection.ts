@@ -11,8 +11,10 @@ import {useLookAwayDetection} from '@/features/safety-alert/hooks/useLookAwayDet
 import {FDSessionService} from '@/services/FDSessionService';
 import {logFaceDetectionSessionData} from '@/api/api';
 import uuid from 'react-native-uuid';
+import {useAuth} from '@/contexts/AuthProvider';
 
 export const useFaceDetection = () => {
+  const {user} = useAuth();
   const {width, height} = useWindowDimensions();
   const {speak, isSpeaking} = useSpeech();
   const {generateMessage} = useOpenAI();
@@ -40,14 +42,14 @@ export const useFaceDetection = () => {
     const sessionId = sessionIdRef.current;
     FDSessionService.startFDSession({
       faceDetectionSessionId: sessionId,
-      userId: '1',
+      userId: user?.uid ?? '',
       startTime: new Date().toISOString(),
     });
 
     return () => {
       FDSessionService.endFDSession({
         faceDetectionSessionId: sessionId,
-        userId: `1`, // ToDo: Get user ID from auth context
+        userId: user?.uid ?? '',
         endTime: new Date().toISOString(),
       });
 
@@ -67,7 +69,7 @@ export const useFaceDetection = () => {
           console.error('An error occurred while registering the session:', error);
         });
     };
-  }, []);
+  }, [user?.uid]);
 
   const handleFacesDetection = (faces: Face[], frame: Frame) => {
     try {
@@ -101,7 +103,7 @@ export const useFaceDetection = () => {
       await AlertService.logAlert({
         alertId: uuid.v4(),
         faceDetectionSessionId: sessionIdRef.current,
-        userId: '1',
+        userId: user?.uid ?? '',
         timestamp: new Date().toISOString(),
       });
 

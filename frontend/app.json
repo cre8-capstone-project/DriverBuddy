@@ -27,7 +27,12 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "package": "com.cre8.DriveBuddy",
       "googleServicesFile": "./google-services.json",
       "config": {
@@ -45,6 +50,7 @@
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
       "expo-router",
+
       [
         "expo-splash-screen",
         {
@@ -69,7 +75,8 @@
             "useFrameworks": "static"
           },
           "android": {
-            "minSdkVersion": 26
+            "minSdkVersion": 26,
+            "kotlinVersion": "1.9.25"
           }
         }
       ],

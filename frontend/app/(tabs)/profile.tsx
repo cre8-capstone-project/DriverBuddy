@@ -16,9 +16,8 @@ import {
   Alert,
 } from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
-import {getDriverByID} from '@/api/api';
+import {getDriverByID, updateDriver, uploadImage} from '@/api/api';
 import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
-import {updateDriver} from '@/api/api';
 import {Button} from '@rneui/base';
 import * as ImagePicker from 'expo-image-picker';
 import {useAuth} from '@/contexts/AuthProvider';
@@ -113,7 +112,6 @@ export default function ProfileScreen() {
 
       let pictureUrl = driver.picture_url;
       if (profileImage && profileImage !== driver.picture_url) {
-        //TODO: pictureUrl = await uploadImageToStorage(profileImage);
         pictureUrl = profileImage;
       }
 
@@ -129,6 +127,7 @@ export default function ProfileScreen() {
       };
 
       const updatedDriver = await updateDriver(driver.id, driverObj);
+      await uploadImage(pictureUrl, driver.id);
       setDriver(updatedDriver);
       if (updatedDriver?.picture_url) {
         setProfileImage(updatedDriver.picture_url);

@@ -45,6 +45,7 @@ export default function SignUpScreen() {
         vehicle_type: '',
         birthday: Timestamp.fromDate(new Date()),
         picture_url: photoUri,
+        company_id: invitation?.company_id,
       };
       await createDriver(newDriverObj);
       if (invitation) {
@@ -57,6 +58,7 @@ export default function SignUpScreen() {
   };
   const validateCode = async () => {
     try {
+      console.log('here');
       const response = await getInvitationCode(code);
       if (response) {
         if (response.status !== 'pending') return;
@@ -106,8 +108,8 @@ export default function SignUpScreen() {
     <View style={styles.container}>
       {validCode ? (
         <>
-          <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 20}}>{name}</Text>
           <View style={styles.profileImageContainer}>
+            <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 20}}>{name}</Text>
             <Pressable
               onPress={pickImage}
               style={[styles.profileImageWrapper, styles.profileImageWrapperEdit]}>
@@ -127,7 +129,7 @@ export default function SignUpScreen() {
           </View>
           <View style={styles.buttonsContainer}>
             <Button title="Skip this for now" onPress={handleAuth} />
-            <Button title="Take a photo with the camera" onPress={openCamera} />
+            {/*<Button title="Take a photo with the camera" onPress={openCamera} />*/}
             <Button title="Upload photo from phone" onPress={pickImage} />
             {photoUri !== '' ? <Button title="Complete" onPress={handleAuth} /> : ''}
           </View>
@@ -214,6 +216,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 20,
+    gap: 50,
   },
   logoContainer: {
     width: width / 3, // 1/3 of the screen width

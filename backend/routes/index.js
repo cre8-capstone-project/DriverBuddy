@@ -1,5 +1,8 @@
 /* eslint-disable import/extensions */
 import admin from 'firebase-admin';
+import {getStorage} from 'firebase/storage';
+
+// eslint-disable-next-line import/no-extraneous-dependencies
 import express from 'express';
 import fs from 'fs';
 import driverRoutes from './driverRoutes.js';
@@ -13,7 +16,6 @@ const serviceAccount = JSON.parse(fs.readFileSync('./config/serviceAccountKey.js
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-
 const db = admin.firestore();
 const driverCollection = db.collection('driver');
 const historyCollection = db.collection('history');

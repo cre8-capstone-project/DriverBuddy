@@ -14,10 +14,6 @@ export const faceDetectionSession = sqliteTable('FaceDetectionSession', {
   sessionDuration: integer('sessionDuration').generatedAlwaysAs(
     sql`strftime('%s', endTime) - strftime('%s', startTime)`,
   ),
-  // sessionStartMonth: text('sessionStartMonth').generatedAlwaysAs(sql`substr(startTime, 1, 7)`),
-  // sessionStartDate: text('sessionStartDate').generatedAlwaysAs(sql`substr(startTime, 1, 10)`),
-  // sessionEndMonth: text('sessionEndMonth').generatedAlwaysAs(sql`substr(endTime, 1, 7)`),
-  // sessionEndDate: text('sessionEndDate').generatedAlwaysAs(sql`substr(endTime, 1, 10)`),
 });
 
 export const alert = sqliteTable('Alert', {
@@ -25,8 +21,6 @@ export const alert = sqliteTable('Alert', {
   userId: text('userId').notNull(),
   faceDetectionSessionId: text('faceDetectionSessionId').notNull(),
   timestamp: text('timestamp').notNull(),
-  // alertMonth: text('alertMonth').generatedAlwaysAs(sql`substr(timestamp, 1, 7)`),
-  // alertDate: text('alertDate').generatedAlwaysAs(sql`substr(timestamp, 1, 10)`),
 });
 
 export const stops = sqliteTable('Stops', {

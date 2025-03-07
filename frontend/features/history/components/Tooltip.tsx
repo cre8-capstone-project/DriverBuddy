@@ -67,8 +67,8 @@ export const Tooltip = ({
 
   return (
     <View>
-      <RoundedRect x={xPositionForBg} y={0} width={90} height={30} r={0} color="#1E3ABA" />
-      <SkiaLine p1={lineStart} p2={lineEnd} strokeWidth={2} style="stroke" color="#1E3ABA" />
+      <RoundedRect x={xPositionForBg} y={0} width={90} height={30} r={0} color="#1E3A8A" />
+      <SkiaLine p1={lineStart} p2={lineEnd} strokeWidth={2} style="stroke" color="#1E3A8A" />
       <SkiaText x={xPosition} y={12} text={xValue} font={font} color="white" />
       <SkiaText x={xPosition} y={24} text={yValue} font={font} color="white" />
     </View>

@@ -15,7 +15,7 @@ type Props = {
 };
 
 const Chart = ({data, displayMode}: Props) => {
-  const font = useFont(interFont, 14);
+  const font = useFont(interFont, 12);
   const {state, isActive} = useChartPressState({x: 0, y: {alertPerHour: 0}});
 
   if (data.length === 0) {

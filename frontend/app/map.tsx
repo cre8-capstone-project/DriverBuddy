@@ -60,7 +60,7 @@ export const Map = forwardRef((props: Props, ref) => {
   // Extracting properties from props related to drive status
   const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
   // UPDATED 04 MAR: Static polyline to prevent the it from blinking when handleUserLocationChange executes
-  const [routeOrigin, setRouteOrigin] = useState<Region | null>(null);
+  // const [routeOrigin, setRouteOrigin] = useState<Region | null>(null); // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
 
   // Updates drive status when destination or driving mode changes
   useEffect(() => {
@@ -85,7 +85,7 @@ export const Map = forwardRef((props: Props, ref) => {
       const currentLocation = deviceLocation || origin; // UPDATED 04 MAR: If deviceLocation is not ready, fallback to origin
       if (currentLocation) {
         mapRef.current.animateCamera(
-          {center: currentLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
+          {center: currentLocation, pitch: 55, heading: 0, zoom: 18, altitude: 150},
           {duration: 1000},
         );
       }
@@ -154,14 +154,14 @@ export const Map = forwardRef((props: Props, ref) => {
           longitudeDelta: 0.01,
         });
         // UPDATED 04 MAR: Set static route origin once to prevent blinking of polyline when handleUserLocationChange executes
-        if (!routeOrigin) {
-          setRouteOrigin({
-            latitude: coordinate.latitude,
-            longitude: coordinate.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          });
-        }
+        // if (!routeOrigin) { // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
+        //   setRouteOrigin({
+        //     latitude: coordinate.latitude,
+        //     longitude: coordinate.longitude,
+        //     latitudeDelta: 0.01,
+        //     longitudeDelta: 0.01,
+        //   });
+        // }
         mapRef.current?.animateToRegion(
           {
             latitude: coordinate.latitude,
@@ -267,7 +267,7 @@ export const Map = forwardRef((props: Props, ref) => {
               mapRef.current.animateCamera(
                 {
                   center: {latitude, longitude},
-                  pitch: 45, // Slightly angled view
+                  pitch: 55, // Slightly angled view
                   heading: heading || 0,
                   zoom: 18, // Adjust zoom level as needed
                   altitude: 150, // Added altitude to support pitch animation
@@ -358,9 +358,9 @@ export const Map = forwardRef((props: Props, ref) => {
     closeSearch();
 
     // UPDATED 04 MAR: When a destination is selected, if no static route origin has been set yet, store the current origin
-    if (!routeOrigin && origin) {
-      setRouteOrigin(origin);
-    }
+    // if (!routeOrigin && origin) { // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
+    //   setRouteOrigin(origin);
+    // }
 
     // UPDATED 04 MAR: Calculate region based on origin and destination
     // then animate to display entire route on map
@@ -417,11 +417,16 @@ export const Map = forwardRef((props: Props, ref) => {
       >
         {destination && origin && (
           <MapViewDirections
-            origin={routeOrigin || origin} // UPDATED 04 MAR: Use static route origin if available
+            // origin={routeOrigin || origin} // UPDATED 04 MAR: Use static route origin if available
+            origin={origin} // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
             destination={destination}
             apikey={GOOGLE_MAPS_APIKEY}
             strokeWidth={4}
             strokeColor="blue"
+            // UPDATED 07 MAR: Added props
+            mode="DRIVING" // Allowed values are DRIVING, BICYCLING, WALKING, and TRANSIT
+            resetOnChange={false} // Prevents polyline from blinking when updating
+            splitWaypoints={true} // Split waypoints to multiple routes to prevent higher Google costs
           />
         )}
         {destination && (

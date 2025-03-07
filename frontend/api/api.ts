@@ -5,7 +5,7 @@ import type {FDSessionHistoryType} from '../types/FDSessionType';
 import type {InvitationCodeType} from '../types/InvitationCodeType';
 
 //const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
-const API_URL = 'http://10.0.0.23:3000'; // replace with your own IP
+const API_URL = 'http://206.12.55.62:3000'; // replace with your own IP
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,
@@ -81,7 +81,9 @@ const getDriverByID = async (id: string) => {
  */
 const getAllDrivers = async (): Promise<Driver[]> => {
   try {
-    const response = await axiosClient.get<Driver[]>('/drivers');
+    const response = await axiosClient.get<Driver[]>('/drivers', {
+      timeout: 5000,
+    });
     return response.data;
   } catch (error) {
     console.error(error);

@@ -179,9 +179,7 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.profileImageContainer}>
-                <Pressable
-                  onPress={editMode ? pickImage : undefined}
-                  style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
+                <Pressable style={styles.profileImageWrapper}>
                   <Image
                     style={styles.profileImage}
                     source={
@@ -190,13 +188,7 @@ export default function ProfileScreen() {
                         : (profilePicturePlaceholder as ImageSourcePropType)
                     }
                   />
-                  {editMode && (
-                    <View style={styles.cameraIconOverlay}>
-                      <MaterialIcons name="photo-camera" size={24} color="white" />
-                    </View>
-                  )}
                 </Pressable>
-                {editMode && <Text style={styles.tapToEditText}>Tap to change photo</Text>}
               </View>
 
               {editMode ? (

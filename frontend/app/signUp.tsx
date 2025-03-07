@@ -1,4 +1,4 @@
-import {useState, useRef} from 'react';
+import {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 
 export default function SignUpScreen() {
   const router = useRouter();
-  const [name, setName] = useState<string | null | undefined>('User');
+  const [name, setName] = useState<string | null | undefined>('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -62,12 +62,18 @@ export default function SignUpScreen() {
         if (response.status !== 'pending') return;
         setName(response.recipient_name);
         setInvitation(response);
-        setValidCode(true);
+        //setValidCode(true);
+        //handleAuth();
       }
     } catch (e) {
       console.error(e);
     }
   };
+  useEffect(() => {
+    if (invitation && invitation.status === 'pending') {
+      handleAuth();
+    }
+  }, [name]);
   const openCamera = async () => {
     try {
       const hasPermission = await Camera.requestCameraPermission();

@@ -26,8 +26,9 @@ import auth from '@react-native-firebase/auth';
 import {useRouter} from 'expo-router';
 
 export default function ProfileScreen() {
-  const {loading, user} = useAuth();
+  const {user} = useAuth();
   const router = useRouter();
+  const [loading, setloading] = useState(true);
   const [driver, setDriver] = useState<any>(undefined);
   const [driverName, setDriverName] = useState<string>('');
   const [driverUserType, setDriverUserType] = useState<string>('');
@@ -44,6 +45,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setloading(true);
         //const currentUserID: string = 'EupIJaWMSnitQnIIcWi7'; //get current user ID
         console.log(user?.uid);
         const currentUserID: string = user ? user.uid : ''; //get current user ID
@@ -53,6 +55,7 @@ export default function ProfileScreen() {
           setProfileImage(driverInfo.picture_url);
         }
         resetEditFields();
+        setloading(false);
       } catch (e) {
         console.error(e);
       }
@@ -160,7 +163,9 @@ export default function ProfileScreen() {
   return (
     <>
       {loading ? (
-        <ActivityIndicator size={'large'} />
+        <View style={styles.container}>
+          <ActivityIndicator size={'large'} />
+        </View>
       ) : driver ? (
         <KeyboardAvoidingView
           style={{flex: 1}}
@@ -292,12 +297,16 @@ export default function ProfileScreen() {
                 </View>
               )}
             </View>
-            <Button onPress={handleSignOut}>Sign out</Button>
+            <View style={styles.container}>
+              <Button onPress={handleSignOut}>Sign out</Button>
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       ) : (
         <View style={styles.container}>
-          <Text style={styles.nameText}>No user information found</Text>
+          <View style={styles.infoTextContainer}>
+            <Text style={styles.infoText}>No user information found</Text>
+          </View>
           <Button onPress={handleSignOut}>Sign out</Button>
         </View>
       )}
@@ -308,7 +317,19 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    padding: 20,
+    alignContent: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+  },
+  infoTextContainer: {
+    paddingVertical: 20,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoText: {
+    fontSize: 20,
   },
   header: {
     flexDirection: 'row',

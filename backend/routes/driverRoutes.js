@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import express from 'express';
 
-const driverRoutes = (driverCollection, storage) => {
+const driverRoutes = driverCollection => {
   const router = express.Router();
 
   router.post('/', async (req, res) => {

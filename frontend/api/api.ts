@@ -355,17 +355,11 @@ const updateInvitationStatus = async (
 
 export {
   Driver,
-  // History,
   getDriverByID,
   getAllDrivers,
   createDriver,
   updateDriver,
   deleteDriver,
-  // getHistoryByID,
-  // createHistoryByDriverID,
-  // updateHistoryByID,
-  // deleteHistoryByID,
-  // getAllHistoryFromDriver,
   logFaceDetectionSessionData,
   getFaceDetectionHistoryDataByDay,
   getFaceDetectionHistoryDataByWeek,

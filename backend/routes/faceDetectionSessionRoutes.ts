@@ -530,28 +530,17 @@ const faceDetectionSessionRoutes = (
         sessionEnd.setMilliseconds(0);
 
         const currentTime = new Date(sessionStart);
-        let remainingDuration = session.sessionDuration / 3600;
+        const EndTime = Math.min(endOfDay.getTime(), sessionEnd.getTime());
+        const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
 
-        // Allocate session duration to each hour
-        while (remainingDuration > 0) {
-          const nextHour = new Date(currentTime);
-          nextHour.setHours(currentTime.getHours() + 1, 0, 0, 0);
-
-          const EndTime = Math.min(nextHour.getTime(), sessionEnd.getTime());
-          const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
-
-          if (!result[session.userId]) {
-            result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
-          }
-
-          result[session.userId].totalSessionHours += Duration;
-
-          remainingDuration -= Duration;
-          currentTime.setTime(EndTime);
+        if (!result[session.userId]) {
+          result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
         }
+        result[session.userId].totalSessionHours += Duration;
 
-        // Allocate alerts to each hour
         session.alerts?.forEach(alert => {
+          const alertTime = alert.toDate();
+          if (alertTime > endOfDay) return;
           if (!result[session.userId]) {
             result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
           }
@@ -619,29 +608,17 @@ const faceDetectionSessionRoutes = (
         sessionEnd.setMilliseconds(0);
 
         const currentTime = new Date(sessionStart);
-        let remainingDuration = session.sessionDuration / 3600;
+        const EndTime = Math.min(endOfWeek.getTime(), sessionEnd.getTime());
+        const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
 
-        // Allocate session duration to each day
-        while (remainingDuration > 0) {
-          const nextDay = new Date(currentTime);
-          nextDay.setDate(nextDay.getDate() + 1);
-          nextDay.setHours(0, 0, 0, 0);
-
-          const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
-          const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
-
-          if (!result[session.userId]) {
-            result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
-          }
-
-          result[session.userId].totalSessionHours += Duration;
-
-          remainingDuration -= Duration;
-          currentTime.setTime(EndTime);
+        if (!result[session.userId]) {
+          result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
         }
+        result[session.userId].totalSessionHours += Duration;
 
-        // Allocate alerts to each day
         session.alerts?.forEach(alert => {
+          const alertTime = alert.toDate();
+          if (alertTime > endOfWeek) return;
           if (!result[session.userId]) {
             result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
           }
@@ -712,29 +689,17 @@ const faceDetectionSessionRoutes = (
         sessionEnd.setMilliseconds(0);
 
         const currentTime = new Date(sessionStart);
-        let remainingDuration = session.sessionDuration / 3600;
+        const EndTime = Math.min(endOfMonth.getTime(), sessionEnd.getTime());
+        const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
 
-        // Allocate session duration to each day
-        while (remainingDuration > 0) {
-          const nextDay = new Date(currentTime);
-          nextDay.setDate(nextDay.getDate() + 1);
-          nextDay.setHours(0, 0, 0, 0);
-
-          const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
-          const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
-
-          if (!result[session.userId]) {
-            result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
-          }
-
-          result[session.userId].totalSessionHours += Duration;
-
-          remainingDuration -= Duration;
-          currentTime.setTime(EndTime);
+        if (!result[session.userId]) {
+          result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
         }
+        result[session.userId].totalSessionHours += Duration;
 
-        // Allocate alerts to each day
         session.alerts?.forEach(alert => {
+          const alertTime = alert.toDate();
+          if (alertTime > endOfMonth) return;
           if (!result[session.userId]) {
             result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
           }
@@ -805,29 +770,18 @@ const faceDetectionSessionRoutes = (
         sessionEnd.setMilliseconds(0);
 
         const currentTime = new Date(sessionStart);
-        let remainingDuration = session.sessionDuration / 3600;
+        const EndTime = Math.min(endOfYear.getTime(), sessionEnd.getTime());
+        const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
 
-        // Allocate session duration to each day
-        while (remainingDuration > 0) {
-          const nextDay = new Date(currentTime);
-          nextDay.setDate(nextDay.getDate() + 1);
-          nextDay.setHours(0, 0, 0, 0);
-
-          const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
-          const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
-
-          if (!result[session.userId]) {
-            result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
-          }
-
-          result[session.userId].totalSessionHours += Duration;
-
-          remainingDuration -= Duration;
-          currentTime.setTime(EndTime);
+        if (!result[session.userId]) {
+          result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
         }
+        result[session.userId].totalSessionHours += Duration;
 
         // Allocate alerts to each day
         session.alerts?.forEach(alert => {
+          const alertTime = alert.toDate();
+          if (alertTime > endOfYear) return;
           if (!result[session.userId]) {
             result[session.userId] = {totalSessionHours: 0, totalNumberOfAlert: 0};
           }
@@ -856,6 +810,114 @@ const faceDetectionSessionRoutes = (
     } catch (error) {
       console.error('Error fetching yearly summary data:', error);
       res.status(500).json({error: `Failed to fetch yearly summary records: ${error}`});
+    }
+  });
+
+  // GET: /face-detection-session/weekly-average?date=YYYY-MM-DD
+  router.get('/weekly-average', async (req, res) => {
+    try {
+      const {date} = req.query;
+
+      if (!date || typeof date !== 'string') {
+        return res.status(400).json({error: 'Invalid parameter.'});
+      }
+
+      const startOfDay = new Date(`${date}T00:00:00`);
+      const startOfWeek = new Date(startOfDay);
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      const startOfWeekTimestamp = admin.firestore.Timestamp.fromDate(startOfWeek);
+      const endOfWeekTimestamp = admin.firestore.Timestamp.fromDate(endOfWeek);
+
+      const querySnapshot = await faceDetectionSessionCollection
+        .where('startTime', '>=', startOfWeekTimestamp)
+        .where('startTime', '<=', endOfWeekTimestamp)
+        .get();
+
+      let totalSessionHours = 0;
+      let totalNumberOfAlert = 0;
+      const result: {[date: string]: {totalSessionHours: number; totalNumberOfAlert: number}} = {};
+
+      querySnapshot.forEach(doc => {
+        const session = doc.data() as FaceDetectionSession;
+        const sessionStart = session.startTime.toDate();
+        const sessionEnd = new Date(sessionStart.getTime() + session.sessionDuration * 1000);
+        sessionStart.setMilliseconds(0);
+        sessionEnd.setMilliseconds(0);
+
+        const currentTime = new Date(sessionStart);
+        let remainingDuration = session.sessionDuration / 3600;
+
+        // Allocate session duration to each day
+        while (remainingDuration > 0) {
+          const nextDay = new Date(currentTime);
+          nextDay.setDate(currentTime.getDate() + 1);
+          nextDay.setHours(0, 0, 0, 0);
+
+          const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
+          const Duration = (EndTime - currentTime.getTime()) / 3600000;
+
+          const currentDateString = currentTime.toLocaleDateString('en-CA');
+          if (!result[currentDateString]) {
+            result[currentDateString] = {
+              totalSessionHours: 0,
+              totalNumberOfAlert: 0,
+            };
+          }
+
+          result[currentDateString].totalSessionHours += Duration;
+          totalSessionHours += Duration;
+
+          remainingDuration -= Duration;
+          currentTime.setTime(EndTime);
+        }
+
+        // Allocate alerts to each day
+        session.alerts?.forEach(alert => {
+          const alertTime = alert.toDate();
+          const alertDateString = alertTime.toLocaleDateString('en-CA');
+          if (!result[alertDateString]) {
+            result[alertDateString] = {totalSessionHours: 0, totalNumberOfAlert: 0};
+          }
+
+          result[alertDateString].totalNumberOfAlert += 1;
+          totalNumberOfAlert += 1;
+        });
+      });
+
+      const weekDates = Array.from({length: 7}, (_, i) => {
+        const day = new Date(startOfWeek);
+        day.setDate(startOfWeek.getDate() + i);
+        return day.toLocaleDateString('en-CA');
+      });
+
+      const processedData = weekDates.map(day => {
+        const dailyData = result[day] || {totalSessionHours: 0, totalNumberOfAlert: 0};
+        const alertPerHour =
+          dailyData.totalSessionHours > 0
+            ? dailyData.totalNumberOfAlert / dailyData.totalSessionHours
+            : 0;
+
+        return {
+          date: day,
+          totalSessionHours: parseFloat(dailyData.totalSessionHours.toFixed(2)),
+          totalNumberOfAlert: dailyData.totalNumberOfAlert,
+          alertPerHour: parseFloat(alertPerHour.toFixed(2)),
+        };
+      });
+
+      res.json({
+        totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
+        totalNumberOfAlert,
+        data: processedData,
+      });
+    } catch (error) {
+      console.error('Error fetching weekly average data:', error);
+      res.status(500).json({error: `Failed to fetch weekly average records: ${error}`});
     }
   });
 

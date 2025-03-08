@@ -18,7 +18,6 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-const storage = admin.storage();
 const driverCollection = db.collection('driver');
 // const historyCollection = db.collection('history');
 const faceDetectionSessionCollection = db.collection('face_detection_session');
@@ -35,7 +34,7 @@ app.get('/', (req, res) => {
   res.send('Welcome to DriveBuddy!');
 });
 
-app.use('/drivers', driverRoutes(driverCollection, storage));
+app.use('/drivers', driverRoutes(driverCollection));
 // app.use('/history', historyRoutes(historyCollection, driverCollection, admin));
 app.use('/face-detection-session', faceDetectionSessionRoutes(faceDetectionSessionCollection));
 app.use('/invitations', invitationsRoutes(invitationsCollection));

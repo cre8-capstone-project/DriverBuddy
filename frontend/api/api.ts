@@ -4,8 +4,7 @@ import type {FDSessionType} from '../types/FDSessionType';
 import type {FDSessionHistoryType} from '../types/FDSessionType';
 import type {InvitationCodeType} from '../types/InvitationCodeType';
 
-//const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
-const API_URL = 'http://206.12.55.62:3000'; // replace with your own IP
+const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL_PRODUCTION;
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,
@@ -26,27 +25,6 @@ interface Driver {
   birthday: Timestamp;
   picture_url: string;
 }
-interface InvitationCode {
-  id?: string;
-  user_type?: string;
-  name: string;
-  email: string;
-  phone: string;
-  vehicle_type?: string;
-  birthday: Timestamp;
-  picture_url: string;
-}
-// interface History {
-//   id?: string;
-//   numberOfAlerts: number;
-//   startingPointName: string;
-//   startingPointCoordinates: string;
-//   destinationName: string;
-//   destinationCoordinates: string;
-//   distanceInKm: number;
-//   driverID: string;
-//   durationInMinutes: number;
-// }
 
 /**
  * Retrieves a driver by their ID.

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "898155493570",
+    "project_id": "capstone-project-8b697",
+    "storage_bucket": "capstone-project-8b697.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:898155493570:android:09962d31d021e880d6e35b",
+        "android_client_info": {
+          "package_name": "com.cre8.DriveBuddy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "898155493570-3nf05tf8ai8sss4ipvvfr5ire5a3jor5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cre8.DriveBuddy",
+            "certificate_hash": "e0960dd25ac88084c8b55401eb25ee0a82cbcc37"
+          }
+        },
+        {
+          "client_id": "898155493570-0152stg7dq4vv1g824h0kp1nnv2tv8kk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4dVsJwbIm_H-fkv68DCKYtlYRo0ylg3M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "898155493570-0152stg7dq4vv1g824h0kp1nnv2tv8kk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "898155493570-6mj1m2pnicdnbk1tmlfphe3plt8j91c5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cre8.DriveBuddy"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

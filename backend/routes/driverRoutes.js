@@ -39,7 +39,8 @@ const driverRoutes = driverCollection => {
   router.put('/:id', async (req, res) => {
     try {
       const {id} = req.params;
-      const {name, email, phone, birthday, vehicle_type, user_type, company_id} = req.body;
+      const {name, email, phone, birthday, vehicle_type, user_type, company_id, picture_url} =
+        req.body;
 
       // Create a new driver object with the updated fields - only include defined values
       const updatedDriver = {};
@@ -52,6 +53,7 @@ const driverRoutes = driverCollection => {
       if (user_type !== undefined) updatedDriver.user_type = user_type;
       if (company_id !== undefined) updatedDriver.company_id = company_id;
       if (birthday !== undefined) updatedDriver.birthday = birthday;
+      if (picture_url !== undefined) updatedDriver.picture_url = picture_url;
 
       // Only proceed with the update if there are fields to update
       if (Object.keys(updatedDriver).length > 0) {

@@ -49,6 +49,7 @@ export default function ProfileScreen() {
         const driverInfo = await getDriverByID(currentUserID);
         setDriver(driverInfo);
         if (driverInfo?.picture_url) {
+          console.log(driverInfo.picture_url);
           setProfileImage(driverInfo.picture_url);
         }
         resetEditFields();
@@ -123,15 +124,17 @@ export default function ProfileScreen() {
         phone: driver.phone,
         vehicle_type: driverVehicleType,
         birthday: birthdayTimestamp,
-        picture_url: pictureUrl,
+        picture_url: '',
       };
 
-      const updatedDriver = await updateDriver(driver.id, driverObj);
-      await uploadImage(pictureUrl, driver.id);
-      setDriver(updatedDriver);
-      if (updatedDriver?.picture_url) {
-        setProfileImage(updatedDriver.picture_url);
+      const downloadURL = await uploadImage(pictureUrl, driver.id);
+      if (downloadURL) {
+        console.log(downloadURL);
+        driverObj.picture_url = downloadURL;
+        setProfileImage(downloadURL);
       }
+      const updatedDriver = await updateDriver(driver.id, driverObj);
+      setDriver(updatedDriver);
       resetEditFields();
       toggleEdit();
     } catch (e) {
@@ -159,7 +162,9 @@ export default function ProfileScreen() {
   return (
     <>
       {loading ? (
-        <ActivityIndicator size={'large'} />
+        <View style={styles.container}>
+          <ActivityIndicator size={'large'} />
+        </View>
       ) : driver ? (
         <KeyboardAvoidingView
           style={{flex: 1}}
@@ -179,8 +184,8 @@ export default function ProfileScreen() {
                   <Image
                     style={styles.profileImage}
                     source={
-                      profileImage
-                        ? {uri: profileImage as string}
+                      profileImage && profileImage.trim() !== ''
+                        ? {uri: profileImage}
                         : (profilePicturePlaceholder as ImageSourcePropType)
                     }
                   />
@@ -291,12 +296,16 @@ export default function ProfileScreen() {
                 </View>
               )}
             </View>
-            <Button onPress={handleSignOut}>Sign out</Button>
+            <View style={styles.container}>
+              <Button onPress={handleSignOut}>Sign out</Button>
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       ) : (
         <View style={styles.container}>
-          <Text style={styles.nameText}>No user information found</Text>
+          <View style={styles.infoTextContainer}>
+            <Text style={styles.infoText}>No user information found</Text>
+          </View>
           <Button onPress={handleSignOut}>Sign out</Button>
         </View>
       )}
@@ -307,7 +316,19 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    padding: 20,
+    alignContent: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+  },
+  infoTextContainer: {
+    paddingVertical: 20,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoText: {
+    fontSize: 20,
   },
   header: {
     flexDirection: 'row',

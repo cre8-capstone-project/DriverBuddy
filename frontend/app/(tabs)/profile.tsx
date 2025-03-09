@@ -35,30 +35,48 @@ export default function ProfileScreen() {
   const [driverEmail, setDriverEmail] = useState<string>('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
+  // Added loading state for image operations
+  const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+
   // Add this new state to control date picker visibility
   const [showDatePicker, setShowDatePicker] = useState(false);
-
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        //const currentUserID: string = 'EupIJaWMSnitQnIIcWi7'; //get current user ID
-        console.log(user?.uid);
-        const currentUserID: string = user ? user.uid : ''; //get current user ID
+        const currentUserID: string = user ? user.uid : '';
+        if (!currentUserID) {
+          console.log('No user ID available');
+          return;
+        }
+
+        setIsImageLoading(true);
         const driverInfo = await getDriverByID(currentUserID);
         setDriver(driverInfo);
+
         if (driverInfo?.picture_url) {
-          console.log(driverInfo.picture_url);
-          setProfileImage(driverInfo.picture_url);
+          console.log('Profile image URL from database:', driverInfo.picture_url);
+          // Add cache buster for Firebase URLs
+          const imageUrl = driverInfo.picture_url.includes('firebasestorage')
+            ? `${driverInfo.picture_url}?t=${new Date().getTime()}`
+            : driverInfo.picture_url;
+          setProfileImage(imageUrl);
+        } else {
+          console.log('No profile image URL found in driver info');
+          setProfileImage(null);
         }
         resetEditFields();
       } catch (e) {
-        console.error(e);
+        console.error('Error loading driver data:', e);
+        setImageError('Failed to load profile data');
+      } finally {
+        setIsImageLoading(false);
       }
     };
+
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -76,44 +94,83 @@ export default function ProfileScreen() {
   }, []);
 
   const resetEditFields = () => {
-    setDriverName(driver?.name || '');
-    setDriverUserType(driver?.user_type || '');
-    setDriverVehicleType(driver?.vehicle_type || '');
-    setDriverBirthday(driver?.birthday ? new Date(driver.birthday) : null);
-    setDriverEmail(driver?.email || '');
-    setProfileImage(driver?.picture_url || null);
+    if (driver) {
+      setDriverName(driver.name || '');
+      setDriverUserType(driver.user_type || '');
+      setDriverVehicleType(driver.vehicle_type || '');
+      setDriverBirthday(driver.birthday ? new Date(driver.birthday) : null);
+      setDriverEmail(driver.email || '');
+
+      // Don't reset profileImage here to avoid conflicting updates
+      // Only set it if it's not already set
+      if (!profileImage && driver.picture_url) {
+        const imageUrl = driver.picture_url.includes('firebasestorage')
+          ? `${driver.picture_url}?t=${new Date().getTime()}`
+          : driver.picture_url;
+        setProfileImage(imageUrl);
+      }
+    }
   };
 
   const toggleEdit = () => {
-    setEditMode(editMode => !editMode);
+    setEditMode(prevMode => !prevMode);
     setShowDatePicker(false);
-    resetEditFields();
+    if (!editMode) {
+      // Only reset when entering edit mode, not when exiting
+      resetEditFields();
+    }
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
 
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        console.log('New image selected:', result.assets[0].uri);
+        setImageError(null);
+        setProfileImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      setImageError('Failed to select image');
     }
   };
 
   const saveChanges = async () => {
+    if (isImageLoading) return; // Prevent multiple submissions
+
     try {
+      setIsImageLoading(true);
+      setImageError(null);
+
       if (!driverBirthday) {
         throw new Error('Birthday is required');
       }
 
       const birthdayTimestamp: Timestamp = Timestamp.fromDate(driverBirthday);
 
-      let pictureUrl = driver.picture_url;
-      if (profileImage && profileImage !== driver.picture_url) {
-        pictureUrl = profileImage;
+      // Determine if we need to upload a new image
+      let finalImageUrl = driver.picture_url || '';
+      const isLocalImage =
+        profileImage && (profileImage.startsWith('file:') || profileImage.startsWith('content:'));
+
+      if (isLocalImage) {
+        console.log('Uploading new image from local URI');
+        const downloadURL = await uploadImage(profileImage, driver.id);
+        if (downloadURL) {
+          console.log('Upload successful, new URL:', downloadURL);
+          finalImageUrl = downloadURL;
+        } else {
+          console.warn('Upload completed but no download URL returned');
+        }
+      } else if (profileImage && !isLocalImage) {
+        console.log('Using existing remote image URL');
+        finalImageUrl = profileImage.split('?')[0]; // Remove any cache buster
       }
 
       const driverObj = {
@@ -124,22 +181,34 @@ export default function ProfileScreen() {
         phone: driver.phone,
         vehicle_type: driverVehicleType,
         birthday: birthdayTimestamp,
-        picture_url: '',
+        picture_url: finalImageUrl,
       };
 
-      const downloadURL = await uploadImage(pictureUrl, driver.id);
-      if (downloadURL) {
-        console.log(downloadURL);
-        driverObj.picture_url = downloadURL;
-        setProfileImage(downloadURL);
-      }
+      console.log('Updating driver with picture URL:', finalImageUrl);
       const updatedDriver = await updateDriver(driver.id, driverObj);
+
+      // Update the driver state with the new data
       setDriver(updatedDriver);
-      resetEditFields();
-      toggleEdit();
+
+      // Update profile image with cache buster for Firebase URLs
+      if (finalImageUrl && finalImageUrl.includes('firebasestorage')) {
+        const cachedUrl = finalImageUrl.includes('?')
+          ? `${finalImageUrl}&t=${new Date().getTime()}` // URL already has query params, use &
+          : `${finalImageUrl}?t=${new Date().getTime()}`; // URL has no query params, use ?
+        console.log('Setting profile image with cache buster:', cachedUrl);
+        setProfileImage(cachedUrl);
+      } else {
+        setProfileImage(finalImageUrl);
+      }
+
+      // Exit edit mode
+      setEditMode(false);
     } catch (e) {
-      console.error(e);
+      console.error('Error saving changes:', e);
+      setImageError('Failed to save changes');
       Alert.alert('Error', 'Failed to save changes');
+    } finally {
+      setIsImageLoading(false);
     }
   };
 
@@ -159,6 +228,48 @@ export default function ProfileScreen() {
     }
   };
 
+  // Helper function to render the profile image
+  const renderProfileImage = () => {
+    // Determine if we have a valid image URL
+    const hasValidImage = profileImage && profileImage.trim() !== '';
+
+    // Log details for debugging
+    console.log('Current profile image state:', {
+      hasValidImage,
+      profileImage,
+      isLoading: isImageLoading,
+    });
+
+    return (
+      <View style={styles.profileImageWrapper}>
+        {isImageLoading && (
+          <View style={styles.loaderOverlay}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        )}
+
+        <Image
+          style={styles.profileImage}
+          source={
+            hasValidImage ? {uri: profileImage} : (profilePicturePlaceholder as ImageSourcePropType)
+          }
+          onLoad={() => console.log('Image loaded successfully:', profileImage)}
+          onError={e => {
+            console.error('Image loading error:', e.nativeEvent.error, 'URL:', profileImage);
+            setImageError('Failed to load image');
+          }}
+        />
+
+        {editMode && (
+          <View style={styles.cameraIconOverlay}>
+            <MaterialIcons name="photo-camera" size={24} color="white" />
+          </View>
+        )}
+
+        {imageError && <Text style={styles.errorText}>{imageError}</Text>}
+      </View>
+    );
+  };
   return (
     <>
       {loading ? (
@@ -181,14 +292,7 @@ export default function ProfileScreen() {
                 <Pressable
                   onPress={editMode ? pickImage : undefined}
                   style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
-                  <Image
-                    style={styles.profileImage}
-                    source={
-                      profileImage && profileImage.trim() !== ''
-                        ? {uri: profileImage}
-                        : (profilePicturePlaceholder as ImageSourcePropType)
-                    }
-                  />
+                  {isImageLoading ? <ActivityIndicator size={'large'} /> : renderProfileImage()}
                   {editMode && (
                     <View style={styles.cameraIconOverlay}>
                       <MaterialIcons name="photo-camera" size={24} color="white" />
@@ -314,6 +418,22 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  loaderOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 5,
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     padding: 20,

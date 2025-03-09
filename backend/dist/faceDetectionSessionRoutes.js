@@ -1,7 +1,9 @@
 import express from 'express';
 import admin from 'firebase-admin';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz'; // eslint-disable-line import/no-extraneous-dependencies
 const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
     const router = express.Router();
+    const timeZone = 'America/Vancouver';
     // POST: /face-detection-session/register
     router.post('/register', async (req, res) => {
         try {
@@ -49,7 +51,8 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (!userId || !date || typeof userId !== 'string' || typeof date !== 'string') {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfDay = new Date(`${date}T00:00:00`);
+            // const startOfDay = new Date(`${date}T00:00:00`);
+            const startOfDay = fromZonedTime(new Date(`${date}T00:00:00`), timeZone);
             const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
             // Convert to Firestore Timestamp
             const startOfDayTimestamp = admin.firestore.Timestamp.fromDate(startOfDay);
@@ -71,16 +74,19 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 const currentTime = new Date(sessionStart);
                 let currentHour = currentTime.getHours();
                 let remainingDuration = session.sessionDuration / 3600;
+                console.log('currentTime', currentTime);
                 // Allocate session duration to each hour
                 while (remainingDuration > 0) {
+                    const localTime = toZonedTime(currentTime, timeZone);
+                    const localHourString = localTime.getHours();
                     const nextHour = new Date(currentTime);
                     nextHour.setHours(currentHour + 1, 0, 0, 0);
                     const EndTime = Math.min(nextHour.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000;
-                    if (!result[currentHour]) {
-                        result[currentHour] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
+                    if (!result[localHourString]) {
+                        result[localHourString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
-                    result[currentHour].totalSessionHours += Duration;
+                    result[localHourString].totalSessionHours += Duration;
                     totalSessionHours += Duration;
                     remainingDuration -= Duration;
                     currentTime.setHours(currentHour + 1, 0, 0, 0);
@@ -89,8 +95,12 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 // Allocate alerts to each hour
                 session.alerts?.forEach(alert => {
                     const alertTime = alert.toDate();
-                    const alertHour = alertTime.getHours();
-                    result[alertHour].totalNumberOfAlert += 1;
+                    const localAlertTime = toZonedTime(alertTime, timeZone);
+                    const localAlertHourString = localAlertTime.getHours();
+                    if (!result[localAlertHourString]) {
+                        result[localAlertHourString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
+                    }
+                    result[localAlertHourString].totalNumberOfAlert += 1;
                     totalNumberOfAlert += 1;
                 });
             });
@@ -111,6 +121,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
+            console.log('startOfDay:', startOfDay);
+            console.log('endOfDay:', endOfDay);
+            console.log('processedData:', processedData);
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,
@@ -130,12 +143,12 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (!userId || !date || typeof userId !== 'string' || typeof date !== 'string') {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfDay = new Date(`${date}T00:00:00`);
+            const startOfDay = fromZonedTime(new Date(`${date}T00:00:00`), timeZone);
             const startOfWeek = new Date(startOfDay);
             startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
             const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            endOfWeek.setHours(23, 59, 59, 999);
+            endOfWeek.setDate(startOfWeek.getDate() + 7);
+            endOfWeek.setSeconds(endOfWeek.getSeconds() - 1);
             const startOfWeekTimestamp = admin.firestore.Timestamp.fromDate(startOfWeek);
             const endOfWeekTimestamp = admin.firestore.Timestamp.fromDate(endOfWeek);
             const querySnapshot = await faceDetectionSessionCollection
@@ -156,12 +169,14 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
                 while (remainingDuration > 0) {
-                    const nextDay = new Date(currentTime);
-                    nextDay.setDate(nextDay.getDate() + 1);
-                    nextDay.setHours(0, 0, 0, 0);
+                    const localCurrentTime = toZonedTime(currentTime, timeZone);
+                    const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
+                    const localNextDay = new Date(localCurrentTime);
+                    localNextDay.setDate(localNextDay.getDate() + 1);
+                    localNextDay.setHours(0, 0, 0, 0);
+                    const nextDay = fromZonedTime(localNextDay, timeZone);
                     const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
-                    const currentDateString = currentTime.toLocaleDateString('en-CA');
                     if (!result[currentDateString]) {
                         result[currentDateString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -173,7 +188,8 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 // Allocate alerts to each hour
                 session.alerts?.forEach(alert => {
                     const alertTime = alert.toDate();
-                    const currentDateString = alertTime.toLocaleDateString('en-CA');
+                    const localAlertTime = toZonedTime(alertTime, timeZone);
+                    const currentDateString = localAlertTime.toLocaleDateString('en-CA');
                     if (!result[currentDateString]) {
                         result[currentDateString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -199,7 +215,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
-            // console.log('processedData:', processedData);
+            console.log('startOfWeek:', startOfWeek);
+            console.log('endOfWeek:', endOfWeek);
+            console.log('processedData:', processedData);
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,
@@ -223,11 +241,10 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (!year || !month) {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfMonth = new Date(`${year}-${month}-01T00:00:00`);
+            const startOfMonth = fromZonedTime(new Date(`${year}-${month}-01T00:00:00`), timeZone);
             const endOfMonth = new Date(startOfMonth);
             endOfMonth.setMonth(startOfMonth.getMonth() + 1);
-            endOfMonth.setDate(0);
-            endOfMonth.setHours(23, 59, 59, 999);
+            endOfMonth.setSeconds(endOfMonth.getSeconds() - 1);
             const startOfMonthTimestamp = admin.firestore.Timestamp.fromDate(startOfMonth);
             const endOfMonthTimestamp = admin.firestore.Timestamp.fromDate(endOfMonth);
             const querySnapshot = await faceDetectionSessionCollection
@@ -248,12 +265,14 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
                 while (remainingDuration > 0) {
-                    const nextDay = new Date(currentTime);
-                    nextDay.setDate(nextDay.getDate() + 1);
-                    nextDay.setHours(0, 0, 0, 0);
+                    const localCurrentTime = toZonedTime(currentTime, timeZone);
+                    const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
+                    const localNextDay = new Date(localCurrentTime);
+                    localNextDay.setDate(localNextDay.getDate() + 1);
+                    localNextDay.setHours(0, 0, 0, 0);
+                    const nextDay = fromZonedTime(localNextDay, timeZone);
                     const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
-                    const currentDateString = currentTime.toLocaleDateString('en-CA');
                     if (!result[currentDateString]) {
                         result[currentDateString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -265,7 +284,8 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 // Allocate alerts to each hour
                 session.alerts?.forEach(alert => {
                     const alertTime = alert.toDate();
-                    const currentDateString = alertTime.toLocaleDateString('en-CA');
+                    const localAlertTime = toZonedTime(alertTime, timeZone);
+                    const currentDateString = localAlertTime.toLocaleDateString('en-CA');
                     if (!result[currentDateString]) {
                         result[currentDateString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -292,7 +312,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
-            // console.log('processedData:', processedData);
+            console.log('startOfMonth:', startOfMonth);
+            console.log('endOfMonth:', endOfMonth);
+            console.log('processedData:', processedData);
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,
@@ -316,11 +338,10 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (Number.isNaN(year)) {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfYear = new Date(`${year}-01-01T00:00:00`);
+            const startOfYear = fromZonedTime(new Date(`${year}-01-01T00:00:00`), timeZone);
             const endOfYear = new Date(startOfYear);
             endOfYear.setFullYear(startOfYear.getFullYear() + 1);
-            endOfYear.setDate(0);
-            endOfYear.setHours(23, 59, 59, 999);
+            endOfYear.setSeconds(endOfYear.getSeconds() - 1);
             const startOfYearTimestamp = admin.firestore.Timestamp.fromDate(startOfYear);
             const endOfYearTimestamp = admin.firestore.Timestamp.fromDate(endOfYear);
             const querySnapshot = await faceDetectionSessionCollection
@@ -341,15 +362,17 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
                 while (remainingDuration > 0) {
-                    const nextDay = new Date(currentTime);
-                    nextDay.setDate(nextDay.getDate() + 1);
-                    nextDay.setHours(0, 0, 0, 0);
-                    const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
-                    const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
-                    const currentMonthString = currentTime.toLocaleDateString('en-CA', {
+                    const localCurrentTime = toZonedTime(currentTime, timeZone);
+                    const currentMonthString = localCurrentTime.toLocaleDateString('en-CA', {
                         year: 'numeric',
                         month: '2-digit',
                     });
+                    const localNextDay = new Date(localCurrentTime);
+                    localNextDay.setDate(localNextDay.getDate() + 1);
+                    localNextDay.setHours(0, 0, 0, 0);
+                    const nextDay = fromZonedTime(localNextDay, timeZone);
+                    const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
+                    const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
                     if (!result[currentMonthString]) {
                         result[currentMonthString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -361,7 +384,8 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 // Allocate alerts to each hour
                 session.alerts?.forEach(alert => {
                     const alertTime = alert.toDate();
-                    const alertMonthString = alertTime.toLocaleDateString('en-CA', {
+                    const localAlertTime = toZonedTime(alertTime, timeZone);
+                    const alertMonthString = localAlertTime.toLocaleDateString('en-CA', {
                         year: 'numeric',
                         month: '2-digit',
                     });
@@ -389,7 +413,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
-            // console.log('processedData:', processedData);
+            console.log('startOfYear:', startOfYear);
+            console.log('endOfYear:', endOfYear);
+            console.log('processedData:', processedData);
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,
@@ -408,7 +434,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (!date || typeof date !== 'string') {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfDay = new Date(`${date}T00:00:00`);
+            const startOfDay = fromZonedTime(new Date(`${date}T00:00:00`), timeZone);
             const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
             const startOfDayTimestamp = admin.firestore.Timestamp.fromDate(startOfDay);
             const endOfDayTimestamp = admin.firestore.Timestamp.fromDate(endOfDay);
@@ -451,6 +477,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
+            console.log('startOfDay:', startOfDay);
+            console.log('endOfDay:', endOfDay);
+            console.log('processedData:', processedData);
             res.json({
                 data: processedData,
             });
@@ -467,12 +496,12 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (!date || typeof date !== 'string') {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfDay = new Date(`${date}T00:00:00`);
+            const startOfDay = fromZonedTime(new Date(`${date}T00:00:00`), timeZone);
             const startOfWeek = new Date(startOfDay);
             startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
             const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            endOfWeek.setHours(23, 59, 59, 999);
+            endOfWeek.setDate(startOfWeek.getDate() + 7);
+            endOfWeek.setSeconds(endOfWeek.getSeconds() - 1);
             const startOfWeekTimestamp = admin.firestore.Timestamp.fromDate(startOfWeek);
             const endOfWeekTimestamp = admin.firestore.Timestamp.fromDate(endOfWeek);
             const querySnapshot = await faceDetectionSessionCollection
@@ -514,6 +543,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
+            console.log('startOfWeek:', startOfWeek);
+            console.log('endOfWeek:', endOfWeek);
+            console.log('processedData:', processedData);
             res.json({
                 data: processedData,
             });
@@ -534,11 +566,10 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (!year || !month) {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfMonth = new Date(`${year}-${month}-01T00:00:00`);
+            const startOfMonth = fromZonedTime(new Date(`${year}-${month}-01T00:00:00`), timeZone);
             const endOfMonth = new Date(startOfMonth);
             endOfMonth.setMonth(startOfMonth.getMonth() + 1);
-            endOfMonth.setDate(0);
-            endOfMonth.setHours(23, 59, 59, 999);
+            endOfMonth.setSeconds(endOfMonth.getSeconds() - 1);
             const startOfMonthTimestamp = admin.firestore.Timestamp.fromDate(startOfMonth);
             const endOfMonthTimestamp = admin.firestore.Timestamp.fromDate(endOfMonth);
             const querySnapshot = await faceDetectionSessionCollection
@@ -580,6 +611,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
+            console.log('startOfMonth:', startOfMonth);
+            console.log('endOfMonth:', endOfMonth);
+            console.log('processedData:', processedData);
             res.json({
                 data: processedData,
             });
@@ -600,11 +634,10 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (Number.isNaN(year)) {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfYear = new Date(`${year}-01-01T00:00:00`);
+            const startOfYear = fromZonedTime(new Date(`${year}-01-01T00:00:00`), timeZone);
             const endOfYear = new Date(startOfYear);
             endOfYear.setFullYear(startOfYear.getFullYear() + 1);
-            endOfYear.setDate(0);
-            endOfYear.setHours(23, 59, 59, 999);
+            endOfYear.setSeconds(endOfYear.getSeconds() - 1);
             const startOfYearTimestamp = admin.firestore.Timestamp.fromDate(startOfYear);
             const endOfYearTimestamp = admin.firestore.Timestamp.fromDate(endOfYear);
             const querySnapshot = await faceDetectionSessionCollection
@@ -647,6 +680,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
+            console.log('startOfYear:', startOfYear);
+            console.log('endOfYear:', endOfYear);
+            console.log('processedData:', processedData);
             res.json({
                 data: processedData,
             });
@@ -663,12 +699,12 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             if (!date || typeof date !== 'string') {
                 return res.status(400).json({ error: 'Invalid parameter.' });
             }
-            const startOfDay = new Date(`${date}T00:00:00`);
+            const startOfDay = fromZonedTime(new Date(`${date}T00:00:00`), timeZone);
             const startOfWeek = new Date(startOfDay);
             startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
             const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            endOfWeek.setHours(23, 59, 59, 999);
+            endOfWeek.setDate(startOfWeek.getDate() + 7);
+            endOfWeek.setSeconds(endOfWeek.getSeconds() - 1);
             const startOfWeekTimestamp = admin.firestore.Timestamp.fromDate(startOfWeek);
             const endOfWeekTimestamp = admin.firestore.Timestamp.fromDate(endOfWeek);
             const querySnapshot = await faceDetectionSessionCollection
@@ -688,17 +724,16 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
                 while (remainingDuration > 0) {
-                    const nextDay = new Date(currentTime);
-                    nextDay.setDate(currentTime.getDate() + 1);
-                    nextDay.setHours(0, 0, 0, 0);
+                    const localCurrentTime = toZonedTime(currentTime, timeZone);
+                    const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
+                    const localNextDay = new Date(localCurrentTime);
+                    localNextDay.setDate(localNextDay.getDate() + 1);
+                    localNextDay.setHours(0, 0, 0, 0);
+                    const nextDay = fromZonedTime(localNextDay, timeZone);
                     const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000;
-                    const currentDateString = currentTime.toLocaleDateString('en-CA');
                     if (!result[currentDateString]) {
-                        result[currentDateString] = {
-                            totalSessionHours: 0,
-                            totalNumberOfAlert: 0,
-                        };
+                        result[currentDateString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
                     result[currentDateString].totalSessionHours += Duration;
                     totalSessionHours += Duration;
@@ -708,7 +743,8 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 // Allocate alerts to each day
                 session.alerts?.forEach(alert => {
                     const alertTime = alert.toDate();
-                    const alertDateString = alertTime.toLocaleDateString('en-CA');
+                    const localAlertTime = toZonedTime(alertTime, timeZone);
+                    const alertDateString = localAlertTime.toLocaleDateString('en-CA');
                     if (!result[alertDateString]) {
                         result[alertDateString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -733,6 +769,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertPerHour.toFixed(2)),
                 };
             });
+            console.log('startOfWeek:', startOfWeek);
+            console.log('endOfWeek:', endOfWeek);
+            console.log('processedData:', processedData);
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,

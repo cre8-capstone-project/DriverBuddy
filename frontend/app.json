@@ -4,7 +4,7 @@
     "slug": "DriveBuddy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon-drive-buddy-white.png",
+    "icon": "./assets/images/drivebuddy-app-icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -24,7 +24,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/drivebuddy-app-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -54,7 +54,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/drivebuddy-app-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

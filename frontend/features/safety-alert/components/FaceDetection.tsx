@@ -2,7 +2,8 @@ import React, {useEffect} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {Camera} from 'react-native-vision-camera-face-detector';
 import Animated from 'react-native-reanimated';
-import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
+// import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {WarningMessage} from '@/features/safety-alert/components/WarningMessage';
 import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
 import type {ViewModeType} from '@/types/ViewModeType';
@@ -24,7 +25,7 @@ const FaceDetection = ({device, viewMode}: Props) => {
     pitchAngleStatus,
     blinkCount,
     isWarning,
-  } = useFaceDetection();
+  } = useFaceDetectionContext();
 
   useEffect(() => {
     return () => {

@@ -491,7 +491,8 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     result[session.userId].totalNumberOfAlert += 1;
                 });
             });
-            const processedData = Object.entries(result).map(([userId, userResult]) => {
+            const processedData = userIds.map(userId => {
+                const userResult = result[userId] || { totalSessionHours: 0, totalNumberOfAlert: 0 };
                 const alertsPerHour = userResult.totalSessionHours > 0
                     ? userResult.totalNumberOfAlert / userResult.totalSessionHours
                     : 0;
@@ -567,7 +568,9 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     result[session.userId].totalNumberOfAlert += 1;
                 });
             });
-            const processedData = Object.entries(result).map(([userId, userResult]) => {
+            // const processedData = Object.entries(result).map(([userId, userResult]) => {
+            const processedData = userIds.map(userId => {
+                const userResult = result[userId] || { totalSessionHours: 0, totalNumberOfAlert: 0 };
                 const alertsPerHour = userResult.totalSessionHours > 0
                     ? userResult.totalNumberOfAlert / userResult.totalSessionHours
                     : 0;
@@ -590,7 +593,6 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             res.status(500).json({ error: `Failed to fetch weekly summary records: ${error}` });
         }
     });
-    // GET: /face-detection-session/monthly-summary?companyID=CCC&date=YYYY-MM
     router.get('/monthly-summary', async (req, res) => {
         try {
             const { date, companyID } = req.query;
@@ -645,7 +647,8 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     result[session.userId].totalNumberOfAlert += 1;
                 });
             });
-            const processedData = Object.entries(result).map(([userId, userResult]) => {
+            const processedData = userIds.map(userId => {
+                const userResult = result[userId] || { totalSessionHours: 0, totalNumberOfAlert: 0 };
                 const alertsPerHour = userResult.totalSessionHours > 0
                     ? userResult.totalNumberOfAlert / userResult.totalSessionHours
                     : 0;
@@ -724,7 +727,8 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     result[session.userId].totalNumberOfAlert += 1;
                 });
             });
-            const processedData = Object.entries(result).map(([userId, userResult]) => {
+            const processedData = userIds.map(userId => {
+                const userResult = result[userId] || { totalSessionHours: 0, totalNumberOfAlert: 0 };
                 const alertsPerHour = userResult.totalSessionHours > 0
                     ? userResult.totalNumberOfAlert / userResult.totalSessionHours
                     : 0;

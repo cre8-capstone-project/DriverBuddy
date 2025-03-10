@@ -604,7 +604,8 @@ const faceDetectionSessionRoutes = (
         });
       });
 
-      const processedData = Object.entries(result).map(([userId, userResult]) => {
+      const processedData = userIds.map(userId => {
+        const userResult = result[userId] || {totalSessionHours: 0, totalNumberOfAlert: 0};
         const alertsPerHour =
           userResult.totalSessionHours > 0
             ? userResult.totalNumberOfAlert / userResult.totalSessionHours
@@ -696,7 +697,9 @@ const faceDetectionSessionRoutes = (
         });
       });
 
-      const processedData = Object.entries(result).map(([userId, userResult]) => {
+      // const processedData = Object.entries(result).map(([userId, userResult]) => {
+      const processedData = userIds.map(userId => {
+        const userResult = result[userId] || {totalSessionHours: 0, totalNumberOfAlert: 0};
         const alertsPerHour =
           userResult.totalSessionHours > 0
             ? userResult.totalNumberOfAlert / userResult.totalSessionHours
@@ -722,7 +725,6 @@ const faceDetectionSessionRoutes = (
     }
   });
 
-  // GET: /face-detection-session/monthly-summary?companyID=CCC&date=YYYY-MM
   router.get('/monthly-summary', async (req, res) => {
     try {
       const {date, companyID} = req.query;
@@ -790,7 +792,8 @@ const faceDetectionSessionRoutes = (
         });
       });
 
-      const processedData = Object.entries(result).map(([userId, userResult]) => {
+      const processedData = userIds.map(userId => {
+        const userResult = result[userId] || {totalSessionHours: 0, totalNumberOfAlert: 0};
         const alertsPerHour =
           userResult.totalSessionHours > 0
             ? userResult.totalNumberOfAlert / userResult.totalSessionHours
@@ -885,7 +888,8 @@ const faceDetectionSessionRoutes = (
         });
       });
 
-      const processedData = Object.entries(result).map(([userId, userResult]) => {
+      const processedData = userIds.map(userId => {
+        const userResult = result[userId] || {totalSessionHours: 0, totalNumberOfAlert: 0};
         const alertsPerHour =
           userResult.totalSessionHours > 0
             ? userResult.totalNumberOfAlert / userResult.totalSessionHours

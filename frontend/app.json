@@ -74,7 +74,8 @@
             "useFrameworks": "static"
           },
           "android": {
-            "minSdkVersion": 26
+            "minSdkVersion": 26,
+            "kotlinVersion": "1.9.25"
           }
         }
       ],
@@ -83,7 +84,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "$(PRODUCT_NAME) needs access to your Location."
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true

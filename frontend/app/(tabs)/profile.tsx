@@ -23,9 +23,11 @@ import * as ImagePicker from 'expo-image-picker';
 import {useAuth} from '@/contexts/AuthProvider';
 import auth from '@react-native-firebase/auth';
 import {useRouter} from 'expo-router';
+import theme from '@/components/Theme';
 
 export default function ProfileScreen() {
-  const {loading, user} = useAuth();
+  const {user} = useAuth();
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
   const [driver, setDriver] = useState<any>(undefined);
   const [driverName, setDriverName] = useState<string>('');
@@ -37,7 +39,6 @@ export default function ProfileScreen() {
 
   // Added loading state for image operations
   const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
-  const [imageError, setImageError] = useState<string | null>(null);
 
   // Add this new state to control date picker visibility
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -46,6 +47,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setLoading(false);
         const currentUserID: string = user ? user.uid : '';
         if (!currentUserID) {
           console.log('No user ID available');
@@ -58,11 +60,7 @@ export default function ProfileScreen() {
 
         if (driverInfo?.picture_url) {
           console.log('Profile image URL from database:', driverInfo.picture_url);
-          // Add cache buster for Firebase URLs
-          const imageUrl = driverInfo.picture_url.includes('firebasestorage')
-            ? `${driverInfo.picture_url}?t=${new Date().getTime()}`
-            : driverInfo.picture_url;
-          setProfileImage(imageUrl);
+          setProfileImage(driverInfo.picture_url);
         } else {
           console.log('No profile image URL found in driver info');
           setProfileImage(null);
@@ -70,9 +68,9 @@ export default function ProfileScreen() {
         resetEditFields();
       } catch (e) {
         console.error('Error loading driver data:', e);
-        setImageError('Failed to load profile data');
       } finally {
         setIsImageLoading(false);
+        setLoading(false);
       }
     };
 
@@ -132,12 +130,10 @@ export default function ProfileScreen() {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         console.log('New image selected:', result.assets[0].uri);
-        setImageError(null);
         setProfileImage(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      setImageError('Failed to select image');
     }
   };
 
@@ -146,7 +142,6 @@ export default function ProfileScreen() {
 
     try {
       setIsImageLoading(true);
-      setImageError(null);
 
       if (!driverBirthday) {
         throw new Error('Birthday is required');
@@ -205,7 +200,6 @@ export default function ProfileScreen() {
       setEditMode(false);
     } catch (e) {
       console.error('Error saving changes:', e);
-      setImageError('Failed to save changes');
       Alert.alert('Error', 'Failed to save changes');
     } finally {
       setIsImageLoading(false);
@@ -254,10 +248,6 @@ export default function ProfileScreen() {
             hasValidImage ? {uri: profileImage} : (profilePicturePlaceholder as ImageSourcePropType)
           }
           onLoad={() => console.log('Image loaded successfully:', profileImage)}
-          onError={e => {
-            console.error('Image loading error:', e.nativeEvent.error, 'URL:', profileImage);
-            setImageError('Failed to load image');
-          }}
         />
 
         {editMode && (
@@ -265,8 +255,6 @@ export default function ProfileScreen() {
             <MaterialIcons name="photo-camera" size={24} color="white" />
           </View>
         )}
-
-        {imageError && <Text style={styles.errorText}>{imageError}</Text>}
       </View>
     );
   };
@@ -281,27 +269,26 @@ export default function ProfileScreen() {
           style={{flex: 1}}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={{flexGrow: 1}} keyboardShouldPersistTaps="handled">
+            <View style={styles.header}>
+              <Pressable style={styles.editButton} onPress={toggleEdit}>
+                <MaterialIcons name="edit" size={24} color="black" />
+              </Pressable>
+            </View>
+
+            <View style={styles.profileImageContainer}>
+              <Pressable
+                onPress={editMode ? pickImage : undefined}
+                style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
+                {isImageLoading ? <ActivityIndicator size={'large'} /> : renderProfileImage()}
+                {editMode && (
+                  <View style={styles.cameraIconOverlay}>
+                    <MaterialIcons name="photo-camera" size={24} color="white" />
+                  </View>
+                )}
+              </Pressable>
+              {editMode && <Text style={styles.tapToEditText}>Tap to change photo</Text>}
+            </View>
             <View style={styles.container}>
-              <View style={styles.header}>
-                <Pressable style={styles.editButton} onPress={toggleEdit}>
-                  <MaterialIcons name="edit" size={24} color="black" />
-                </Pressable>
-              </View>
-
-              <View style={styles.profileImageContainer}>
-                <Pressable
-                  onPress={editMode ? pickImage : undefined}
-                  style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
-                  {isImageLoading ? <ActivityIndicator size={'large'} /> : renderProfileImage()}
-                  {editMode && (
-                    <View style={styles.cameraIconOverlay}>
-                      <MaterialIcons name="photo-camera" size={24} color="white" />
-                    </View>
-                  )}
-                </Pressable>
-                {editMode && <Text style={styles.tapToEditText}>Tap to change photo</Text>}
-              </View>
-
               {editMode ? (
                 <View style={styles.form}>
                   <View style={styles.formGroup}>
@@ -315,19 +302,13 @@ export default function ProfileScreen() {
                   <View style={styles.formGroup}>
                     <TextInput
                       style={styles.textInput}
-                      value={driverUserType}
-                      onChangeText={setDriverUserType}
-                      placeholder="User Type"
+                      value={driverEmail}
+                      onChangeText={setDriverEmail}
+                      placeholder="Email"
+                      inputMode="email"
                     />
                   </View>
-                  <View style={styles.formGroup}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={driverVehicleType}
-                      onChangeText={setDriverVehicleType}
-                      placeholder="Vehicle Type"
-                    />
-                  </View>
+
                   <View style={styles.formGroup}>
                     {/* Date picker button */}
                     <Pressable
@@ -349,15 +330,6 @@ export default function ProfileScreen() {
                       />
                     )}
                   </View>
-                  <View style={styles.formGroup}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={driverEmail}
-                      onChangeText={setDriverEmail}
-                      placeholder="Email"
-                      inputMode="email"
-                    />
-                  </View>
                   <View style={styles.buttonContainer}>
                     <Button size="md" buttonStyle={styles.fullWidthButton} onPress={saveChanges}>
                       Save Changes
@@ -377,13 +349,15 @@ export default function ProfileScreen() {
                   <Text style={styles.nameText}>{driver.name}</Text>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.label}>User Type:</Text>
-                    <Text style={styles.value}>{driver.user_type || '-'}</Text>
+                    <Text style={styles.label}>Company</Text>
+                    <Text style={styles.value}>
+                      {driver.company_name ? driver.company_name : '-'}
+                    </Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.label}>Vehicle:</Text>
-                    <Text style={styles.value}>{driver.vehicle_type || '-'}</Text>
+                    <Text style={styles.label}>Email:</Text>
+                    <Text style={styles.value}>{driver.email || '-'}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
@@ -391,11 +365,6 @@ export default function ProfileScreen() {
                     <Text style={styles.value}>
                       {driver?.birthday ? driver.birthday.toDateString() : '-'}
                     </Text>
-                  </View>
-
-                  <View style={styles.infoRow}>
-                    <Text style={styles.label}>Email:</Text>
-                    <Text style={styles.value}>{driver.email || '-'}</Text>
                   </View>
                 </View>
               )}
@@ -436,10 +405,10 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 20,
     alignContent: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
+    padding: 20,
   },
   infoTextContainer: {
     paddingVertical: 20,
@@ -469,6 +438,8 @@ const styles = StyleSheet.create({
   profileImageContainer: {
     alignItems: 'center',
     marginTop: 20,
+    backgroundColor: theme.lightColors?.primary,
+    padding: 10,
   },
   profileImageWrapper: {
     position: 'relative',
@@ -481,8 +452,8 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   profileImage: {
-    width: 160,
-    height: 160,
+    width: 180,
+    height: 180,
     backgroundColor: '#E0E0E0',
   },
   cameraIconOverlay: {

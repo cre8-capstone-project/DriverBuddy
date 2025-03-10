@@ -14,7 +14,13 @@ import {
 import auth from '@react-native-firebase/auth';
 import {Timestamp} from 'firebase/firestore';
 import {useRouter} from 'expo-router';
-import {createDriver, Driver, getInvitationCode, updateInvitationStatus} from '@/api/api';
+import {
+  createDriver,
+  Driver,
+  getInvitationCode,
+  updateInvitationStatus,
+  uploadImage,
+} from '@/api/api';
 import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
 import * as ImagePicker from 'expo-image-picker';
 import {MaterialIcons} from '@expo/vector-icons';
@@ -36,6 +42,10 @@ export default function SignUpScreen() {
   const handleAuth = async () => {
     try {
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      let downloadURL: string | undefined = photoUri.trim();
+      if (downloadURL !== '') {
+        downloadURL = await uploadImage(photoUri, userCredential.user.uid);
+      }
       const newDriverObj: Driver = {
         id: userCredential.user.uid,
         user_type: 'basic',
@@ -44,7 +54,7 @@ export default function SignUpScreen() {
         phone: '',
         vehicle_type: '',
         birthday: Timestamp.fromDate(new Date()),
-        picture_url: photoUri,
+        picture_url: downloadURL ? downloadURL : '',
         company_id: invitation?.company_id,
       };
       await createDriver(newDriverObj);
@@ -58,7 +68,6 @@ export default function SignUpScreen() {
   };
   const validateCode = async () => {
     try {
-      console.log('here');
       const response = await getInvitationCode(code);
       if (response) {
         if (response.status !== 'pending') return;

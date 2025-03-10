@@ -1,13 +1,14 @@
 /* eslint-disable import/extensions */
 import admin from 'firebase-admin';
-import {getStorage} from 'firebase/storage';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import express from 'express';
 import fs from 'fs';
 import driverRoutes from './driverRoutes.js';
-import historyRoutes from './historyRoutes.js';
+// import historyRoutes from './historyRoutes.js';
 import invitationsRoutes from './invitationsRoutes.js';
+import faceDetectionSessionRoutes from '../dist/faceDetectionSessionRoutes.js';
+import companyRoutes from './companyRoutes.js';
 
 const router = express.Router();
 // Initialize Firebase Admin SDK
@@ -18,11 +19,15 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 const driverCollection = db.collection('driver');
-const historyCollection = db.collection('history');
+// const historyCollection = db.collection('history');
 const invitationsCollection = db.collection('invitations');
+const companyCollection = db.collection('companies');
+const faceDetectionSessionCollection = db.collection('face_detection_session');
 
 router.use('/drivers', driverRoutes(driverCollection));
-router.use('/history', historyRoutes(historyCollection, driverCollection, admin));
+// router.use('/history', historyRoutes(historyCollection, driverCollection, admin));
 router.use('/invitations', invitationsRoutes(invitationsCollection, db));
+router.use('/companies', companyRoutes(companyCollection));
+router.use('/face-detection-session', faceDetectionSessionRoutes(faceDetectionSessionCollection));
 
 export default router;

@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useWindowDimensions} from 'react-native';
 import {Frame} from 'react-native-vision-camera';
 import {Face, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
@@ -22,6 +22,7 @@ export const useFaceDetection = () => {
   const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
   const {checkDrowsiness, leftEyeStatus, rightEyeStatus, blinkCount} = useDrowsinessDetection();
   const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
+  const [alertCount, setAlertCount] = useState<number>(0);
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
@@ -107,6 +108,8 @@ export const useFaceDetection = () => {
         timestamp: new Date().toISOString(),
       });
 
+      setAlertCount((prev: number) => prev + 1);
+
       alertRef.current = false;
     } catch (error) {
       console.error(error);
@@ -122,5 +125,6 @@ export const useFaceDetection = () => {
     pitchAngleStatus,
     blinkCount,
     isWarning: isSpeaking,
+    alertCount,
   };
 };

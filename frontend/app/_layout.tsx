@@ -12,6 +12,8 @@ import * as FileSystem from 'expo-file-system';
 import {useDrizzleStudio} from 'expo-drizzle-studio-plugin';
 import {ThemeProvider, useTheme} from '@rneui/themed';
 import {AuthProvider, useAuth} from '@/contexts/AuthProvider';
+import {FaceDetectionProvider} from '@/contexts/FaceDetectionProvider';
+import {RootSiblingParent} from 'react-native-root-siblings';
 import theme from '../components/Theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -103,12 +105,16 @@ export default function RootLayout() {
         <SafeAreaView style={{flex: 1}} edges={['top']}>
           <Suspense fallback={<ActivityIndicator size="large" />}>
             <AuthenticationGuard>
-              <Stack screenOptions={{headerShown: false}}>
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="journey" />
-                <Stack.Screen name="signIn" />
-                <Stack.Screen name="signUp" />
-              </Stack>
+              <FaceDetectionProvider>
+                <RootSiblingParent>
+                  <Stack screenOptions={{headerShown: false}}>
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="journey" />
+                    <Stack.Screen name="signIn" />
+                    <Stack.Screen name="signUp" />
+                  </Stack>
+                </RootSiblingParent>
+              </FaceDetectionProvider>
             </AuthenticationGuard>
           </Suspense>
         </SafeAreaView>

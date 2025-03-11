@@ -44,12 +44,12 @@ const Chart = ({data, displayMode}: Props) => {
         yKeys={['alertPerHour']}
         domainPadding={
           displayMode === 'day'
-            ? {left: 5, right: 5, top: 50}
+            ? {left: 5, right: 5, top: 60}
             : displayMode === 'week'
-              ? {left: 25, right: 25, top: 50}
+              ? {left: 25, right: 25, top: 60}
               : displayMode === 'month'
-                ? {left: 5, right: 5, top: 50}
-                : {left: 15, right: 15, top: 50}
+                ? {left: 5, right: 5, top: 60}
+                : {left: 15, right: 15, top: 60}
         }
         axisOptions={{
           font,
@@ -70,7 +70,7 @@ const Chart = ({data, displayMode}: Props) => {
           {
             font,
             axisSide: 'left',
-            domain: [0, maxAlertPerHour + 5],
+            domain: [0, maxAlertPerHour + 6],
           },
         ]}>
         {({points, chartBounds}) => (
@@ -90,6 +90,7 @@ const Chart = ({data, displayMode}: Props) => {
                 alertPerHour={state.y.alertPerHour.value}
                 startDate={startDate}
                 displayMode={displayMode}
+                maxAlertPerHour={maxAlertPerHour}
               />
             )}
           </View>

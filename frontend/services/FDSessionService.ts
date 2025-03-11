@@ -4,16 +4,6 @@ import type {FDSessionType} from '@/types/FDSessionType';
 import {eq} from 'drizzle-orm';
 
 export const FDSessionService = {
-  // async getAllFDSessions() {
-  //   try {
-  //     const result = await drizzleDb.select().from(faceDetectionSession);
-  //     return result;
-  //   } catch (error) {
-  //     console.error('Retrieve FDSession data failed:', error);
-  //     throw error;
-  //   }
-  // },
-
   async startFDSession(session: FDSessionType) {
     try {
       await drizzleDb.insert(faceDetectionSession).values(session);
@@ -21,7 +11,6 @@ export const FDSessionService = {
       console.error('Failed to start FDSession:', error);
       throw error;
     }
-    console.log('Start FDSession:', session);
   },
 
   async endFDSession(session: FDSessionType) {
@@ -34,7 +23,6 @@ export const FDSessionService = {
       console.error('Failed to end FDSession:', error);
       throw error;
     }
-    console.log('End FDSession:', session);
   },
 
   async getFDSessionDataById(sessionId: string): Promise<FDSessionType> {

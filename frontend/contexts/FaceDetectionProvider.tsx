@@ -1,14 +1,19 @@
-import {createContext, useContext, ReactNode} from 'react';
-import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
+import {createContext, useContext, ReactNode, useState} from 'react';
 
-type FaceDetectionContextType = ReturnType<typeof useFaceDetection>;
+type FaceDetectionContextType = {
+  alertCount: number;
+  setAlertCount: React.Dispatch<React.SetStateAction<number>>;
+};
+
 const FaceDetectionContext = createContext<FaceDetectionContextType | undefined>(undefined);
 
 export const FaceDetectionProvider = ({children}: {children: ReactNode}) => {
-  const faceDetection = useFaceDetection();
+  const [alertCount, setAlertCount] = useState(0);
 
   return (
-    <FaceDetectionContext.Provider value={faceDetection}>{children}</FaceDetectionContext.Provider>
+    <FaceDetectionContext.Provider value={{alertCount, setAlertCount}}>
+      {children}
+    </FaceDetectionContext.Provider>
   );
 };
 

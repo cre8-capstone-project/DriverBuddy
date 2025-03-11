@@ -2,8 +2,7 @@ import React, {useEffect} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {Camera} from 'react-native-vision-camera-face-detector';
 import Animated from 'react-native-reanimated';
-// import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
-import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
+import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
 import {WarningMessage} from '@/features/safety-alert/components/WarningMessage';
 import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
 import type {ViewModeType} from '@/types/ViewModeType';
@@ -16,6 +15,13 @@ type Props = {
 };
 
 const FaceDetection = ({device, viewMode}: Props) => {
+  useEffect(() => {
+    console.log('[DEBUG] FaceDetection component is mounted');
+    return () => {
+      console.log('[DEBUG] FaceDetection component is unmounted');
+    };
+  }, []);
+
   const {
     faceDetectionOptions,
     handleFacesDetection,
@@ -25,13 +31,7 @@ const FaceDetection = ({device, viewMode}: Props) => {
     pitchAngleStatus,
     blinkCount,
     isWarning,
-  } = useFaceDetectionContext();
-
-  useEffect(() => {
-    return () => {
-      console.log('FaceDetection component is unmounting, cleaning up...');
-    };
-  }, []);
+  } = useFaceDetection();
 
   return (
     <View style={styles.container}>

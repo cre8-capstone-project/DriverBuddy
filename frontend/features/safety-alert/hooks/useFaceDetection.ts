@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef} from 'react';
 import {useWindowDimensions} from 'react-native';
 import {Frame} from 'react-native-vision-camera';
 import {Face, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
@@ -12,6 +12,7 @@ import {FDSessionService} from '@/services/FDSessionService';
 import {logFaceDetectionSessionData} from '@/api/api';
 import uuid from 'react-native-uuid';
 import {useAuth} from '@/contexts/AuthProvider';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 
 export const useFaceDetection = () => {
   const {user} = useAuth();
@@ -22,7 +23,8 @@ export const useFaceDetection = () => {
   const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
   const {checkDrowsiness, leftEyeStatus, rightEyeStatus, blinkCount} = useDrowsinessDetection();
   const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
-  const [alertCount, setAlertCount] = useState<number>(0);
+
+  const {alertCount, setAlertCount} = useFaceDetectionContext();
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
@@ -40,12 +42,21 @@ export const useFaceDetection = () => {
   const sessionIdRef = useRef<string>(uuid.v4() as string);
 
   useEffect(() => {
+    console.log('[DEBUG] useFaceDetection component is mounted');
+    return () => {
+      console.log('[DEBUG] useFaceDetection component is unmounted');
+    };
+  }, []);
+
+  useEffect(() => {
     const sessionId = sessionIdRef.current;
     FDSessionService.startFDSession({
       faceDetectionSessionId: sessionId,
       userId: user?.uid ?? '',
       startTime: new Date().toISOString(),
+      endTime: new Date().toISOString(),
     });
+    console.log('[DEBUG] Start FDSession:', sessionId);
 
     return () => {
       FDSessionService.endFDSession({
@@ -53,6 +64,7 @@ export const useFaceDetection = () => {
         userId: user?.uid ?? '',
         endTime: new Date().toISOString(),
       });
+      console.log('[DEBUG] End FDSession:', sessionId);
 
       // Send the session data to the cloud database
       FDSessionService.getFDSessionDataById(sessionId)
@@ -69,6 +81,8 @@ export const useFaceDetection = () => {
         .catch(error => {
           console.error('An error occurred while registering the session:', error);
         });
+
+      setAlertCount(0); //Reset FaceDetectionContext alert count
     };
   }, [user?.uid]);
 

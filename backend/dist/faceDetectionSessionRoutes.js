@@ -85,7 +85,6 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 const currentTime = new Date(sessionStart);
                 let currentHour = currentTime.getHours();
                 let remainingDuration = session.sessionDuration / 3600;
-                console.log('currentTime', currentTime);
                 // Allocate session duration to each hour
                 while (remainingDuration > 0) {
                     const localTime = toZonedTime(currentTime, timeZone);

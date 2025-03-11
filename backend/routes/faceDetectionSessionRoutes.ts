@@ -113,7 +113,6 @@ const faceDetectionSessionRoutes = (
         const currentTime = new Date(sessionStart);
         let currentHour = currentTime.getHours();
         let remainingDuration = session.sessionDuration / 3600;
-        console.log('currentTime', currentTime);
 
         // Allocate session duration to each hour
         while (remainingDuration > 0) {

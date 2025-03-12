@@ -10,7 +10,7 @@ const API_URL = 'http://10.0.0.23:3000'; // replace with your own IP
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },

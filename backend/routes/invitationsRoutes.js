@@ -29,6 +29,30 @@ const invitationsRoutes = invitationsCollection => {
       res.status(500).json({error: `Failed to update invitation: ${error}`});
     }
   });
+  router.get('/', async (req, res) => {
+    try {
+      const {company_id} = req.query;
+      const querySnapshot = await invitationsCollection.where('company_id', '==', company_id).get();
+      if (querySnapshot.empty) {
+        return res.status(404).send({error: 'Invitation not found'});
+      }
+
+      // Create an array to store the documents
+      const dbData = [];
+
+      // Loop through the documents and add them to the array
+      querySnapshot.forEach(doc => {
+        dbData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      res.status(200).send(dbData);
+    } catch (error) {
+      console.error('Error updating invitation:', error);
+      res.status(500).json({error: `Failed to update invitation: ${error}`});
+    }
+  });
   router.put('/:id', async (req, res) => {
     try {
       const {company_id, invitation_code, createdAt, recipient_email, recipient_name, status} =
@@ -40,6 +64,14 @@ const invitationsRoutes = invitationsCollection => {
     } catch (error) {
       console.error('Error fetching daily data:', error);
       res.status(500).json({error: `Failed to fetch daily history records: ${error}`});
+    }
+  });
+  router.delete('/:id', async (req, res) => {
+    try {
+      await invitationsCollection.delete(req.params.id);
+      res.status(200).json({message: 'Invitation deleted successfully'});
+    } catch (error) {
+      res.status(500).json({error: `Failed to fetch invitation: ${error}`});
     }
   });
   return router;

@@ -1,17 +1,27 @@
 /* eslint-disable camelcase */
 import express from 'express';
+import {serverTimestamp} from 'firebase/firestore';
 
 const companyRoutes = companyCollection => {
   const router = express.Router();
 
   router.post('/', async (req, res) => {
     try {
-      const {id, name} = req.body;
-      const newCompany = {id, name};
-      await companyCollection.doc(id).set(newCompany);
-      res.status(201).send({id, ...newCompany});
+      const {name} = req.body;
+
+      const companyRef = await companyCollection.add({
+        name,
+        createdAt: new Date().toDateString(),
+      });
+
+      const companyId = companyRef.id;
+
+      res.status(201).send({
+        id: companyId,
+        name,
+      });
     } catch (error) {
-      res.status(500).send({error: `Failed to create company: ${error}`});
+      res.status(500).send({error: `Failed to create company: ${error.message}`});
     }
   });
 

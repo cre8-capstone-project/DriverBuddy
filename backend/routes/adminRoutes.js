@@ -22,8 +22,19 @@ const adminsRoutes = adminsCollection => {
   });
   router.put('/:id', async (req, res) => {
     try {
-      const {company_id, createdAt, email, name} = req.body;
-      await adminsCollection.doc(req.params.id).update({company_id, createdAt, email, name});
+      const {company_id, email, name} = req.body;
+      await adminsCollection.doc(req.params.id).update({company_id, email, name});
+      res.status(200).json({message: 'Admin updated successfully'});
+    } catch (error) {
+      res.status(500).json({error: `Failed to update Admin: ${error}`});
+    }
+  });
+  router.post('/:id', async (req, res) => {
+    try {
+      const {company_id, email, name} = req.body;
+      await adminsCollection
+        .doc(req.params.id)
+        .set({company_id, email, name, createdAt: new Date().toDateString()});
       res.status(200).json({message: 'Admin updated successfully'});
     } catch (error) {
       res.status(500).json({error: `Failed to update Admin: ${error}`});

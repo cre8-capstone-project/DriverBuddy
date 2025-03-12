@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import express from 'express';
-import {serverTimestamp} from 'firebase/firestore';
 
 const companyRoutes = companyCollection => {
   const router = express.Router();

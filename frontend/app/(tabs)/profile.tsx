@@ -59,10 +59,8 @@ export default function ProfileScreen() {
         setDriver(driverInfo);
 
         if (driverInfo?.picture_url) {
-          console.log('Profile image URL from database:', driverInfo.picture_url);
           setProfileImage(driverInfo.picture_url);
         } else {
-          console.log('No profile image URL found in driver info');
           setProfileImage(null);
         }
         resetEditFields();
@@ -114,7 +112,6 @@ export default function ProfileScreen() {
     setEditMode(prevMode => !prevMode);
     setShowDatePicker(false);
     if (!editMode) {
-      // Only reset when entering edit mode, not when exiting
       resetEditFields();
     }
   };
@@ -142,12 +139,11 @@ export default function ProfileScreen() {
 
     try {
       setIsImageLoading(true);
+      let birthdayTimestamp: Timestamp | undefined = undefined;
 
-      if (!driverBirthday) {
-        throw new Error('Birthday is required');
+      if (driverBirthday) {
+        birthdayTimestamp = Timestamp.fromDate(driverBirthday);
       }
-
-      const birthdayTimestamp: Timestamp = Timestamp.fromDate(driverBirthday);
 
       // Determine if we need to upload a new image
       let finalImageUrl = driver.picture_url || '';
@@ -155,16 +151,13 @@ export default function ProfileScreen() {
         profileImage && (profileImage.startsWith('file:') || profileImage.startsWith('content:'));
 
       if (isLocalImage) {
-        console.log('Uploading new image from local URI');
         const downloadURL = await uploadImage(profileImage, driver.id);
         if (downloadURL) {
-          console.log('Upload successful, new URL:', downloadURL);
           finalImageUrl = downloadURL;
         } else {
           console.warn('Upload completed but no download URL returned');
         }
       } else if (profileImage && !isLocalImage) {
-        console.log('Using existing remote image URL');
         finalImageUrl = profileImage.split('?')[0]; // Remove any cache buster
       }
 
@@ -179,7 +172,6 @@ export default function ProfileScreen() {
         picture_url: finalImageUrl,
       };
 
-      console.log('Updating driver with picture URL:', finalImageUrl);
       const updatedDriver = await updateDriver(driver.id, driverObj);
 
       // Update the driver state with the new data
@@ -190,7 +182,6 @@ export default function ProfileScreen() {
         const cachedUrl = finalImageUrl.includes('?')
           ? `${finalImageUrl}&t=${new Date().getTime()}` // URL already has query params, use &
           : `${finalImageUrl}?t=${new Date().getTime()}`; // URL has no query params, use ?
-        console.log('Setting profile image with cache buster:', cachedUrl);
         setProfileImage(cachedUrl);
       } else {
         setProfileImage(finalImageUrl);
@@ -226,13 +217,6 @@ export default function ProfileScreen() {
   const renderProfileImage = () => {
     // Determine if we have a valid image URL
     const hasValidImage = profileImage && profileImage.trim() !== '';
-
-    // Log details for debugging
-    console.log('Current profile image state:', {
-      hasValidImage,
-      profileImage,
-      isLoading: isImageLoading,
-    });
 
     return (
       <View style={styles.profileImageWrapper}>

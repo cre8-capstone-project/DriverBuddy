@@ -35,6 +35,26 @@ const driverRoutes = driverCollection => {
       res.status(500).send({error: `Failed to fetch driver: ${error}`});
     }
   });
+  router.get('/company/:company_id', async (req, res) => {
+    try {
+      const {company_id} = req.params;
+      const querySnapshot = await driverCollection.where('company_id', '==', company_id).get();
+
+      // Create an array to store the documents
+      const dbData = [];
+
+      // Loop through the documents and add them to the array
+      querySnapshot.forEach(doc => {
+        dbData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      res.status(200).send(dbData);
+    } catch (error) {
+      res.status(500).send({error: `Failed to fetch driver: ${error}`});
+    }
+  });
 
   router.put('/:id', async (req, res) => {
     try {

@@ -48,7 +48,9 @@ export const Tooltip = ({
     const position = xCoordinate.value - tooltipWidth / 2;
     if (maxAlertPerHour < 10 && position < 18) {
       return 18 + 5;
-    } else if (maxAlertPerHour >= 100 && position < 35) {
+    } else if (maxAlertPerHour >= 500 && position < 40) {
+      return 33 + 5;
+    } else if (maxAlertPerHour >= 50 && position < 35) {
       return 25 + 5;
     } else if (maxAlertPerHour >= 10 && position < 20) {
       return 20 + 5;
@@ -63,7 +65,9 @@ export const Tooltip = ({
     const position = xCoordinate.value - tooltipWidth / 2;
     if (maxAlertPerHour < 10 && position < 18) {
       return 18;
-    } else if (maxAlertPerHour >= 100 && position < 35) {
+    } else if (maxAlertPerHour >= 500 && position < 40) {
+      return 33;
+    } else if (maxAlertPerHour >= 50 && position < 35) {
       return 25;
     } else if (maxAlertPerHour >= 10 && position < 20) {
       return 20;

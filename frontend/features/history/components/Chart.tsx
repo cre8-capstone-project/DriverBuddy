@@ -44,12 +44,12 @@ const Chart = ({data, displayMode}: Props) => {
         yKeys={['alertPerHour']}
         domainPadding={
           displayMode === 'day'
-            ? {left: 5, right: 5, top: 60}
+            ? {left: 10, right: 5, top: 70}
             : displayMode === 'week'
-              ? {left: 25, right: 25, top: 60}
+              ? {left: 25, right: 25, top: 70}
               : displayMode === 'month'
-                ? {left: 5, right: 5, top: 60}
-                : {left: 15, right: 15, top: 60}
+                ? {left: 10, right: 5, top: 70}
+                : {left: 15, right: 15, top: 70}
         }
         axisOptions={{
           font,
@@ -70,7 +70,7 @@ const Chart = ({data, displayMode}: Props) => {
           {
             font,
             axisSide: 'left',
-            domain: [0, maxAlertPerHour + 6],
+            domain: [0, Math.min(maxAlertPerHour + 6, 500)],
           },
         ]}>
         {({points, chartBounds}) => (
@@ -78,9 +78,10 @@ const Chart = ({data, displayMode}: Props) => {
             <Bar
               chartBounds={chartBounds}
               points={points.alertPerHour}
+              roundedCorners={{topLeft: 2, topRight: 2}}
               innerPadding={0.5}
               animate={{type: 'timing', duration: 500}}>
-              <LinearGradient start={vec(0, 0)} end={vec(0, 400)} colors={['#1E3A8A', '#00FFFF']} />
+              <LinearGradient start={vec(0, 0)} end={vec(0, 150)} colors={['#00FFFF', '#1E3A8A']} />
             </Bar>
             {isActive && font && (
               <Tooltip

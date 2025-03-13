@@ -1,11 +1,12 @@
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
 import {Card} from '@rneui/themed';
 
 type Props = {
   data: {totalSessionHours: number; totalNumberOfAlert: number};
+  loading: boolean;
 };
 
-export const SummaryCard = ({data}: Props) => {
+export const SummaryCard = ({data, loading}: Props) => {
   const totalSessionHours = data?.totalSessionHours ?? 'N/A';
   const totalNumberOfAlert = data?.totalNumberOfAlert ?? 'N/A';
 
@@ -14,11 +15,23 @@ export const SummaryCard = ({data}: Props) => {
       <Card.Title style={styles.cardTitle}>Driving Time Overview</Card.Title>
       <View style={styles.contentContainer}>
         <View style={styles.content}>
-          <Text style={styles.contentTitle}>{totalSessionHours}</Text>
+          <View style={styles.loading}>
+            {loading ? (
+              <ActivityIndicator size="large" color="#ffffff" />
+            ) : (
+              <Text style={styles.contentTitle}>{totalSessionHours}</Text>
+            )}
+          </View>
           <Text style={styles.contentText}>hours with detection</Text>
         </View>
         <View style={styles.content}>
-          <Text style={styles.contentTitle}>{totalNumberOfAlert}</Text>
+          <View style={styles.loading}>
+            {loading ? (
+              <ActivityIndicator size="large" color="#ffffff" />
+            ) : (
+              <Text style={styles.contentTitle}>{totalNumberOfAlert}</Text>
+            )}
+          </View>
           <Text style={styles.contentText}>alerts received</Text>
         </View>
       </View>
@@ -29,7 +42,7 @@ export const SummaryCard = ({data}: Props) => {
 // Styles will be replaced after the visual design is ready
 const styles = StyleSheet.create({
   containerStyle: {
-    borderRadius: 20,
+    borderRadius: 36,
     padding: 0,
     margin: 0,
     backgroundColor: '#1E3A8A',
@@ -53,4 +66,5 @@ const styles = StyleSheet.create({
   },
   contentTitle: {textAlign: 'left', fontSize: 32, color: 'white'},
   contentText: {textAlign: 'left', color: 'white'},
+  loading: {alignItems: 'flex-start', height: 40, paddingBottom: 1},
 });

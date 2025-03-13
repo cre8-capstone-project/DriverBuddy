@@ -86,13 +86,17 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 let currentHour = currentTime.getHours();
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each hour
-                while (remainingDuration > 0) {
+                while (remainingDuration > 0 && currentTime < sessionEnd) {
                     const localTime = toZonedTime(currentTime, timeZone);
                     const localHourString = localTime.getHours();
                     const nextHour = new Date(currentTime);
                     nextHour.setHours(currentHour + 1, 0, 0, 0);
                     const EndTime = Math.min(nextHour.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000;
+                    if (Duration <= 0) {
+                        console.warn('[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.');
+                        break;
+                    }
                     if (!result[localHourString]) {
                         result[localHourString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -178,7 +182,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 const currentTime = new Date(sessionStart);
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
-                while (remainingDuration > 0) {
+                while (remainingDuration > 0 && currentTime < sessionEnd) {
                     const localCurrentTime = toZonedTime(currentTime, timeZone);
                     const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
                     const localNextDay = new Date(localCurrentTime);
@@ -187,6 +191,10 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     const nextDay = fromZonedTime(localNextDay, timeZone);
                     const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
+                    if (Duration <= 0) {
+                        console.warn('[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.');
+                        break;
+                    }
                     if (!result[currentDateString]) {
                         result[currentDateString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -274,7 +282,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 const currentTime = new Date(sessionStart);
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
-                while (remainingDuration > 0) {
+                while (remainingDuration > 0 && currentTime < sessionEnd) {
                     const localCurrentTime = toZonedTime(currentTime, timeZone);
                     const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
                     const localNextDay = new Date(localCurrentTime);
@@ -283,6 +291,10 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     const nextDay = fromZonedTime(localNextDay, timeZone);
                     const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
+                    if (Duration <= 0) {
+                        console.warn('[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.');
+                        break;
+                    }
                     if (!result[currentDateString]) {
                         result[currentDateString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -371,7 +383,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 const currentTime = new Date(sessionStart);
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
-                while (remainingDuration > 0) {
+                while (remainingDuration > 0 && currentTime < sessionEnd) {
                     const localCurrentTime = toZonedTime(currentTime, timeZone);
                     const currentMonthString = localCurrentTime.toLocaleDateString('en-CA', {
                         year: 'numeric',
@@ -383,6 +395,10 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     const nextDay = fromZonedTime(localNextDay, timeZone);
                     const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
+                    if (Duration <= 0) {
+                        console.warn('[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.');
+                        break;
+                    }
                     if (!result[currentMonthString]) {
                         result[currentMonthString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }

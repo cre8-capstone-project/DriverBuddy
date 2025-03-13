@@ -1,6 +1,7 @@
 import express from 'express';
 import admin from 'firebase-admin';
 import {fromZonedTime, toZonedTime} from 'date-fns-tz'; // eslint-disable-line import/no-extraneous-dependencies
+import {set} from 'date-fns';
 
 type FaceDetectionSession = {
   faceDetectionSessionId: string;
@@ -115,7 +116,7 @@ const faceDetectionSessionRoutes = (
         let remainingDuration = session.sessionDuration / 3600;
 
         // Allocate session duration to each hour
-        while (remainingDuration > 0) {
+        while (remainingDuration > 0 && currentTime < sessionEnd) {
           const localTime = toZonedTime(currentTime, timeZone);
           const localHourString = localTime.getHours();
 
@@ -124,6 +125,12 @@ const faceDetectionSessionRoutes = (
 
           const EndTime = Math.min(nextHour.getTime(), sessionEnd.getTime());
           const Duration = (EndTime - currentTime.getTime()) / 3600000;
+          if (Duration <= 0) {
+            console.warn(
+              '[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.',
+            );
+            break;
+          }
 
           if (!result[localHourString]) {
             result[localHourString] = {totalSessionHours: 0, totalNumberOfAlert: 0};
@@ -227,7 +234,7 @@ const faceDetectionSessionRoutes = (
         let remainingDuration = session.sessionDuration / 3600;
 
         // Allocate session duration to each day
-        while (remainingDuration > 0) {
+        while (remainingDuration > 0 && currentTime < sessionEnd) {
           const localCurrentTime = toZonedTime(currentTime, timeZone);
           const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
 
@@ -238,6 +245,12 @@ const faceDetectionSessionRoutes = (
           const nextDay = fromZonedTime(localNextDay, timeZone);
           const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
           const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
+          if (Duration <= 0) {
+            console.warn(
+              '[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.',
+            );
+            break;
+          }
 
           if (!result[currentDateString]) {
             result[currentDateString] = {totalSessionHours: 0, totalNumberOfAlert: 0};
@@ -343,7 +356,7 @@ const faceDetectionSessionRoutes = (
         let remainingDuration = session.sessionDuration / 3600;
 
         // Allocate session duration to each day
-        while (remainingDuration > 0) {
+        while (remainingDuration > 0 && currentTime < sessionEnd) {
           const localCurrentTime = toZonedTime(currentTime, timeZone);
           const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
 
@@ -354,6 +367,12 @@ const faceDetectionSessionRoutes = (
           const nextDay = fromZonedTime(localNextDay, timeZone);
           const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
           const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
+          if (Duration <= 0) {
+            console.warn(
+              '[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.',
+            );
+            break;
+          }
 
           if (!result[currentDateString]) {
             result[currentDateString] = {totalSessionHours: 0, totalNumberOfAlert: 0};
@@ -460,7 +479,7 @@ const faceDetectionSessionRoutes = (
         let remainingDuration = session.sessionDuration / 3600;
 
         // Allocate session duration to each day
-        while (remainingDuration > 0) {
+        while (remainingDuration > 0 && currentTime < sessionEnd) {
           const localCurrentTime = toZonedTime(currentTime, timeZone);
           const currentMonthString = localCurrentTime.toLocaleDateString('en-CA', {
             year: 'numeric',
@@ -474,6 +493,12 @@ const faceDetectionSessionRoutes = (
           const nextDay = fromZonedTime(localNextDay, timeZone);
           const EndTime = Math.min(nextDay.getTime(), sessionEnd.getTime());
           const Duration = (EndTime - currentTime.getTime()) / 3600000; // calculated in hours
+          if (Duration <= 0) {
+            console.warn(
+              '[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.',
+            );
+            break;
+          }
 
           if (!result[currentMonthString]) {
             result[currentMonthString] = {totalSessionHours: 0, totalNumberOfAlert: 0};

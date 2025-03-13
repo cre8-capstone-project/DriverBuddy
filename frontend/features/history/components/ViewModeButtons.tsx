@@ -14,6 +14,7 @@ export const ViewModeButtons = ({displayMode, setDisplayMode, setStartDate}: Pro
     <ButtonGroup
       containerStyle={styles.container}
       buttonContainerStyle={styles.buttonContainer}
+      buttonStyle={styles.button}
       selectedButtonStyle={styles.selectedButton}
       selectedTextStyle={styles.selectedButtonText}
       textStyle={styles.buttonText}
@@ -36,12 +37,18 @@ export const ViewModeButtons = ({displayMode, setDisplayMode, setStartDate}: Pro
 };
 
 const styles = StyleSheet.create({
-  container: {borderRadius: 18, padding: 0, margin: 0},
-  buttonContainer: {borderColor: 'transparent', padding: 0, margin: 0, backgroundColor: '#1E3A8A'},
+  container: {borderRadius: 36, padding: 0, margin: 0},
+  buttonContainer: {
+    borderColor: 'transparent',
+    padding: 0,
+    margin: 0,
+    backgroundColor: '#1E3A8A',
+  },
+  button: {justifyContent: 'center', marginHorizontal: 12},
   selectedButton: {
     backgroundColor: 'white',
-    margin: 7,
-    borderRadius: 5,
+    margin: 8,
+    borderRadius: 8,
     boxShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)',
     color: 'black',
   },

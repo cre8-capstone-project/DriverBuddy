@@ -15,7 +15,7 @@ export const FaceDetectionWindowFrame = ({viewMode, isFaceDetectionActive}: Prop
         viewMode === 'mapView' && isFaceDetectionActive ? styles.cameraWindowBorder : styles.hidden
       }>
       <View style={styles.cameraWindowLabel}>
-        <Icon name="visibility" color="black" size={10 / 0.2} />
+        <Icon name="visibility" color="black" size={14 / 0.25} />
         <Text style={styles.cameraWindowText}>Detecting</Text>
       </View>
     </View>
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   cameraWindowText: {
     color: 'black',
-    fontSize: 10 / 0.2,
+    fontSize: 14 / 0.25,
     height: '100%',
     fontWeight: 'bold',
   },

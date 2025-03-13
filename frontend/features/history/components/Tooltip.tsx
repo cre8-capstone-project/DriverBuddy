@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {View, Dimensions} from 'react-native';
 import {vec} from '@shopify/react-native-skia';
 import {useFont, RoundedRect, Text as SkiaText, Line as SkiaLine} from '@shopify/react-native-skia';
@@ -48,8 +48,12 @@ export const Tooltip = ({
     const position = xCoordinate.value - tooltipWidth / 2;
     if (maxAlertPerHour < 10 && position < 18) {
       return 18 + 5;
-    } else if (maxAlertPerHour >= 10 && position < 25) {
+    } else if (maxAlertPerHour >= 500 && position < 40) {
+      return 33 + 5;
+    } else if (maxAlertPerHour >= 50 && position < 35) {
       return 25 + 5;
+    } else if (maxAlertPerHour >= 10 && position < 20) {
+      return 20 + 5;
     } else if (position + tooltipWidth + 40 > screenWidth) {
       return screenWidth - tooltipWidth - 40 + 5;
     } else {
@@ -61,8 +65,12 @@ export const Tooltip = ({
     const position = xCoordinate.value - tooltipWidth / 2;
     if (maxAlertPerHour < 10 && position < 18) {
       return 18;
-    } else if (maxAlertPerHour >= 10 && position < 25) {
+    } else if (maxAlertPerHour >= 500 && position < 40) {
+      return 33;
+    } else if (maxAlertPerHour >= 50 && position < 35) {
       return 25;
+    } else if (maxAlertPerHour >= 10 && position < 20) {
+      return 20;
     } else if (position + tooltipWidth + 40 > screenWidth) {
       return screenWidth - tooltipWidth - 40;
     } else {
@@ -86,6 +94,7 @@ export const Tooltip = ({
       return updatedDate.toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
+        year: 'numeric',
       });
     }
   }, [date, startDate, displayMode]);
@@ -110,8 +119,8 @@ export const Tooltip = ({
         color="#1E3A8A"
       />
       <SkiaLine p1={lineStart} p2={lineEnd} strokeWidth={2} style="stroke" color="#1E3A8A" />
-      <SkiaText x={xPosition} y={12} text={xValue} font={font} color="white" />
-      <SkiaText x={xPosition} y={24} text={yValue} font={font} color="white" />
+      <SkiaText x={xPosition} y={24} text={xValue} font={font} color="white" />
+      <SkiaText x={xPosition} y={12} text={yValue} font={font} color="white" />
     </View>
   );
 };

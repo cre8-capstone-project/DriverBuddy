@@ -1,5 +1,6 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Image} from 'react-native';
+const legendIcon = require('@/assets/images/legend.png');
 
 type LegendItem = {
   label: string;
@@ -17,7 +18,7 @@ export const Legend = ({legend}: Props) => {
       {legend.map((item, index) => (
         <View key={index}>
           <View style={styles.itemContainer}>
-            <View style={[styles.colorBox, {backgroundColor: item.color}]} />
+            <Image source={legendIcon} style={styles.icon} />
             <Text style={styles.label}>{item.label}</Text>
           </View>
           <Text>{item.description}</Text>
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
     marginBottom: 10,
   },
-  colorBox: {
+  icon: {
     width: 20,
     height: 20,
     marginRight: 5,

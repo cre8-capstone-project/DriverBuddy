@@ -30,7 +30,7 @@ export const useFaceBounds = () => {
     }
   };
 
-  const showFaceBorder = () => (borderWidth.value = 2);
+  const showFaceBorder = () => (borderWidth.value = 4);
   const hideFaceBorder = () => (borderWidth.value = 0);
 
   return {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder};

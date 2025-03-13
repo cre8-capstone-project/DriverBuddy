@@ -50,12 +50,12 @@ export const HistoryView = () => {
         setDisplayMode={setDisplayMode}
         setStartDate={setStartDate}
       />
-      <SummaryCard data={{totalSessionHours, totalNumberOfAlert}} />
+      <SummaryCard data={{totalSessionHours, totalNumberOfAlert}} loading={loading} />
       <ChartPager displayMode={displayMode} startDate={startDate} setStartDate={setStartDate} />
       {/* <Chart data={detailedData} viewMode={viewMode} /> */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#1E3A8A" />
         </View>
       ) : (
         <Chart {...chartProps} />

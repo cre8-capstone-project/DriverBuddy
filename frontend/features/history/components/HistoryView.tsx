@@ -66,7 +66,7 @@ export const HistoryView = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, gap: 20, padding: 20, backgroundColor: '#ffffff'},
+  container: {flex: 1, gap: 15, padding: 20, backgroundColor: '#ffffff'},
   title: {fontSize: 20, fontWeight: 'bold', textAlign: 'center'},
   loadingContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
 });

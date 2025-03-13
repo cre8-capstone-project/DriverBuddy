@@ -81,7 +81,7 @@ const Chart = ({data, displayMode}: Props) => {
               roundedCorners={{topLeft: 2, topRight: 2}}
               innerPadding={0.5}
               animate={{type: 'timing', duration: 500}}>
-              <LinearGradient start={vec(0, 0)} end={vec(0, 150)} colors={['#00FFFF', '#1E3A8A']} />
+              <LinearGradient start={vec(0, 0)} end={vec(0, 150)} colors={['#1E3A8A']} />
             </Bar>
             {isActive && font && (
               <Tooltip

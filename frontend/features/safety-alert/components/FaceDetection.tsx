@@ -54,12 +54,12 @@ const FaceDetection = ({device, viewMode}: Props) => {
       {viewMode === 'cameraView' ? (
         <View style={styles.alertContainer}>
           <Image source={eyeIcon} />
-          <Text style={styles.alertText}>Drowsiness detected: {alertCount} Times</Text>
+          <Text style={styles.alertText}>Drowsiness detected: {alertCount} times</Text>
         </View>
       ) : (
         <View style={styles.alertContainerLarge}>
           <Image source={eyeIcon} style={styles.iconLarge} />
-          <Text style={styles.alertTextLarge}>{alertCount} Times</Text>
+          <Text style={styles.alertTextLarge}>{alertCount} times</Text>
         </View>
       )}
 
@@ -104,14 +104,14 @@ const styles = StyleSheet.create({
     gap: 20,
     bottom: 80,
     width: '100%',
-    height: 100,
+    height: 85,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   alertTextLarge: {
     color: 'white',
-    fontSize: 50,
+    fontSize: 55,
     fontWeight: 'bold',
   },
   iconLarge: {
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   debugText: {
     color: 'lightgreen',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

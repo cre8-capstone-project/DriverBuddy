@@ -253,5 +253,6 @@ const styles = StyleSheet.create({
     height: height * 1,
     transform: [{scale: 0.25}],
     zIndex: 1,
+    boxShadow: '5px 5px 10px 5px rgba(0, 0, 0, 0.2)',
   },
 });

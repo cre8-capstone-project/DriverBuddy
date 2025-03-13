@@ -1,11 +1,13 @@
 import React, {useEffect} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, Image} from 'react-native';
 import {Camera} from 'react-native-vision-camera-face-detector';
 import Animated from 'react-native-reanimated';
 import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
 import {WarningMessage} from '@/features/safety-alert/components/WarningMessage';
 import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import type {ViewModeType} from '@/types/ViewModeType';
+const eyeIcon = require('@/assets/images/eye-closed.png');
 
 const DEBUG_MODE = true;
 
@@ -15,6 +17,8 @@ type Props = {
 };
 
 const FaceDetection = ({device, viewMode}: Props) => {
+  const {alertCount} = useFaceDetectionContext();
+
   useEffect(() => {
     console.log('[DEBUG] FaceDetection component is mounted');
     return () => {
@@ -47,6 +51,18 @@ const FaceDetection = ({device, viewMode}: Props) => {
       <WarningMessage isWarning={isWarning} />
       <FaceDetectingLabel />
 
+      {viewMode === 'cameraView' ? (
+        <View style={styles.alertContainer}>
+          <Image source={eyeIcon} />
+          <Text style={styles.alertText}>Drowsiness detected: {alertCount} Times</Text>
+        </View>
+      ) : (
+        <View style={styles.alertContainerLarge}>
+          <Image source={eyeIcon} style={styles.iconLarge} />
+          <Text style={styles.alertTextLarge}>{alertCount} Times</Text>
+        </View>
+      )}
+
       {DEBUG_MODE && (
         <View style={styles.debugContainer}>
           <Text style={styles.debugText}>
@@ -68,6 +84,40 @@ const FaceDetection = ({device, viewMode}: Props) => {
 const styles = StyleSheet.create({
   container: {flex: 1},
   camera: {...StyleSheet.absoluteFillObject},
+  alertContainer: {
+    position: 'absolute',
+    flexDirection: 'row',
+    gap: 10,
+    bottom: 80,
+    width: '100%',
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  alertText: {
+    color: 'white',
+  },
+  alertContainerLarge: {
+    position: 'absolute',
+    flexDirection: 'row',
+    gap: 20,
+    bottom: 80,
+    width: '100%',
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  alertTextLarge: {
+    color: 'white',
+    fontSize: 50,
+    fontWeight: 'bold',
+  },
+  iconLarge: {
+    width: 50,
+    height: 50,
+  },
   debugContainer: {
     position: 'absolute',
     top: '5%',

@@ -34,9 +34,9 @@ export const Tooltip = ({
   //   };
   // }, []);
 
-  const font = useFont(interFont, 10);
+  const font = useFont(interFont, 12);
   const tooltipWidth = 120;
-  const tooltipHeight = 30;
+  const tooltipHeight = 35;
 
   const lineStart = useDerivedValue(() => vec(xCoordinate.value, 30), [xCoordinate]);
   const lineEnd = useDerivedValue(
@@ -119,8 +119,8 @@ export const Tooltip = ({
         color="#1E3A8A"
       />
       <SkiaLine p1={lineStart} p2={lineEnd} strokeWidth={2} style="stroke" color="#1E3A8A" />
-      <SkiaText x={xPosition} y={24} text={xValue} font={font} color="white" />
-      <SkiaText x={xPosition} y={12} text={yValue} font={font} color="white" />
+      <SkiaText x={xPosition} y={29} text={xValue} font={font} color="white" />
+      <SkiaText x={xPosition} y={15} text={yValue} font={font} color="white" />
     </View>
   );
 };

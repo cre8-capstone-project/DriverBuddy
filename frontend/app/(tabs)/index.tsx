@@ -1,30 +1,35 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
+import OnboardingTour from '@/components/OnboardingTour';
 
 export default function HomeScreen() {
   const [dialogStatus, setDialogStatus] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(true);
 
   const toggleStartDialog = () => {
     setDialogStatus(!dialogStatus);
   };
 
   return (
-    <View style={styles.container}>
-      <View>
-        <Button
-          buttonStyle={styles.roundButton}
-          containerStyle={styles.roundButton}
-          onPress={() => {
-            toggleStartDialog();
-          }}>
-          <Icon name={'videocam'} color={'white'} size={50} />
-          <Text style={styles.buttonText}>Start your{'\n'}journey</Text>
-        </Button>
+    <>
+      {showOnboarding && <OnboardingTour onComplete={() => setShowOnboarding(false)} />}
+      <View style={styles.container}>
+        <View>
+          <Button
+            buttonStyle={styles.roundButton}
+            containerStyle={styles.roundButton}
+            onPress={() => {
+              toggleStartDialog();
+            }}>
+            <Icon name={'videocam'} color={'white'} size={50} />
+            <Text style={styles.buttonText}>Start your{'\n'}journey</Text>
+          </Button>
+        </View>
+        <StartConfirmationDialog dialogStatus={dialogStatus} toggleDialog={toggleStartDialog} />
       </View>
-      <StartConfirmationDialog dialogStatus={dialogStatus} toggleDialog={toggleStartDialog} />
-    </View>
+    </>
   );
 }
 

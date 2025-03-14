@@ -27,6 +27,7 @@ import {MaterialIcons} from '@expo/vector-icons';
 import {Camera} from 'react-native-vision-camera';
 import {InvitationCodeType} from '@/types/InvitationCodeType';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
+import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -38,10 +39,12 @@ export default function SignUpScreen() {
   const [invitation, setInvitation] = useState<InvitationCodeType | null>(null);
   const [photoUri, setPhotoUri] = useState<string>('');
   const cameraRef = useRef<Camera>(null);
+  const {setShowOnboarding} = useOnboardingTourContext();
 
   const handleAuth = async () => {
     try {
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      setShowOnboarding(true);
       let downloadURL: string | undefined = photoUri.trim();
       if (downloadURL !== '') {
         downloadURL = await uploadImage(photoUri, userCredential.user.uid);

@@ -38,13 +38,13 @@ export const SummaryCard = ({data, loading}: Props) => {
                 <Text style={styles.contentTitle}>{totalSessionHours}</Text>
               )}
             </View>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={styles.innerContent}>
               <Text style={styles.contentText}>hours with detection</Text>
               <TouchableOpacity onPress={toggleTooltip}>
                 <View ref={iconRef}>
                   <Icon
-                    name="help"
-                    color={tooltipVisible ? '#00FFFF' : 'white'}
+                    name={tooltipVisible ? 'help' : 'help-outline'}
+                    color="#00FFFF"
                     size={15}
                     style={{paddingLeft: 5}}
                   />
@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
   },
+  innerContent: {flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center'},
   contentTitle: {textAlign: 'left', fontSize: 32, color: 'white'},
   contentText: {textAlign: 'left', color: 'white'},
   loading: {alignItems: 'flex-start', height: 45, justifyContent: 'flex-end', paddingBottom: 1},

@@ -1,6 +1,8 @@
 import {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 
 export const useFaceBounds = () => {
+  const {viewModeContext} = useFaceDetectionContext();
   const aFaceW = useSharedValue(0);
   const aFaceH = useSharedValue(0);
   const aFaceX = useSharedValue(0);
@@ -18,12 +20,13 @@ export const useFaceBounds = () => {
   }));
 
   const updateFaceBounds = (face?: any) => {
-    const PADDING = 10;
+    const PADDING = 25;
     if (face) {
       const {width, height, x, y} = face.bounds;
       aFaceW.value = width + PADDING * 2;
-      aFaceH.value = height + PADDING * 2;
-      aFaceX.value = x - PADDING;
+      aFaceH.value =
+        viewModeContext === 'mapView' ? (height + PADDING * 2) * 0.8 : (height + PADDING * 2) * 0.8;
+      aFaceX.value = x - PADDING + 10;
       aFaceY.value = y - PADDING;
     } else {
       aFaceW.value = aFaceH.value = aFaceX.value = aFaceY.value = 0;

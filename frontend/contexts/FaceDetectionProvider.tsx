@@ -1,17 +1,22 @@
 import {createContext, useContext, ReactNode, useState} from 'react';
+import type {ViewModeType} from '@/types/ViewModeType';
 
 type FaceDetectionContextType = {
   alertCount: number;
   setAlertCount: React.Dispatch<React.SetStateAction<number>>;
+  viewModeContext: ViewModeType;
+  setViewModeContext: React.Dispatch<React.SetStateAction<ViewModeType>>;
 };
 
 const FaceDetectionContext = createContext<FaceDetectionContextType | undefined>(undefined);
 
 export const FaceDetectionProvider = ({children}: {children: ReactNode}) => {
   const [alertCount, setAlertCount] = useState(0);
+  const [viewModeContext, setViewModeContext] = useState<ViewModeType>('mapView');
 
   return (
-    <FaceDetectionContext.Provider value={{alertCount, setAlertCount}}>
+    <FaceDetectionContext.Provider
+      value={{alertCount, setAlertCount, viewModeContext, setViewModeContext}}>
       {children}
     </FaceDetectionContext.Provider>
   );

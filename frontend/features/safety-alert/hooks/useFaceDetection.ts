@@ -11,8 +11,11 @@ import {useLookAwayDetection} from '@/features/safety-alert/hooks/useLookAwayDet
 import {FDSessionService} from '@/services/FDSessionService';
 import {logFaceDetectionSessionData} from '@/api/api';
 import uuid from 'react-native-uuid';
+import {useAuth} from '@/contexts/AuthProvider';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 
 export const useFaceDetection = () => {
+  const {user} = useAuth();
   const {width, height} = useWindowDimensions();
   const {speak, isSpeaking} = useSpeech();
   const {generateMessage} = useOpenAI();
@@ -20,6 +23,8 @@ export const useFaceDetection = () => {
   const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
   const {checkDrowsiness, leftEyeStatus, rightEyeStatus, blinkCount} = useDrowsinessDetection();
   const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
+
+  const {alertCount, setAlertCount} = useFaceDetectionContext();
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
@@ -37,19 +42,29 @@ export const useFaceDetection = () => {
   const sessionIdRef = useRef<string>(uuid.v4() as string);
 
   useEffect(() => {
+    console.log('[DEBUG] useFaceDetection component is mounted');
+    return () => {
+      console.log('[DEBUG] useFaceDetection component is unmounted');
+    };
+  }, []);
+
+  useEffect(() => {
     const sessionId = sessionIdRef.current;
     FDSessionService.startFDSession({
       faceDetectionSessionId: sessionId,
-      userId: '1',
+      userId: user?.uid ?? '',
       startTime: new Date().toISOString(),
+      endTime: new Date().toISOString(),
     });
+    console.log('[DEBUG] Start FDSession:', sessionId);
 
     return () => {
       FDSessionService.endFDSession({
         faceDetectionSessionId: sessionId,
-        userId: `1`, // ToDo: Get user ID from auth context
+        userId: user?.uid ?? '',
         endTime: new Date().toISOString(),
       });
+      console.log('[DEBUG] End FDSession:', sessionId);
 
       // Send the session data to the cloud database
       FDSessionService.getFDSessionDataById(sessionId)
@@ -66,8 +81,10 @@ export const useFaceDetection = () => {
         .catch(error => {
           console.error('An error occurred while registering the session:', error);
         });
+
+      setAlertCount(0); //Reset FaceDetectionContext alert count
     };
-  }, []);
+  }, [user?.uid]);
 
   const handleFacesDetection = (faces: Face[], frame: Frame) => {
     try {
@@ -101,9 +118,11 @@ export const useFaceDetection = () => {
       await AlertService.logAlert({
         alertId: uuid.v4(),
         faceDetectionSessionId: sessionIdRef.current,
-        userId: '1',
+        userId: user?.uid ?? '',
         timestamp: new Date().toISOString(),
       });
+
+      setAlertCount((prev: number) => prev + 1);
 
       alertRef.current = false;
     } catch (error) {
@@ -120,5 +139,6 @@ export const useFaceDetection = () => {
     pitchAngleStatus,
     blinkCount,
     isWarning: isSpeaking,
+    alertCount,
   };
 };

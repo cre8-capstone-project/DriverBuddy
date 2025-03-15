@@ -1,28 +1,78 @@
-import {View, Text, StyleSheet} from 'react-native';
-import {Card} from '@rneui/themed';
+import {useState, useRef} from 'react';
+import {View, Text, StyleSheet, ActivityIndicator, TouchableOpacity} from 'react-native';
+import {Card, Icon} from '@rneui/themed';
 
 type Props = {
   data: {totalSessionHours: number; totalNumberOfAlert: number};
+  loading: boolean;
 };
 
-export const SummaryCard = ({data}: Props) => {
+export const SummaryCard = ({data, loading}: Props) => {
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({top: 0, left: 0});
+  const iconRef = useRef<View>(null);
   const totalSessionHours = data?.totalSessionHours ?? 'N/A';
   const totalNumberOfAlert = data?.totalNumberOfAlert ?? 'N/A';
 
+  const toggleTooltip = () => {
+    if (tooltipVisible) {
+      setTooltipVisible(false);
+    } else {
+      iconRef.current?.measure((fx, fy, width, height, px, py) => {
+        setTooltipPosition({top: py - 85, left: px - 77});
+        setTooltipVisible(true);
+      });
+    }
+  };
+
   return (
-    <Card wrapperStyle={styles.wrapperStyle} containerStyle={styles.containerStyle}>
-      <Card.Title style={styles.cardTitle}>Driving Time Overview</Card.Title>
-      <View style={styles.contentContainer}>
-        <View style={styles.content}>
-          <Text style={styles.contentTitle}>{totalSessionHours}</Text>
-          <Text style={styles.contentText}>hours with detection</Text>
+    <>
+      <Card wrapperStyle={styles.wrapperStyle} containerStyle={styles.containerStyle}>
+        <Card.Title style={styles.cardTitle}>Driving Time Overview</Card.Title>
+        <View style={styles.contentContainer}>
+          <View style={styles.content}>
+            <View style={styles.loading}>
+              {loading ? (
+                <ActivityIndicator size="large" color="#ffffff" />
+              ) : (
+                <Text style={styles.contentTitle}>{totalSessionHours}</Text>
+              )}
+            </View>
+            <View style={styles.innerContent}>
+              <Text style={styles.contentText}>hours with detection</Text>
+              <TouchableOpacity onPress={toggleTooltip}>
+                <View ref={iconRef}>
+                  <Icon
+                    name={tooltipVisible ? 'help' : 'help-outline'}
+                    color="#00FFFF"
+                    size={15}
+                    style={{paddingLeft: 5}}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={styles.content}>
+            <View style={styles.loading}>
+              {loading ? (
+                <ActivityIndicator size="large" color="#ffffff" />
+              ) : (
+                <Text style={styles.contentTitle}>{totalNumberOfAlert}</Text>
+              )}
+            </View>
+            <Text style={styles.contentText}>alerts received</Text>
+          </View>
         </View>
-        <View style={styles.content}>
-          <Text style={styles.contentTitle}>{totalNumberOfAlert}</Text>
-          <Text style={styles.contentText}>alerts received</Text>
+      </Card>
+      {tooltipVisible && (
+        <View style={[styles.tooltipOverlay, tooltipPosition]}>
+          <Text style={styles.tooltipText}>
+            The time spent driving while Drive Buddy’s drowsiness detection was active.
+          </Text>
+          <View style={styles.tooltipArrow} />
         </View>
-      </View>
-    </Card>
+      )}
+    </>
   );
 };
 
@@ -47,7 +97,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 20,
     borderColor: 'transparent',
     padding: 0,
     margin: 0,
@@ -60,6 +110,7 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
   },
+  innerContent: {flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center'},
   contentTitle: {textAlign: 'left', fontSize: 32, color: 'white'},
   contentText: {textAlign: 'left', fontSize: 15, fontWeight: 500, color: 'white', marginTop: 10},
 });

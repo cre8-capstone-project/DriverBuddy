@@ -1,5 +1,5 @@
 import {useState, useMemo} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, ActivityIndicator} from 'react-native';
 import {useChartData} from '@/features/history/hooks/useChartData';
 import {ViewModeButtons} from '@/features/history/components/ViewModeButtons';
 import {SummaryCard} from '@/features/history/components/SummaryCard';
@@ -16,7 +16,7 @@ export const HistoryView = () => {
     return startDate;
   });
 
-  const {totalSessionHours, totalNumberOfAlert, detailedData} = useChartData(
+  const {totalSessionHours, totalNumberOfAlert, detailedData, loading} = useChartData(
     displayMode,
     startDate,
   );
@@ -50,24 +50,23 @@ export const HistoryView = () => {
         setDisplayMode={setDisplayMode}
         setStartDate={setStartDate}
       />
-      <SummaryCard data={{totalSessionHours, totalNumberOfAlert}} />
+      <SummaryCard data={{totalSessionHours, totalNumberOfAlert}} loading={loading} />
       <ChartPager displayMode={displayMode} startDate={startDate} setStartDate={setStartDate} />
       {/* <Chart data={detailedData} viewMode={viewMode} /> */}
-      {/* {loading ? (
+      {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#1E3A8A" />
         </View>
       ) : (
         <Chart {...chartProps} />
-      )} */}
-      <Chart {...chartProps} />
+      )}
       <Legend legend={legendItems} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, gap: 20, padding: 20},
+  container: {flex: 1, gap: 20, padding: 20, backgroundColor: '#ffffff'},
   title: {fontSize: 20, fontWeight: 'bold', textAlign: 'center'},
   loadingContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
 });

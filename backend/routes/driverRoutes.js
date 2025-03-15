@@ -1,13 +1,13 @@
 /* eslint-disable camelcase */
 import express from 'express';
 
-const driverRoutes = (driverCollection, storage) => {
+const driverRoutes = driverCollection => {
   const router = express.Router();
 
   router.post('/', async (req, res) => {
     try {
-      const {id, name, email, phone, vehicle_type, user_type} = req.body;
-      const newDriver = {id, name, email, phone, vehicle_type, user_type};
+      const {id, name, email, phone, vehicle_type, user_type, picture_url, company_id} = req.body;
+      const newDriver = {id, name, email, phone, vehicle_type, user_type, picture_url, company_id};
       await driverCollection.doc(id).set(newDriver);
       res.status(201).send({id, ...newDriver});
     } catch (error) {
@@ -35,18 +35,60 @@ const driverRoutes = (driverCollection, storage) => {
       res.status(500).send({error: `Failed to fetch driver: ${error}`});
     }
   });
+  router.get('/company/:company_id', async (req, res) => {
+    try {
+      const {company_id} = req.params;
+      const querySnapshot = await driverCollection.where('company_id', '==', company_id).get();
+
+      // Create an array to store the documents
+      const dbData = [];
+
+      // Loop through the documents and add them to the array
+      querySnapshot.forEach(doc => {
+        dbData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      res.status(200).send(dbData);
+    } catch (error) {
+      res.status(500).send({error: `Failed to fetch driver: ${error}`});
+    }
+  });
 
   router.put('/:id', async (req, res) => {
     try {
-      const {name, email, phone, birthday, vehicle_type, user_type} = req.body;
-      await driverCollection
-        .doc(req.params.id)
-        .update({name, email, phone, birthday, vehicle_type, user_type});
-      res
-        .status(200)
-        .send({id: req.params.id, name, email, phone, birthday, vehicle_type, user_type});
+      const {id} = req.params;
+      const {name, email, phone, birthday, vehicle_type, user_type, company_id, picture_url} =
+        req.body;
+
+      // Create a new driver object with the updated fields - only include defined values
+      const updatedDriver = {};
+
+      // Only add fields that are defined
+      if (name !== undefined) updatedDriver.name = name;
+      if (email !== undefined) updatedDriver.email = email;
+      if (phone !== undefined) updatedDriver.phone = phone;
+      if (vehicle_type !== undefined) updatedDriver.vehicle_type = vehicle_type;
+      if (user_type !== undefined) updatedDriver.user_type = user_type;
+      if (company_id !== undefined) updatedDriver.company_id = company_id;
+      if (birthday !== undefined) updatedDriver.birthday = birthday;
+      if (picture_url !== undefined) updatedDriver.picture_url = picture_url;
+
+      // Only proceed with the update if there are fields to update
+      if (Object.keys(updatedDriver).length > 0) {
+        // Update the driver document in Firestore
+        await driverCollection.doc(id).update(updatedDriver);
+      }
+
+      // Get the updated driver document to return in the response
+      const updatedDriverDoc = await driverCollection.doc(id).get();
+      const updatedDriverData = updatedDriverDoc.data();
+
+      res.status(200).send(updatedDriverData);
     } catch (error) {
-      res.status(500).send({error: `Failed to update driver: ${error}`});
+      console.error('Error updating driver:', error);
+      res.status(500).send({error: `Failed to update driver: ${error.message}`});
     }
   });
 

@@ -1,11 +1,16 @@
 import React, {useEffect} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, Image, Dimensions} from 'react-native';
 import {Camera} from 'react-native-vision-camera-face-detector';
 import Animated from 'react-native-reanimated';
 import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
 import {WarningMessage} from '@/features/safety-alert/components/WarningMessage';
 import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
+import {Icon} from '@rneui/themed';
 import type {ViewModeType} from '@/types/ViewModeType';
+
+const eyeIcon = require('@/assets/images/eye-closed.png');
+const {width} = Dimensions.get('window');
 
 const DEBUG_MODE = true;
 
@@ -15,6 +20,15 @@ type Props = {
 };
 
 const FaceDetection = ({device, viewMode}: Props) => {
+  const {alertCount} = useFaceDetectionContext();
+
+  useEffect(() => {
+    console.log('[DEBUG] FaceDetection component is mounted');
+    return () => {
+      console.log('[DEBUG] FaceDetection component is unmounted');
+    };
+  }, []);
+
   const {
     faceDetectionOptions,
     handleFacesDetection,
@@ -25,12 +39,6 @@ const FaceDetection = ({device, viewMode}: Props) => {
     blinkCount,
     isWarning,
   } = useFaceDetection();
-
-  useEffect(() => {
-    return () => {
-      console.log('FaceDetection component is unmounting, cleaning up...');
-    };
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -44,7 +52,19 @@ const FaceDetection = ({device, viewMode}: Props) => {
       />
       <Animated.View style={faceBorderStyle} />
       <WarningMessage isWarning={isWarning} />
-      <FaceDetectingLabel />
+      {viewMode === 'cameraView' && <FaceDetectingLabel />}
+      {viewMode === 'mapView' && (
+        <>
+          <View style={[styles.alertContainer, {bottom: 85}]}>
+            <Image source={eyeIcon} style={styles.icon} />
+            <Text style={styles.alertText}>{alertCount} times</Text>
+          </View>
+          <View style={[styles.alertContainer, {bottom: 0, backgroundColor: 'lightgreen'}]}>
+            <Icon name="visibility" color="black" size={55} />
+            <Text style={[styles.alertText, {color: 'black'}]}>Detecting</Text>
+          </View>
+        </>
+      )}
 
       {DEBUG_MODE && (
         <View style={styles.debugContainer}>
@@ -66,15 +86,36 @@ const FaceDetection = ({device, viewMode}: Props) => {
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  camera: {...StyleSheet.absoluteFillObject},
+  camera: {...StyleSheet.absoluteFillObject, width: width + 40}, //tentative workaround for camera view's mini window issue
+  alertContainer: {
+    position: 'absolute',
+    flexDirection: 'row',
+    gap: 10,
+    bottom: 0,
+    width: '100%',
+    height: 85,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  alertText: {
+    color: 'white',
+    fontSize: 55,
+    fontWeight: 'bold',
+  },
+  icon: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+  },
   debugContainer: {
     position: 'absolute',
     top: '5%',
-    right: '2%',
+    right: '5%',
   },
   debugText: {
     color: 'lightgreen',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

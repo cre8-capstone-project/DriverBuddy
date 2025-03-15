@@ -1,12 +1,12 @@
 import React, {useCallback, useRef, useState} from 'react';
-import {View, StyleSheet, Text, Dimensions, Image, ImageSourcePropType} from 'react-native';
+import {View, StyleSheet, Text, Image, ImageSourcePropType} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
 import {Button, Icon} from '@rneui/themed';
-import {FaceDetectionWindowFrame} from '@/features/safety-alert/components/FaceDetectionWindowFrame';
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
 import {EndConfirmationDialog} from '@/features/safety-alert/components/EndConfirmationDialog';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import type {ViewModeType} from '@/types/ViewModeType';
 import GoogleMapImage from '@/assets/images/google-map.png';
 import BackButton from '@/components/BackButton';
@@ -18,9 +18,11 @@ import EndRouteButton from '@/components/EndRouteButton';
 
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
-const {width, height} = Dimensions.get('window');
+const eyeIcon = require('@/assets/images/eye-closed.png');
 
 export default function HomeScreen() {
+  const {alertCount} = useFaceDetectionContext();
+  const {setViewModeContext} = useFaceDetectionContext();
   const [viewMode, setViewMode] = useState<ViewModeType>('mapView');
   const [driveDestinationStatus, setDriveDestinationStatus] = useState(false);
   const [driveModeStatus, setDriveModeStatus] = useState(false);
@@ -57,10 +59,15 @@ export default function HomeScreen() {
       {/* Switch View Mode: Camera or Map */}
       <View
         onStartShouldSetResponder={() => true}
-        onResponderRelease={() => setViewMode('mapView')}
+        onResponderRelease={() => {
+          setViewMode('mapView');
+          setViewModeContext('mapView');
+        }}
         style={[
           styles.mapComponentContainer,
-          viewMode === 'mapView' ? styles.visible : styles.miniWindowView,
+          viewMode === 'mapView'
+            ? styles.visible
+            : [styles.miniWindowView, {borderColor: 'none', borderWidth: 0}],
         ]}>
         <Map
           key={mapKey}
@@ -73,7 +80,10 @@ export default function HomeScreen() {
       </View>
       <View
         onStartShouldSetResponder={() => true}
-        onResponderRelease={() => setViewMode('cameraView')}
+        onResponderRelease={() => {
+          setViewMode('cameraView');
+          setViewModeContext('cameraView');
+        }}
         style={[
           styles.cameraComponentContainer,
           viewMode === 'cameraView'
@@ -87,10 +97,6 @@ export default function HomeScreen() {
           setIsFaceDetectionActive={setIsFaceDetectionActive}
           setViewMode={setViewMode}
           viewMode={viewMode}
-        />
-        <FaceDetectionWindowFrame
-          viewMode={viewMode}
-          isFaceDetectionActive={isFaceDetectionActive}
         />
       </View>
 
@@ -213,6 +219,16 @@ export default function HomeScreen() {
           driveMode={driveModeStatus}
           setEndDrive={setEndDriveStatus}
         />
+
+        {/* Alert Counter */}
+        {viewMode === 'cameraView' && (
+          <View style={styles.alertContainer}>
+            <Image source={eyeIcon} />
+            <Text style={styles.alertText}>
+              Drowsiness detected: <Text style={styles.alertCountText}>{alertCount} times</Text>
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -260,17 +276,37 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: 'center',
   },
-
+  alertContainer: {
+    position: 'absolute',
+    flexDirection: 'row',
+    gap: 10,
+    bottom: 80,
+    left: 0,
+    right: 0,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  alertText: {
+    color: 'white',
+  },
+  alertCountText: {
+    fontSize: 20,
+  },
   // TODO: NEED MORE INVESTIGATION
   miniWindowView: {
     overflow: 'hidden',
     position: 'absolute',
     borderRadius: 60,
-    top: -height * 0.5 + (height * 0.2) / 2 + 10,
-    left: -width * 0.5 + (width * 0.2) / 2 + 10,
-    width: width * 1,
-    height: height * 1,
-    transform: [{scale: 0.2}],
+    borderWidth: 10,
+    borderColor: 'lightgreen',
+    top: -600 * 0.5 + (600 * 0.25) / 2 + 10,
+    left: -400 * 0.5 + (400 * 0.25) / 2 + 10,
+    height: 600,
+    width: 400,
+    transform: [{scale: 0.25}],
     zIndex: 1,
+    boxShadow: '5px 5px 10px 5px rgba(0, 0, 0, 0.2)',
   },
 });

@@ -14,7 +14,13 @@ import {
 import auth from '@react-native-firebase/auth';
 import {Timestamp} from 'firebase/firestore';
 import {useRouter} from 'expo-router';
-import {createDriver, Driver, getInvitationCode, updateInvitationStatus} from '@/api/api';
+import {
+  createDriver,
+  Driver,
+  getInvitationCode,
+  updateInvitationStatus,
+  uploadImage,
+} from '@/api/api';
 import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
 import * as ImagePicker from 'expo-image-picker';
 import {MaterialIcons} from '@expo/vector-icons';
@@ -22,6 +28,7 @@ import {Camera} from 'react-native-vision-camera';
 import {InvitationCodeType} from '@/types/InvitationCodeType';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 import FullWidthButton from '@/components/FullWidthButton';
+import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -33,10 +40,16 @@ export default function SignUpScreen() {
   const [invitation, setInvitation] = useState<InvitationCodeType | null>(null);
   const [photoUri, setPhotoUri] = useState<string>('');
   const cameraRef = useRef<Camera>(null);
+  const {setShowOnboarding} = useOnboardingTourContext();
 
   const handleAuth = async () => {
     try {
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      setShowOnboarding(true);
+      let downloadURL: string | undefined = photoUri.trim();
+      if (downloadURL !== '') {
+        downloadURL = await uploadImage(photoUri, userCredential.user.uid);
+      }
       const newDriverObj: Driver = {
         id: userCredential.user.uid,
         user_type: 'basic',
@@ -45,7 +58,8 @@ export default function SignUpScreen() {
         phone: '',
         vehicle_type: '',
         birthday: Timestamp.fromDate(new Date()),
-        picture_url: photoUri,
+        picture_url: downloadURL ? downloadURL : '',
+        company_id: invitation?.company_id,
       };
       await createDriver(newDriverObj);
       if (invitation) {
@@ -107,8 +121,8 @@ export default function SignUpScreen() {
     <View style={styles.container}>
       {validCode ? (
         <>
-          <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 20}}>{name}</Text>
           <View style={styles.profileImageContainer}>
+            <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 20}}>{name}</Text>
             <Pressable
               onPress={pickImage}
               style={[styles.profileImageWrapper, styles.profileImageWrapperEdit]}>
@@ -128,7 +142,7 @@ export default function SignUpScreen() {
           </View>
           <View style={styles.buttonsContainer}>
             <Button title="Skip this for now" onPress={handleAuth} />
-            <Button title="Take a photo with the camera" onPress={openCamera} />
+            {/*<Button title="Take a photo with the camera" onPress={openCamera} />*/}
             <Button title="Upload photo from phone" onPress={pickImage} />
             {photoUri !== '' ? <Button title="Complete" onPress={handleAuth} /> : ''}
           </View>
@@ -222,6 +236,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 20,
+    gap: 50,
   },
   logoContainer: {
     width: width / 3, // 1/3 of the screen width

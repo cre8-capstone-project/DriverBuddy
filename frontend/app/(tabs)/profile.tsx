@@ -16,9 +16,8 @@ import {
   Alert,
 } from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
-import {getDriverByID} from '@/api/api';
+import {getDriverByID, updateDriver, uploadImage} from '@/api/api';
 import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
-import {updateDriver} from '@/api/api';
 import {Button} from '@rneui/base';
 import * as ImagePicker from 'expo-image-picker';
 import {useAuth} from '@/contexts/AuthProvider';
@@ -27,7 +26,8 @@ import {useRouter} from 'expo-router';
 import FullWidthButton from '@/components/FullWidthButton';
 
 export default function ProfileScreen() {
-  const {loading, user} = useAuth();
+  const {user} = useAuth();
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
   const [driver, setDriver] = useState<any>(undefined);
   const [driverName, setDriverName] = useState<string>('');
@@ -37,29 +37,42 @@ export default function ProfileScreen() {
   const [driverEmail, setDriverEmail] = useState<string>('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
+  // Added loading state for image operations
+  const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
+
   // Add this new state to control date picker visibility
   const [showDatePicker, setShowDatePicker] = useState(false);
-
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        //const currentUserID: string = 'EupIJaWMSnitQnIIcWi7'; //get current user ID
-        console.log(user?.uid);
-        const currentUserID: string = user ? user.uid : ''; //get current user ID
+        setLoading(false);
+        const currentUserID: string = user ? user.uid : '';
+        if (!currentUserID) {
+          console.log('No user ID available');
+          return;
+        }
+
+        setIsImageLoading(true);
         const driverInfo = await getDriverByID(currentUserID);
         setDriver(driverInfo);
+
         if (driverInfo?.picture_url) {
           setProfileImage(driverInfo.picture_url);
+        } else {
+          setProfileImage(null);
         }
         resetEditFields();
       } catch (e) {
-        console.error(e);
+        console.error('Error loading driver data:', e);
+      } finally {
+        setIsImageLoading(false);
+        setLoading(false);
       }
     };
+
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -77,45 +90,75 @@ export default function ProfileScreen() {
   }, []);
 
   const resetEditFields = () => {
-    setDriverName(driver?.name || '');
-    setDriverUserType(driver?.user_type || '');
-    setDriverVehicleType(driver?.vehicle_type || '');
-    setDriverBirthday(driver?.birthday ? new Date(driver.birthday) : null);
-    setDriverEmail(driver?.email || '');
-    setProfileImage(driver?.picture_url || null);
+    if (driver) {
+      setDriverName(driver.name || '');
+      setDriverUserType(driver.user_type || '');
+      setDriverVehicleType(driver.vehicle_type || '');
+      setDriverBirthday(driver.birthday ? new Date(driver.birthday) : null);
+      setDriverEmail(driver.email || '');
+
+      // Don't reset profileImage here to avoid conflicting updates
+      // Only set it if it's not already set
+      if (!profileImage && driver.picture_url) {
+        const imageUrl = driver.picture_url.includes('firebasestorage')
+          ? `${driver.picture_url}?t=${new Date().getTime()}`
+          : driver.picture_url;
+        setProfileImage(imageUrl);
+      }
+    }
   };
 
   const toggleEdit = () => {
-    setEditMode(editMode => !editMode);
+    setEditMode(prevMode => !prevMode);
     setShowDatePicker(false);
-    resetEditFields();
+    if (!editMode) {
+      resetEditFields();
+    }
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
 
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        console.log('New image selected:', result.assets[0].uri);
+        setProfileImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
     }
   };
 
   const saveChanges = async () => {
+    if (isImageLoading) return; // Prevent multiple submissions
+
     try {
-      if (!driverBirthday) {
-        throw new Error('Birthday is required');
+      setIsImageLoading(true);
+      let birthdayTimestamp: Timestamp | undefined = undefined;
+
+      if (driverBirthday) {
+        birthdayTimestamp = Timestamp.fromDate(driverBirthday);
       }
 
-      const birthdayTimestamp: Timestamp = Timestamp.fromDate(driverBirthday);
+      // Determine if we need to upload a new image
+      let finalImageUrl = driver.picture_url || '';
+      const isLocalImage =
+        profileImage && (profileImage.startsWith('file:') || profileImage.startsWith('content:'));
 
-      let pictureUrl = driver.picture_url;
-      if (profileImage && profileImage !== driver.picture_url) {
-        //TODO: pictureUrl = await uploadImageToStorage(profileImage);
-        pictureUrl = profileImage;
+      if (isLocalImage) {
+        const downloadURL = await uploadImage(profileImage, driver.id);
+        if (downloadURL) {
+          finalImageUrl = downloadURL;
+        } else {
+          console.warn('Upload completed but no download URL returned');
+        }
+      } else if (profileImage && !isLocalImage) {
+        finalImageUrl = profileImage.split('?')[0]; // Remove any cache buster
       }
 
       const driverObj = {
@@ -126,19 +169,31 @@ export default function ProfileScreen() {
         phone: driver.phone,
         vehicle_type: driverVehicleType,
         birthday: birthdayTimestamp,
-        picture_url: pictureUrl,
+        picture_url: finalImageUrl,
       };
 
       const updatedDriver = await updateDriver(driver.id, driverObj);
+
+      // Update the driver state with the new data
       setDriver(updatedDriver);
-      if (updatedDriver?.picture_url) {
-        setProfileImage(updatedDriver.picture_url);
+
+      // Update profile image with cache buster for Firebase URLs
+      if (finalImageUrl && finalImageUrl.includes('firebasestorage')) {
+        const cachedUrl = finalImageUrl.includes('?')
+          ? `${finalImageUrl}&t=${new Date().getTime()}` // URL already has query params, use &
+          : `${finalImageUrl}?t=${new Date().getTime()}`; // URL has no query params, use ?
+        setProfileImage(cachedUrl);
+      } else {
+        setProfileImage(finalImageUrl);
       }
-      resetEditFields();
-      toggleEdit();
+
+      // Exit edit mode
+      setEditMode(false);
     } catch (e) {
-      console.error(e);
+      console.error('Error saving changes:', e);
       Alert.alert('Error', 'Failed to save changes');
+    } finally {
+      setIsImageLoading(false);
     }
   };
 
@@ -158,43 +213,66 @@ export default function ProfileScreen() {
     }
   };
 
+  // Helper function to render the profile image
+  const renderProfileImage = () => {
+    // Determine if we have a valid image URL
+    const hasValidImage = profileImage && profileImage.trim() !== '';
+
+    return (
+      <View style={styles.profileImageWrapper}>
+        {isImageLoading && (
+          <View style={styles.loaderOverlay}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        )}
+
+        <Image
+          style={styles.profileImage}
+          source={
+            hasValidImage ? {uri: profileImage} : (profilePicturePlaceholder as ImageSourcePropType)
+          }
+          onLoad={() => console.log('Image loaded successfully:', profileImage)}
+        />
+
+        {editMode && (
+          <View style={styles.cameraIconOverlay}>
+            <MaterialIcons name="photo-camera" size={24} color="white" />
+          </View>
+        )}
+      </View>
+    );
+  };
   return (
     <>
       {loading ? (
-        <ActivityIndicator size={'large'} />
+        <View style={styles.container}>
+          <ActivityIndicator size={'large'} />
+        </View>
       ) : driver ? (
         <KeyboardAvoidingView
           style={{flex: 1}}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={{flexGrow: 1}} keyboardShouldPersistTaps="handled">
+            <View style={styles.header}>
+              <Pressable style={styles.editButton} onPress={toggleEdit}>
+                <MaterialIcons name="edit" size={24} color="black" />
+              </Pressable>
+            </View>
+
+            <View style={styles.profileImageContainer}>
+              <Pressable
+                onPress={editMode ? pickImage : undefined}
+                style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
+                {isImageLoading ? <ActivityIndicator size={'large'} /> : renderProfileImage()}
+                {editMode && (
+                  <View style={styles.cameraIconOverlay}>
+                    <MaterialIcons name="photo-camera" size={24} color="white" />
+                  </View>
+                )}
+              </Pressable>
+              {editMode && <Text style={styles.tapToEditText}>Tap to change photo</Text>}
+            </View>
             <View style={styles.container}>
-              <View style={styles.header}>
-                <Pressable style={styles.editButton} onPress={toggleEdit}>
-                  <MaterialIcons name="edit" size={24} color="black" />
-                </Pressable>
-              </View>
-
-              <View style={styles.profileImageContainer}>
-                <Pressable
-                  onPress={editMode ? pickImage : undefined}
-                  style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
-                  <Image
-                    style={styles.profileImage}
-                    source={
-                      profileImage
-                        ? {uri: profileImage as string}
-                        : (profilePicturePlaceholder as ImageSourcePropType)
-                    }
-                  />
-                  {editMode && (
-                    <View style={styles.cameraIconOverlay}>
-                      <MaterialIcons name="photo-camera" size={24} color="white" />
-                    </View>
-                  )}
-                </Pressable>
-                {editMode && <Text style={styles.tapToEditText}>Tap to change photo</Text>}
-              </View>
-
               {editMode ? (
                 <View style={styles.form}>
                   <View style={styles.formGroup}>
@@ -208,19 +286,13 @@ export default function ProfileScreen() {
                   <View style={styles.formGroup}>
                     <TextInput
                       style={styles.textInput}
-                      value={driverUserType}
-                      onChangeText={setDriverUserType}
-                      placeholder="User Type"
+                      value={driverEmail}
+                      onChangeText={setDriverEmail}
+                      placeholder="Email"
+                      inputMode="email"
                     />
                   </View>
-                  <View style={styles.formGroup}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={driverVehicleType}
-                      onChangeText={setDriverVehicleType}
-                      placeholder="Vehicle Type"
-                    />
-                  </View>
+
                   <View style={styles.formGroup}>
                     {/* Date picker button */}
                     <Pressable
@@ -241,15 +313,6 @@ export default function ProfileScreen() {
                         onChange={onChangeDate}
                       />
                     )}
-                  </View>
-                  <View style={styles.formGroup}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={driverEmail}
-                      onChangeText={setDriverEmail}
-                      placeholder="Email"
-                      inputMode="email"
-                    />
                   </View>
                   <View style={styles.buttonContainer}>
                     <FullWidthButton title="Save Changes" type="primary" onPress={saveChanges} />
@@ -272,13 +335,15 @@ export default function ProfileScreen() {
                   <Text style={styles.nameText}>{driver.name}</Text>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.label}>User Type:</Text>
-                    <Text style={styles.value}>{driver.user_type || '-'}</Text>
+                    <Text style={styles.label}>Company</Text>
+                    <Text style={styles.value}>
+                      {driver.company_name ? driver.company_name : '-'}
+                    </Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.label}>Vehicle:</Text>
-                    <Text style={styles.value}>{driver.vehicle_type || '-'}</Text>
+                    <Text style={styles.label}>Email:</Text>
+                    <Text style={styles.value}>{driver.email || '-'}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
@@ -286,11 +351,6 @@ export default function ProfileScreen() {
                     <Text style={styles.value}>
                       {driver?.birthday ? driver.birthday.toDateString() : '-'}
                     </Text>
-                  </View>
-
-                  <View style={styles.infoRow}>
-                    <Text style={styles.label}>Email:</Text>
-                    <Text style={styles.value}>{driver.email || '-'}</Text>
                   </View>
                 </View>
               )}
@@ -304,7 +364,9 @@ export default function ProfileScreen() {
         </KeyboardAvoidingView>
       ) : (
         <View style={styles.container}>
-          <Text style={styles.nameText}>No user information found</Text>
+          <View style={styles.infoTextContainer}>
+            <Text style={styles.infoText}>No user information found</Text>
+          </View>
           <Button onPress={handleSignOut}>Sign out</Button>
         </View>
       )}
@@ -313,9 +375,37 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  loaderOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 5,
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    alignContent: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    padding: 20,
+  },
+  infoTextContainer: {
+    paddingVertical: 20,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoText: {
+    fontSize: 20,
   },
   header: {
     flexDirection: 'row',
@@ -336,6 +426,8 @@ const styles = StyleSheet.create({
   profileImageContainer: {
     alignItems: 'center',
     marginTop: 20,
+    backgroundColor: theme.lightColors?.primary,
+    padding: 10,
   },
   profileImageWrapper: {
     position: 'relative',
@@ -348,8 +440,8 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   profileImage: {
-    width: 160,
-    height: 160,
+    width: 180,
+    height: 180,
     backgroundColor: '#E0E0E0',
   },
   cameraIconOverlay: {

@@ -3,13 +3,14 @@ import {Timestamp} from 'firebase/firestore';
 import type {FDSessionType} from '../types/FDSessionType';
 import type {FDSessionHistoryType} from '../types/FDSessionType';
 import type {InvitationCodeType} from '../types/InvitationCodeType';
+import storage from '@react-native-firebase/storage';
 
 //const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.128.242.200:3000'; // replace with your own IP
 const API_URL = 'http://10.0.0.23:3000'; // replace with your own IP
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,6 +26,7 @@ interface Driver {
   vehicle_type?: string;
   birthday: Timestamp;
   picture_url: string;
+  company_id: string | undefined;
 }
 interface InvitationCode {
   id?: string;
@@ -47,6 +49,27 @@ interface InvitationCode {
 //   driverID: string;
 //   durationInMinutes: number;
 // }
+
+const uploadImage = async (fileUri: string, id: string) => {
+  try {
+    // Create a reference in Firebase Storage
+    const fileName = `profile_pictures/${id}.jpg`;
+    const imageRef = storage().ref(fileName);
+
+    // Upload file
+    await imageRef.putFile(fileUri);
+
+    // Get the URL of the uploaded image
+    const downloadURL = await imageRef.getDownloadURL();
+
+    console.log('File uploaded successfully! URL:', downloadURL);
+
+    // Now send the download URL to your backend instead of the file URI
+    return downloadURL;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+  }
+};
 
 /**
  * Retrieves a driver by their ID.
@@ -375,6 +398,7 @@ const updateInvitationStatus = async (
 
 export {
   Driver,
+  uploadImage,
   // History,
   getDriverByID,
   getAllDrivers,

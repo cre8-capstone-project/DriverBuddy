@@ -1,9 +1,22 @@
 import React from 'react';
+import {useState} from 'react';
 import {StyleSheet, View, Text, Pressable} from 'react-native';
+
 import {Tabs} from 'expo-router';
 import {Icon} from '@rneui/themed';
 
+// Modal visibility state (managed via context or state management)
+const useModalVisibility = () => {
+  // This is a placeholder - you would implement proper state management
+  // This could be via useContext, Redux, Zustand, etc.
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  return {isModalVisible, setIsModalVisible};
+};
+
 export default function TabLayout() {
+  const {isModalVisible} = useModalVisibility();
+
   return (
     <Tabs
       screenOptions={{

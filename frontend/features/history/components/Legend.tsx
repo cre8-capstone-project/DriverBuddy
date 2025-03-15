@@ -40,9 +40,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   colorBox: {
-    width: 20,
-    height: 20,
+    width: 15,
+    height: 15,
     marginRight: 5,
+    borderRadius: 4,
   },
   label: {
     fontSize: 14,

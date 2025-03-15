@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
   profileImageContainer: {
     alignItems: 'center',
     marginTop: 20,
-    backgroundColor: theme.lightColors?.primary,
+    backgroundColor: '#1E3A8A',
     padding: 10,
   },
   profileImageWrapper: {
@@ -538,7 +538,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   fullWidthButton: {
-    width: '100%', // Ensures each button takes the full width of the container
+    width: '50%', // Ensures each button takes the full width of the container
     borderRadius: 3,
+    textAlign: 'right',
   },
 });

@@ -23,7 +23,7 @@ import * as ImagePicker from 'expo-image-picker';
 import {useAuth} from '@/contexts/AuthProvider';
 import auth from '@react-native-firebase/auth';
 import {useRouter} from 'expo-router';
-import theme from '@/components/Theme';
+import FullWidthButton from '@/components/FullWidthButton';
 
 export default function ProfileScreen() {
   const {user} = useAuth();
@@ -315,17 +315,19 @@ export default function ProfileScreen() {
                     )}
                   </View>
                   <View style={styles.buttonContainer}>
-                    <Button size="md" buttonStyle={styles.fullWidthButton} onPress={saveChanges}>
+                    <FullWidthButton title="Save Changes" type="primary" onPress={saveChanges} />
+                    {/* <Button size="md" buttonStyle={styles.fullWidthButton} onPress={saveChanges}>
                       Save Changes
-                    </Button>
+                    </Button> */}
 
-                    <Button
+                    <FullWidthButton title="Cancel" type="secondary" onPress={toggleEdit} />
+                    {/* <Button
                       type="outline"
                       size="md"
                       buttonStyle={styles.fullWidthButton}
                       onPress={toggleEdit}>
                       Cancel
-                    </Button>
+                    </Button> */}
                   </View>
                 </View>
               ) : (
@@ -352,10 +354,12 @@ export default function ProfileScreen() {
                   </View>
                 </View>
               )}
+              <View style={styles.buttonContainer}>
+                <FullWidthButton title="Sign out" type="tertiary" onPress={handleSignOut} />
+              </View>
             </View>
-            <View style={styles.container}>
-              <Button onPress={handleSignOut}>Sign out</Button>
-            </View>
+
+            {/* <Button onPress={handleSignOut}>Sign out</Button> */}
           </ScrollView>
         </KeyboardAvoidingView>
       ) : (
@@ -422,7 +426,7 @@ const styles = StyleSheet.create({
   profileImageContainer: {
     alignItems: 'center',
     marginTop: 20,
-    backgroundColor: theme.lightColors?.primary,
+    backgroundColor: '#1E3A8A',
     padding: 10,
   },
   profileImageWrapper: {
@@ -452,7 +456,7 @@ const styles = StyleSheet.create({
   },
   tapToEditText: {
     marginTop: 8,
-    color: '#3498db',
+    color: '#1E3A8A',
     fontSize: 14,
   },
   nameText: {
@@ -528,11 +532,14 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: '100%', // Ensures the container takes the full width of the form
-    gap: 10, // Adds spacing between buttons
-    paddingBottom: 20,
+    gap: 20, // Adds spacing between buttons
+    marginTop: 20,
+    paddingBottom: 10,
+    alignItems: 'center',
   },
   fullWidthButton: {
-    width: '100%', // Ensures each button takes the full width of the container
+    width: '50%', // Ensures each button takes the full width of the container
     borderRadius: 3,
+    textAlign: 'right',
   },
 });

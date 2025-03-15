@@ -9,8 +9,8 @@ const theme = createTheme({
     secondary: '#EFEFEF', // Silver
     background: '#F5F5F5', // Background from Mockup
     white: '#FFFFFF',
-    black: '#1E3A8A', // Darkest palette color as "black"
-    grey0: '#333333',
+    black: '#000000', // Darkest palette color as "black"
+    grey0: '#333333', //Nature4
     grey1: '#666666',
     grey2: '#999999',
     grey3: '#CCCCCC',
@@ -79,7 +79,7 @@ const theme = createTheme({
         marginVertical: 5,
         alignSelf: 'center',
         borderWidth: 2,
-        borderRadius: 30,
+        borderRadius: 50,
         borderColor: '#1E3A8A',
       },
       titleStyle: {

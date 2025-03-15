@@ -9,6 +9,13 @@ import {EndConfirmationDialog} from '@/features/safety-alert/components/EndConfi
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import type {ViewModeType} from '@/types/ViewModeType';
 import GoogleMapImage from '@/assets/images/google-map.png';
+import BackButton from '@/components/BackButton';
+import SearchHereToDrive from '@/components/SearchHereToDrive';
+import StartDrivingButton from '@/components/StartDrivingButton';
+import TurnOnDetectionButton from '@/components/TurnOnDetectionButton';
+import TurnOffDetectionButton from '@/components/TurnOffDetectionButton';
+import EndRouteButton from '@/components/EndRouteButton';
+
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
 const eyeIcon = require('@/assets/images/eye-closed.png');
@@ -96,95 +103,106 @@ export default function HomeScreen() {
       <View style={styles.navContainer}>
         {/* Back Home Button */}
         {!driveModeStatus && !driveDestinationStatus && isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.backButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'west', size: 16, color: 'black'}}
-            onPress={() => toggleEndDialog()}>
-            {/* <Text style={styles.buttonText}>Back</Text> */}
-          </Button>
+          <BackButton onPress={toggleEndDialog} />
+
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.backButtonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   iconPosition="top"
+          //   icon={{name: 'west', size: 16, color: 'black'}}
+          //   onPress={() => toggleEndDialog()}>
+          //   {/* <Text style={styles.buttonText}>Back</Text> */}
+          // </Button>
         )}
 
         {/* Destination Clear Button */}
         {!driveModeStatus && driveDestinationStatus && (
-          <Button
-            type="clear"
-            containerStyle={styles.backButtonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            iconPosition="top"
-            icon={{name: 'west', size: 16, color: 'black'}}
-            onPress={() => {
-              mapRef.current?.clearSearch();
-            }}>
-            {/* <Text style={styles.buttonText}>Back</Text> */}
-          </Button>
+          <BackButton onPress={toggleEndDialog} />
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.backButtonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   iconPosition="top"
+          //   icon={{name: 'west', size: 16, color: 'black'}}
+          //   onPress={() => {
+          //     mapRef.current?.clearSearch();
+          //   }}>
+          // {/* <Text style={styles.buttonText}>Back</Text> */}
+          // </Button>
         )}
 
         {/* Turn Off Face Detection Button  */}
         {driveModeStatus && isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={() => setIsFaceDetectionActive(false)}>
-            <Icon name="videocam-off" size={28} color="black" />
-            <Text style={styles.buttonText}>Turn off{'\n'}detection</Text>
-          </Button>
+          <TurnOffDetectionButton onPress={() => setIsFaceDetectionActive(false)} />
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.buttonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   onPress={() => setIsFaceDetectionActive(false)}>
+          //   <Icon name="videocam-off" size={28} color="black" />
+          //   <Text style={styles.buttonText}>Turn off{'\n'}detection</Text>
+          // </Button>
         )}
 
-        {/* Start Face Detection Button　*/}
+        {/* Turn On Detection Button　*/}
         {driveModeStatus && !isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={() => setIsFaceDetectionActive(true)}>
-            <Icon name="videocam" size={28} color="black" />
-            <Text style={styles.buttonText}>Start{'\n'}detection</Text>
-          </Button>
+          <TurnOnDetectionButton onPress={() => setIsFaceDetectionActive(true)} />
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.buttonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   onPress={() => setIsFaceDetectionActive(true)}>
+          //   <Icon name="videocam" size={28} color="black" />
+          //   <Text style={styles.buttonText}>Start{'\n'}detection</Text>
+          // </Button>
         )}
 
         {/* Search Here to Drive Button */}
         {!driveModeStatus && !driveDestinationStatus && isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={() => mapRef.current?.openSearch('destination')}>
-            <Image source={GoogleMapIcon} style={{height: 36, width: 36}} />
-            <Text style={styles.buttonText}>Search here to drive</Text>
-          </Button>
+          <SearchHereToDrive
+            onPress={() => mapRef.current?.openSearch('destination')}
+            iconSource={GoogleMapIcon}
+          />
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.buttonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   onPress={() => mapRef.current?.openSearch('destination')}>
+          //   <Image source={GoogleMapIcon} style={{height: 36, width: 36}} />
+          //   <Text style={styles.buttonText}>Search here to drive</Text>
+          // </Button>
         )}
 
         {/* Start Driving Button */}
         {!driveModeStatus && driveDestinationStatus && isFaceDetectionActive && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={() => setStartDriveStatus(true)}>
-            <Text style={styles.buttonText}>Start Driving</Text>
-          </Button>
+          <StartDrivingButton onPress={() => setStartDriveStatus(true)} />
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.buttonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   onPress={() => setStartDriveStatus(true)}>
+          //   <Text style={styles.buttonText}>Start Driving</Text>
+          // </Button>
         )}
 
         {/* End Route Button */}
         {driveModeStatus && (
-          <Button
-            type="clear"
-            containerStyle={styles.buttonContainer}
-            buttonStyle={styles.button}
-            titleStyle={styles.buttonText}
-            onPress={() => toggleEndDialog()}>
-            <Text style={styles.buttonText}>End Route</Text>
-          </Button>
+          <EndRouteButton onPress={() => toggleEndDialog()} disabled={false} />
+          // <Button
+          //   type="clear"
+          //   containerStyle={styles.buttonContainer}
+          //   buttonStyle={styles.button}
+          //   titleStyle={styles.buttonText}
+          //   onPress={() => toggleEndDialog()}>
+          //   <Text style={styles.buttonText}>End Route</Text>
+          // </Button>
         )}
 
         {/* Start Face Detection Confirmation Dialog */}
@@ -241,9 +259,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    height: 80,
+    height: 96,
     backgroundColor: 'white',
     flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 20,
     gap: 20,
   },

@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {View, StyleSheet, Text, TouchableOpacity, Image, ImageSourcePropType} from 'react-native';
 import {Button, Icon} from '@rneui/themed';
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
+import StartYourJourneyButton from '@/assets/images/StartYourJourneyButton.png';
 import OnboardingTour from '@/components/OnboardingTour';
 import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
 
@@ -18,7 +19,11 @@ export default function HomeScreen() {
       {showOnboarding && <OnboardingTour onComplete={() => setShowOnboarding(false)} />}
       <View style={styles.container}>
         <View>
-          <Button
+          <TouchableOpacity onPress={toggleStartDialog} style={styles.button}>
+            <Image source={StartYourJourneyButton as ImageSourcePropType} style={styles.image} />
+          </TouchableOpacity>
+          <StartConfirmationDialog dialogStatus={dialogStatus} toggleDialog={toggleStartDialog} />
+          {/* <Button
             buttonStyle={styles.roundButton}
             containerStyle={styles.roundButton}
             onPress={() => {
@@ -26,7 +31,7 @@ export default function HomeScreen() {
             }}>
             <Icon name={'videocam'} color={'white'} size={50} />
             <Text style={styles.buttonText}>Start your{'\n'}journey</Text>
-          </Button>
+          </Button> */}
         </View>
         <StartConfirmationDialog dialogStatus={dialogStatus} toggleDialog={toggleStartDialog} />
       </View>

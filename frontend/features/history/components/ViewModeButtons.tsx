@@ -37,14 +37,8 @@ export const ViewModeButtons = ({displayMode, setDisplayMode, setStartDate}: Pro
 };
 
 const styles = StyleSheet.create({
-  container: {borderRadius: 36, padding: 0, margin: 0},
-  buttonContainer: {
-    borderColor: 'transparent',
-    padding: 0,
-    margin: 0,
-    backgroundColor: '#1E3A8A',
-  },
-  button: {justifyContent: 'center', marginHorizontal: 12},
+  container: {width: 292, height: 42, borderRadius: 36, padding: 0, margin: 0, alignSelf: 'center'},
+  buttonContainer: {borderColor: 'transparent', padding: 0, margin: 0, backgroundColor: '#1E3A8A'},
   selectedButton: {
     backgroundColor: 'white',
     margin: 8,
@@ -53,5 +47,5 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   selectedButtonText: {color: 'black'},
-  buttonText: {color: 'white'},
+  buttonText: {color: 'white', fontSize: 15},
 });

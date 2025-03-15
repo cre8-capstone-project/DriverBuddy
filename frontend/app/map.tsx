@@ -42,6 +42,233 @@ export const Map = () => {
   // State to hold autocomplete suggestions (for both origin and destination)
   const [suggestions, setSuggestions] = useState<{description: string; place_id: string}[]>([]);
   const mapRef = useRef<MapView>(null);
+  // Ref for the Input so we can force focus when modal opens
+  const inputRef = useRef<any>(null);
+  // State to track if driving mode is active
+  const [drivingMode, setDrivingMode] = useState(false);
+  // UPDATED 04 MAR: Flag to ensure initial zoom only happens once after the map loads
+  const [initialZoom, setInitialZoom] = useState(false);
+  // UPDATED 11 MAR: Added flag to disable onUserLocationChange when Nearby Stops is active
+  const [disableUserLocationChange, setDisableUserLocationChange] = useState(false);
+  // UPDATED 11 MAR: Changed state to store an array of gas stations (instead of a single one)
+  const [restStops, setRestStops] = useState<{latitude: number; longitude: number; name: string}[]>(
+    [],
+  );
+  // Extracting properties from props related to drive status
+  const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
+  // UPDATED 04 MAR: Static polyline to prevent the it from blinking when handleUserLocationChange executes
+  // const [routeOrigin, setRouteOrigin] = useState<Region | null>(null); // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
+
+  // UPDATED 14 MAR: Show or hide the destination card
+  const [showDestinationCard, setShowDestinationCard] = useState(false);
+
+  // Updates drive status when destination or driving mode changes
+  useEffect(() => {
+    setDriveDestinationStatus(destination ? true : false);
+    setDriveModeStatus(drivingMode ? true : false);
+  }, [destination, drivingMode]);
+
+  // Starts the driving process when status is true
+  useEffect(() => {
+    if (startDriveStatus) handleStartDriving();
+  }, [startDriveStatus]);
+
+  // Ends the driving process if status is true
+  useEffect(() => {
+    if (endDriveStatus) handleEndDriving();
+  }, [endDriveStatus]);
+
+  // UPDATED 14 MAR: Toggle the destination card
+  useEffect(() => {
+    if (destination) {
+      setShowDestinationCard(true);
+    } else {
+      setShowDestinationCard(false);
+    }
+  }, [destination]);
+
+  // Starts driving mode
+  const handleStartDriving = () => {
+    console.log('Start Driving clicked');
+    if (mapRef.current) {
+      const currentLocation = deviceLocation || origin; // UPDATED 04 MAR: If deviceLocation is not ready, fallback to origin
+      if (currentLocation) {
+        mapRef.current.animateCamera(
+          {center: currentLocation, pitch: 55, heading: 0, zoom: 18, altitude: 150},
+          {duration: 1000},
+        );
+      }
+    }
+    setDrivingMode(true);
+
+    // UPDATED 14 MAR: Dismiss the destination card
+    setShowDestinationCard(false);
+  };
+
+  // Ends driving mode
+  const handleEndDriving = () => {
+    console.log('End Route clicked');
+    if (mapRef.current && deviceLocation) {
+      mapRef.current.animateCamera(
+        {
+          center: deviceLocation,
+          pitch: 0,
+          heading: 0,
+          zoom: 18,
+        },
+        {duration: 1000},
+      );
+    }
+    setDestination(null);
+    setDeviceLocation(null);
+    setDrivingMode(false);
+    savedDestination = null;
+    setOrigin(null); // UPDATED 04 MAR: Clear origin state
+    savedOrigin = null; // UPDATED 04 MAR: Clear persisted origin
+    setDisableUserLocationChange(false); // UPDATED 11 MAR: Flag to disable location change so it won't update
+    setRestStops([]); // UPDATED 11 MAR: Set rest stops
+  };
+
+  // useEffect to force focus on input when searchModalVisible becomes true using requestAnimationFrame
+  useEffect(() => {
+    if (searchModalVisible && inputRef.current) {
+      requestAnimationFrame(() => {
+        inputRef.current.focus();
+      });
+    }
+  }, [searchModalVisible]);
+
+  // Handle map ready, do nothing to the origin state
+  const handleMapReady = () => {
+    console.log('MapView is ready'); // Log when Map View is ready
+    setOrigin(prev => prev);
+  };
+
+  // onUserLocationChange - animate to user's current location when it changes
+  const handleUserLocationChange = (event: any) => {
+    if (disableUserLocationChange) return; // UPDATED 11 MAR: Prevent user location from updating and zooming in
+    const {coordinate} = event.nativeEvent;
+    if (coordinate) {
+      // UPDATED 04 MAR: If driving mode is active, update and log the location.
+      if (drivingMode) {
+        console.log('User location changed'); // Log user location change
+        setOrigin({
+          latitude: coordinate.latitude,
+          longitude: coordinate.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
+      }
+      // UPDATED 04 MAR: If not in driving mode and initial zoom hasn't been done, perform initial zoom.
+      else if (!initialZoom) {
+        console.log('Zoom to user current location'); // Log the first user location change
+        setOrigin({
+          latitude: coordinate.latitude,
+          longitude: coordinate.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
+        // UPDATED 04 MAR: Set static route origin once to prevent blinking of polyline when handleUserLocationChange executes
+        // if (!routeOrigin) { // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
+        //   setRouteOrigin({
+        //     latitude: coordinate.latitude,
+        //     longitude: coordinate.longitude,
+        //     latitudeDelta: 0.01,
+        //     longitudeDelta: 0.01,
+        //   });
+        // }
+        mapRef.current?.animateToRegion(
+          {
+            latitude: coordinate.latitude,
+            longitude: coordinate.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+          1500,
+        );
+        setInitialZoom(true);
+      }
+    }
+  };
+
+  // UPDATED 11 MAR: Function to handle Nearby Stops button press using nearbysearch endpoint with radius parameter, displaying ALL gas stations within the perimeter
+  const handleNearbyStops = async () => {
+    const currentLocation = deviceLocation || origin;
+    if (!currentLocation) {
+      Alert.alert('Current location not available');
+      return;
+    }
+    try {
+      // Return gas stations within the set perimeter
+      const restStopRadius = 10000;
+      const restStopType = 'gas_station';
+      const restStopKeyword = '';
+      const restStopResults = 5;
+      const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(`${currentLocation.latitude},${currentLocation.longitude}`)}&radius=${restStopRadius}&type=${restStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.status === 'OK' && data.results && data.results.length > 0) {
+        // Map and calculate distance to each station
+        const allStations = data.results.map((result: any) => {
+          const stationLat = result.geometry.location.lat;
+          const stationLng = result.geometry.location.lng;
+
+          // Calculate distance (simple Euclidean distance for simplicity)
+          const distance = Math.sqrt(
+            Math.pow(stationLat - currentLocation.latitude, 2) +
+              Math.pow(stationLng - currentLocation.longitude, 2),
+          );
+
+          return {
+            latitude: stationLat,
+            longitude: stationLng,
+            name: result.name,
+            distance: distance, // Store the distance for sorting
+          };
+        });
+
+        // Sort stations by distance and get up to 5 nearest stations
+        const nearestStations = allStations
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, restStopResults);
+
+        // Set nearest stations
+        setRestStops(nearestStations);
+
+        // Include current location in the region boundary calculations
+        const latitudes = [currentLocation.latitude, ...nearestStations.map(s => s.latitude)];
+        const longitudes = [currentLocation.longitude, ...nearestStations.map(s => s.longitude)];
+
+        const minLat = Math.min(...latitudes);
+        const maxLat = Math.max(...latitudes);
+        const minLng = Math.min(...longitudes);
+        const maxLng = Math.max(...longitudes);
+
+        const midLat = (minLat + maxLat) / 2;
+        const midLng = (minLng + maxLng) / 2;
+
+        // Add padding to the region delta for better visibility
+        const latitudeDelta = (maxLat - minLat) * 1.5 || 0.05;
+        const longitudeDelta = (maxLng - minLng) * 1.5 || 0.05;
+
+        const region = {
+          latitude: midLat,
+          longitude: midLng,
+          latitudeDelta,
+          longitudeDelta,
+        };
+
+        // Animate to the calculated region
+        mapRef.current?.animateToRegion(region, 1000);
+        setDisableUserLocationChange(true);
+      } else {
+        Alert.alert('No gas stations found nearby');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'An error occurred while fetching nearby gas stations.');
+    }
+  };
 
   // Function to geocode a place name using Google Geocoding API
   const geocodePlace = async (place: string) => {
@@ -133,6 +360,24 @@ export const Map = () => {
   const closeSearch = () => {
     setSearchModalVisible(false);
     Keyboard.dismiss();
+  };
+
+  // UPDATED 14 MAR: Close the destination card and zoom back to origin
+  const closeDestinationCard = () => {
+    setDestination(null);
+    savedDestination = null;
+    setShowDestinationCard(false);
+    if (mapRef.current && origin) {
+      mapRef.current.animateCamera(
+        {
+          center: origin,
+          pitch: 0,
+          heading: 0,
+          zoom: 18,
+        },
+        {duration: 1000},
+      );
+    }
   };
 
   // Handle selection of coordinates for origin or destination
@@ -230,23 +475,24 @@ export const Map = () => {
         )}
       </MapView>
 
-      {/* Search Button */}
-      <View style={styles.searchContainer}>
-        {destination && (
-          <Button
-            title={originLabel || 'Your location'}
-            buttonStyle={styles.searchButton}
-            titleStyle={styles.buttonText}
-            onPress={() => openSearch('origin')}
-          />
-        )}
-        <Button
-          title={destinationLabel || 'Enter destination (e.g. Langara College)'}
-          buttonStyle={styles.searchButton}
-          titleStyle={styles.buttonText}
-          onPress={() => openSearch('destination')}
-        />
-      </View>
+      {/* UPDATED 11 MAR: Nearby Stops button (visible only in driving mode) */}
+      {drivingMode && (
+        <View style={styles.nearbyStopsButtonContainer}>
+          <TouchableOpacity style={styles.nearbyStopsButton} onPress={handleNearbyStops}>
+            <Text>Nearby Stops (Test)</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* UPDATED 14 MAR: Show destination card */}
+      {showDestinationCard && (
+        <View style={styles.destinationCard}>
+          <Text style={styles.destinationCardText}>{destinationLabel}</Text>
+          <TouchableOpacity style={styles.destinationCardClose} onPress={closeDestinationCard}>
+            <Icon name="close" type="ionicon" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Search Modal */}
       <Modal visible={searchModalVisible} animationType="slide">
@@ -413,5 +659,59 @@ const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: 'red',
     marginTop: 20,
+  },
+  startButtonContainer: {
+    position: 'absolute',
+    bottom: 80,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  startButton: {
+    backgroundColor: 'blue',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+  },
+  startButtonText: {
+    fontSize: 16,
+    color: 'white',
+  },
+  // UPDATED 11 MAR: Nearby Stops button container style
+  nearbyStopsButtonContainer: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  // UPDATED 11 MAR: Nearby Stops button style
+  nearbyStopsButton: {
+    backgroundColor: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+  },
+
+  // UPDATED 14 MAR: Destination card styles
+  destinationCard: {
+    position: 'absolute',
+    bottom: 81,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  destinationCardText: {
+    flex: 1,
+    fontSize: 16,
+    marginRight: 10,
+  },
+  destinationCardClose: {
+    padding: 5,
   },
 });

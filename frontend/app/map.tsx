@@ -68,6 +68,9 @@ export const Map = forwardRef((props: Props, ref) => {
   // UPDATED 04 MAR: Static polyline to prevent the it from blinking when handleUserLocationChange executes
   // const [routeOrigin, setRouteOrigin] = useState<Region | null>(null); // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
 
+  // UPDATED 14 MAR: Show or hide a destination card
+  const [showDestinationCard, setShowDestinationCard] = useState(false);
+
   // Updates drive status when destination or driving mode changes
   useEffect(() => {
     setDriveDestinationStatus(destination ? true : false);
@@ -84,6 +87,15 @@ export const Map = forwardRef((props: Props, ref) => {
     if (endDriveStatus) handleEndDriving();
   }, [endDriveStatus]);
 
+  // UPDATED 14 MAR: Toggle the destination card
+  useEffect(() => {
+    if (destination) {
+      setShowDestinationCard(true);
+    } else {
+      setShowDestinationCard(false);
+    }
+  }, [destination]);
+
   // Starts driving mode
   const handleStartDriving = () => {
     console.log('Start Driving clicked');
@@ -97,6 +109,9 @@ export const Map = forwardRef((props: Props, ref) => {
       }
     }
     setDrivingMode(true);
+
+    // UPDATED 14 MAR: Dismiss the destination card when user clicks Start Driving
+    setShowDestinationCard(false);
   };
 
   // Ends driving mode
@@ -396,6 +411,24 @@ export const Map = forwardRef((props: Props, ref) => {
     Keyboard.dismiss();
   };
 
+  // UPDATED 14 MAR: Close the destination card and zoom back to origin
+  const closeDestinationCard = () => {
+    setDestination(null);
+    savedDestination = null;
+    setShowDestinationCard(false);
+    if (mapRef.current && origin) {
+      mapRef.current.animateCamera(
+        {
+          center: origin,
+          pitch: 0,
+          heading: 0,
+          zoom: 18,
+        },
+        {duration: 1000},
+      );
+    }
+  };
+
   // Handle selection of coordinates for origin or destination
   // labelOverride to show place name in the button
   const selectCoordinate = (
@@ -536,6 +569,22 @@ export const Map = forwardRef((props: Props, ref) => {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* UPDATED 14 MAR: Show destination card */}
+      {showDestinationCard && (
+        <View style={styles.destinationCard}>
+          <Text style={styles.destinationCardText}>
+            {destinationLabel}
+          </Text>
+          <TouchableOpacity
+            style={styles.destinationCardClose}
+            onPress={closeDestinationCard}
+          >
+            <Icon name="close" type="ionicon" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Search Modal */}
       <Modal
         visible={searchModalVisible}
@@ -745,5 +794,26 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 50,
+  },
+
+  // UPDATED 14 MAR: Destination card
+  destinationCard: {
+    position: 'absolute',
+    bottom: 81,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  destinationCardText: {
+    flex: 1,
+    fontSize: 16,
+    marginRight: 10,
+  },
+  destinationCardClose: {
+    padding: 5,
   },
 });

@@ -12,6 +12,7 @@ import {
 import auth from '@react-native-firebase/auth';
 import {useRouter} from 'expo-router';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
+import FullWidthButton from '@/components/FullWidthButton';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -54,8 +55,15 @@ export default function SignInScreen() {
       />
 
       <View style={styles.buttonsContainer}>
-        <Button title="Sign In" onPress={handleAuth} />
-        <Button title="No account? Sign Up" onPress={() => router.replace('/signUp')} />
+        <FullWidthButton title="SIGN IN" type="primary" onPress={handleAuth} />
+        <FullWidthButton
+          title="NO ACCOUNT? SIGN UP"
+          type="secondary"
+          onPress={() => router.replace('/signUp')}
+        />
+
+        {/* <Button title="Sign In" onPress={handleAuth} />
+        <Button title="No account? Sign Up" onPress={() => router.replace('/signUp')} /> */}
       </View>
     </View>
   );
@@ -94,5 +102,6 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     gap: 10,
     width: '100%',
+    alignItems: 'center',
   },
 });

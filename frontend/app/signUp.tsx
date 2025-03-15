@@ -21,6 +21,7 @@ import {MaterialIcons} from '@expo/vector-icons';
 import {Camera} from 'react-native-vision-camera';
 import {InvitationCodeType} from '@/types/InvitationCodeType';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
+import FullWidthButton from '@/components/FullWidthButton';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -166,8 +167,15 @@ export default function SignUpScreen() {
             style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
           />
           <View style={styles.buttonsContainer}>
-            <Button title="Create an account" onPress={validateCode} />
-            <Button title="Have an account? Sign In" onPress={() => router.replace('/signIn')} />
+            <FullWidthButton title="Create an account" type="primary" onPress={validateCode} />
+            <FullWidthButton
+              title="Have an account? Sign In"
+              type="tertiary"
+              onPress={() => router.replace('/signIn')}
+            />
+
+            {/* <Button title="Create an account" onPress={validateCode} />
+            <Button title="Have an account? Sign In" onPress={() => router.replace('/signIn')} /> */}
           </View>
         </View>
       )}

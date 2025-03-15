@@ -3,6 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 import {Dialog, Button} from '@rneui/themed';
 import {useSnackBar} from './SnackBar';
 import {useNavigation} from '@react-navigation/native';
+import PairButtons from '@/components/PairButtons';
 
 type Props = {
   dialogStatus: boolean;
@@ -14,11 +15,27 @@ export const StartConfirmationDialog = ({dialogStatus, toggleDialog}: Props) => 
   const navigation = useNavigation<any>();
 
   return (
-    <Dialog isVisible={dialogStatus} onBackdropPress={toggleDialog}>
+    <Dialog
+      isVisible={dialogStatus}
+      onBackdropPress={toggleDialog}
+      overlayStyle={styles.dialogContainer}>
       <View style={styles.container}>
         <Text style={styles.dialogTitle}>Start detection to prevent drowsiness?</Text>
         <Text>The camera will activate once you click the start button</Text>
-        <View>
+
+        <PairButtons
+          primaryTitle="Start now"
+          secondaryTitle="Cancel"
+          onPrimaryPress={() => {
+            const FaceDetectionStatus = true;
+            navigation.navigate('journey', {FaceDetectionStatus});
+            toggleDialog();
+            showSnackBar('The detection has started');
+          }}
+          onSecondaryPress={toggleDialog}
+        />
+
+        {/* <View>
           <Button
             title="Start now"
             type="solid"
@@ -38,18 +55,24 @@ export const StartConfirmationDialog = ({dialogStatus, toggleDialog}: Props) => 
             containerStyle={styles.buttonContainer}
             onPress={toggleDialog}
           />
-        </View>
+        </View> */}
       </View>
     </Dialog>
   );
 };
 
 const styles = StyleSheet.create({
+  dialogContainer: {
+    width: 364,
+    borderRadius: 20,
+    paddingVertical: 48,
+    paddingHorizontal: 16,
+  },
   container: {
     flexDirection: 'column',
     gap: 15,
   },
   dialogTitle: {fontWeight: 'bold', fontSize: 20},
-  buttonStyle: {},
-  buttonContainer: {width: '100%', justifyContent: 'center'},
+  // buttonStyle: {},
+  // buttonContainer: {width: '100%', justifyContent: 'center'},
 });

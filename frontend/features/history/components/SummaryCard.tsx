@@ -29,13 +29,22 @@ export const SummaryCard = ({data}: Props) => {
 // Styles will be replaced after the visual design is ready
 const styles = StyleSheet.create({
   containerStyle: {
-    borderRadius: 20,
-    padding: 0,
+    width: 398,
+    height: 170,
+    borderRadius: 36,
+    padding: 12,
     margin: 0,
     backgroundColor: '#1E3A8A',
+    alignSelf: 'center',
   },
   wrapperStyle: {padding: 20},
-  cardTitle: {textAlign: 'left', fontWeight: 'bold', marginBottom: 10, color: 'white'},
+  cardTitle: {
+    textAlign: 'left',
+    fontSize: 15,
+    fontWeight: 500,
+    marginBottom: 20,
+    color: 'white',
+  },
   contentContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -52,5 +61,5 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   contentTitle: {textAlign: 'left', fontSize: 32, color: 'white'},
-  contentText: {textAlign: 'left', color: 'white'},
+  contentText: {textAlign: 'left', fontSize: 15, fontWeight: 500, color: 'white', marginTop: 10},
 });

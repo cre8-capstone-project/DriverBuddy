@@ -1,7 +1,7 @@
 import React from 'react';
-import {StyleSheet} from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import {StyleSheet, View, Text, Pressable} from 'react-native';
 import {Tabs} from 'expo-router';
+import {Icon} from '@rneui/themed';
 
 export default function TabLayout() {
   return (
@@ -11,26 +11,48 @@ export default function TabLayout() {
         headerShown: false,
         tabBarItemStyle: styles.tabBarItemStyle,
         tabBarStyle: styles.tabBarStyle,
+        tabBarLabelStyle: styles.tabBarLabelStyle,
+        tabBarButton: props => <Pressable {...props} android_ripple={{color: 'transparent'}} />,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({color}) => <FontAwesome size={28} name="home" color={color} />,
+          title: '',
+          tabBarIcon: ({focused}) => (
+            <View style={[styles.iconContainer, focused && styles.activeBackground]}>
+              <Icon name="home" type="material" size={32} color={focused ? '#1E3A8A' : '#999'} />
+              <Text style={[styles.label, focused && styles.activeLabel]}>Home</Text>
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: 'History',
-          tabBarIcon: ({color}) => <FontAwesome size={28} name="bar-chart" color={color} />,
+          title: '',
+          tabBarIcon: ({focused}) => (
+            <View style={[styles.iconContainer, focused && styles.activeBackground]}>
+              <Icon
+                name="insert-chart"
+                type="material"
+                size={32}
+                color={focused ? '#1E3A8A' : '#999'}
+              />
+              <Text style={[styles.label, focused && styles.activeLabel]}>History</Text>
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({color}) => <FontAwesome size={28} name="user" color={color} />,
+          title: '',
+          tabBarIcon: ({focused}) => (
+            <View style={[styles.iconContainer, focused && styles.activeBackground]}>
+              <Icon name="person" type="material" size={32} color={focused ? '#1E3A8A' : '#999'} />
+              <Text style={[styles.label, focused && styles.activeLabel]}>Profile</Text>
+            </View>
+          ),
         }}
       />
     </Tabs>
@@ -38,6 +60,75 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabBarStyle: {height: 80, paddingTop: 10},
+  tabBarStyle: {height: 96, paddingTop: 25},
   tabBarItemStyle: {},
+  tabBarLabelStyle: {
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  iconContainer: {
+    width: 64,
+    minHeight: 64,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingVertical: 6,
+  },
+  activeBackground: {
+    backgroundColor: 'rgba(0, 255, 255, 0.15)',
+  },
+  label: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+  },
+  activeLabel: {
+    color: '#1E3A8A',
+    fontWeight: 'bold',
+  },
 });
+
+// import React from 'react';
+// import {StyleSheet} from 'react-native';
+// import FontAwesome from '@expo/vector-icons/FontAwesome';
+// import {Tabs} from 'expo-router';
+
+// export default function TabLayout() {
+//   return (
+//     <Tabs
+//       screenOptions={{
+//         tabBarActiveTintColor: '#1E3A8A',
+//         headerShown: false,
+//         tabBarItemStyle: styles.tabBarItemStyle,
+//         tabBarStyle: styles.tabBarStyle,
+//       }}>
+//       <Tabs.Screen
+//         name="index"
+//         options={{
+//           title: 'Home',
+//           tabBarIcon: ({color}) => <FontAwesome size={32} name="home" color={color} />,
+//         }}
+//       />
+//       <Tabs.Screen
+//         name="history"
+//         options={{
+//           title: 'History',
+//           tabBarIcon: ({color}) => <FontAwesome size={32} name="bar-chart" color={color} />,
+//         }}
+//       />
+//       <Tabs.Screen
+//         name="profile"
+//         options={{
+//           title: 'Profile',
+//           tabBarIcon: ({color}) => <FontAwesome size={32} name="user" color={color} />,
+//         }}
+//       />
+//     </Tabs>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   tabBarStyle: {height: 96, paddingTop: 10},
+//   tabBarItemStyle: {},
+// });

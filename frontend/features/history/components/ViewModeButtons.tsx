@@ -36,15 +36,15 @@ export const ViewModeButtons = ({displayMode, setDisplayMode, setStartDate}: Pro
 };
 
 const styles = StyleSheet.create({
-  container: {borderRadius: 18, padding: 0, margin: 0},
+  container: {width: 292, height: 42, borderRadius: 36, padding: 0, margin: 0, alignSelf: 'center'},
   buttonContainer: {borderColor: 'transparent', padding: 0, margin: 0, backgroundColor: '#1E3A8A'},
   selectedButton: {
     backgroundColor: 'white',
-    margin: 7,
-    borderRadius: 5,
+    margin: 8,
+    borderRadius: 8,
     boxShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)',
     color: 'black',
   },
   selectedButtonText: {color: 'black'},
-  buttonText: {color: 'white'},
+  buttonText: {color: 'white', fontSize: 15},
 });

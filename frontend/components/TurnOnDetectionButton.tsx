@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   button: {
+    flex: 1,
     width: 180,
     height: 64,
     flexDirection: 'row',

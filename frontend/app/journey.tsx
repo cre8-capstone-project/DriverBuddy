@@ -3,7 +3,6 @@ import {View, StyleSheet, Text, Image, ImageSourcePropType} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
-import {Button, Icon} from '@rneui/themed';
 import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
 import {EndConfirmationDialog} from '@/features/safety-alert/components/EndConfirmationDialog';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
@@ -225,7 +224,7 @@ export default function HomeScreen() {
         />
 
         {/* Alert Counter */}
-        {viewMode === 'cameraView' && (
+        {viewMode === 'cameraView' && isFaceDetectionActive && (
           <View style={styles.alertContainer}>
             <Image source={eyeIcon} />
             <Text style={styles.alertText}>
@@ -247,17 +246,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     flex: 1,
   },
-  hidden: {
+  invisible: {
     opacity: 0,
     position: 'absolute',
     width: 0,
     height: 0,
-  },
-  invisible: {
-    opacity: 0,
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
   },
   navContainer: {
     position: 'absolute',
@@ -284,7 +277,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     gap: 10,
-    bottom: 80,
+    bottom: 96,
     left: 0,
     right: 0,
     height: 50,

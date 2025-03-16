@@ -79,7 +79,8 @@ export const SummaryCard = ({data, loading}: Props) => {
 // Styles will be replaced after the visual design is ready
 const styles = StyleSheet.create({
   containerStyle: {
-    width: 398,
+    // width: 398,
+    width: '100%',
     height: 170,
     borderRadius: 36,
     padding: 12,

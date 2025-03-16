@@ -119,7 +119,11 @@ export default function HomeScreen() {
 
         {/* Destination Clear Button */}
         {!driveModeStatus && driveDestinationStatus && (
-          <BackButton onPress={toggleEndDialog} />
+          <BackButton
+            onPress={() => {
+              mapRef.current?.clearSearch();
+            }}
+          />
           // <Button
           //   type="clear"
           //   containerStyle={styles.backButtonContainer}

@@ -33,7 +33,7 @@ export default function TabLayout() {
           title: '',
           tabBarIcon: ({focused}) => (
             <View style={[styles.iconContainer, focused && styles.activeBackground]}>
-              <Icon name="home" type="material" size={32} color={focused ? '#1E3A8A' : '#999'} />
+              <Icon name="home" type="material" size={32} color={focused ? '#1E3A8A' : '#333333'} />
               <Text style={[styles.label, focused && styles.activeLabel]}>Home</Text>
             </View>
           ),
@@ -49,7 +49,7 @@ export default function TabLayout() {
                 name="insert-chart"
                 type="material"
                 size={32}
-                color={focused ? '#1E3A8A' : '#999'}
+                color={focused ? '#1E3A8A' : '#333333'}
               />
               <Text style={[styles.label, focused && styles.activeLabel]}>History</Text>
             </View>
@@ -62,7 +62,12 @@ export default function TabLayout() {
           title: '',
           tabBarIcon: ({focused}) => (
             <View style={[styles.iconContainer, focused && styles.activeBackground]}>
-              <Icon name="person" type="material" size={32} color={focused ? '#1E3A8A' : '#999'} />
+              <Icon
+                name="person"
+                type="material"
+                size={32}
+                color={focused ? '#1E3A8A' : '#333333'}
+              />
               <Text style={[styles.label, focused && styles.activeLabel]}>Profile</Text>
             </View>
           ),
@@ -93,7 +98,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#999',
+    color: '#333333',
     textAlign: 'center',
   },
   activeLabel: {

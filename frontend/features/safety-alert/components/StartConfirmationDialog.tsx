@@ -63,16 +63,17 @@ export const StartConfirmationDialog = ({dialogStatus, toggleDialog}: Props) => 
 
 const styles = StyleSheet.create({
   dialogContainer: {
-    width: 364,
+    width: '90%',
     borderRadius: 20,
     paddingVertical: 48,
     paddingHorizontal: 16,
+    alignSelf: 'center',
   },
   container: {
     flexDirection: 'column',
     gap: 15,
   },
-  dialogTitle: {fontWeight: 'bold', fontSize: 20},
+  dialogTitle: {fontWeight: 'bold', fontSize: 20, textAlign: 'center'},
   // buttonStyle: {},
   // buttonContainer: {width: '100%', justifyContent: 'center'},
 });

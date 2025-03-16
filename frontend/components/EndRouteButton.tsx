@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   button: {
+    flex: 1,
     width: 180,
     height: 64,
     alignItems: 'center',

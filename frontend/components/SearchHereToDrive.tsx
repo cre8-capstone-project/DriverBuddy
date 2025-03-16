@@ -20,6 +20,8 @@ const SearchHereToDrive: React.FC<SearchHereToDriveProps> = ({onPress, iconSourc
 
 const styles = StyleSheet.create({
   button: {
+    flex: 1,
+    width: 300,
     height: 64,
     flexDirection: 'row',
     alignItems: 'center',

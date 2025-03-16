@@ -1,70 +1,3 @@
-// import React from 'react';
-// import {StyleSheet, View} from 'react-native';
-// import {Button, useTheme} from '@rneui/themed';
-
-// interface PairButtonsProps {
-//   primaryTitle: string;
-//   primaryOnPress: () => void;
-//   secondaryTitle: string;
-//   secondaryOnPress: () => void;
-// }
-
-// const PairButtons: React.FC<PairButtonsProps> = ({
-//   primaryTitle,
-//   primaryOnPress,
-//   secondaryTitle,
-//   secondaryOnPress,
-// }) => {
-//   const {theme} = useTheme();
-
-//   return (
-//     <View style={styles.container}>
-//       <Button
-//         title={primaryTitle}
-//         type="solid"
-//         buttonStyle={[styles.button, {backgroundColor: theme.colors.primary}]}
-//         containerStyle={styles.buttonContainer}
-//         titleStyle={styles.buttonText}
-//         onPress={primaryOnPress}
-//       />
-//       <Button
-//         title={secondaryTitle}
-//         type="outline"
-//         buttonStyle={[styles.button, {borderColor: theme.colors.primary}]}
-//         containerStyle={styles.buttonContainer}
-//         titleStyle={[styles.buttonText, {color: theme.colors.primary}]}
-//         onPress={secondaryOnPress}
-//       />
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     width: '100%',
-//     flexDirection: 'column',
-//     marginTop: 20,
-//     gap: 10,
-//   },
-//   buttonContainer: {
-//     width: '100%',
-//   },
-//   button: {
-//     width: 332,
-//     height: 46,
-//     borderRadius: 50,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   buttonText: {
-//     fontSize: 15,
-//     fontWeight: 'bold',
-//     textAlign: 'center',
-//   },
-// });
-
-// export default PairButtons;
-
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {Button} from '@rneui/themed';
@@ -98,7 +31,7 @@ const PairButtons: React.FC<PairButtonsProps> = ({
         ]}
         titleStyle={styles.buttonTextPrimary}
         onPress={onPrimaryPress}
-        containerStyle={[styles.primaryButtonShadow, {borderWidth: 0}]}
+        containerStyle={[styles.primaryButtonShadow, {borderWidth: 0}, {width: '100%'}]}
       />
 
       {/* Secondary (Outline) Button */}
@@ -114,7 +47,7 @@ const PairButtons: React.FC<PairButtonsProps> = ({
         ]}
         titleStyle={[styles.buttonTextSecondary, {color: theme.colors.primary}]}
         onPress={onSecondaryPress}
-        containerStyle={{borderWidth: 0}}
+        containerStyle={[{borderWidth: 0}, {width: '100%'}]}
       />
     </View>
   );
@@ -123,12 +56,13 @@ const PairButtons: React.FC<PairButtonsProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+    alignSelf: 'center',
     flexDirection: 'column',
     marginTop: 20,
     gap: 10,
   },
   primaryButton: {
-    width: 332,
+    width: '100%',
     height: 46,
     borderRadius: 50,
     justifyContent: 'center',
@@ -142,7 +76,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   secondaryButton: {
-    width: 332,
+    width: '100%',
+    // width: 332,
     height: 46,
     borderRadius: 50,
     justifyContent: 'center',

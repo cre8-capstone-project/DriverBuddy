@@ -72,7 +72,8 @@ export const EndConfirmationDialog = ({
 
 const styles = StyleSheet.create({
   dialogContainer: {
-    width: 364,
+    width: '90%',
+    // width: 364,
     borderRadius: 20,
     paddingVertical: 48,
     paddingHorizontal: 16,

@@ -66,7 +66,7 @@ const FullWidthButton: React.FC<FullWidthButtonProps> = ({title, onPress, type =
 const styles = StyleSheet.create({
   button: {
     width: '100%',
-    maxWidth: 398,
+    // maxWidth: 398,
     // width: 398,
     height: 46,
     borderRadius: 25,

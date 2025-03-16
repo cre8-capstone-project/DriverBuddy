@@ -38,6 +38,7 @@ const StartDrivingButton: React.FC<StartDrivingButtonProps> = ({onPress, disable
 
 const styles = StyleSheet.create({
   button: {
+    flex: 1,
     width: 200,
     height: 64,
     flexDirection: 'row',
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     borderRadius: 44,
     borderWidth: 2,
     paddingHorizontal: 24,
-    paddingVertical: 11,
+    paddingVertical: 12,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,

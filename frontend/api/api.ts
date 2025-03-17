@@ -22,33 +22,10 @@ interface Driver {
   user_type?: string;
   name: string;
   email: string;
-  phone: string;
-  vehicle_type?: string;
   birthday: Timestamp;
   picture_url: string;
   company_id: string | undefined;
 }
-interface InvitationCode {
-  id?: string;
-  user_type?: string;
-  name: string;
-  email: string;
-  phone: string;
-  vehicle_type?: string;
-  birthday: Timestamp;
-  picture_url: string;
-}
-// interface History {
-//   id?: string;
-//   numberOfAlerts: number;
-//   startingPointName: string;
-//   startingPointCoordinates: string;
-//   destinationName: string;
-//   destinationCoordinates: string;
-//   distanceInKm: number;
-//   driverID: string;
-//   durationInMinutes: number;
-// }
 
 const uploadImage = async (fileUri: string, id: string) => {
   try {
@@ -85,9 +62,7 @@ const getDriverByID = async (id: string) => {
       id: response.data.id,
       name: response.data.name,
       email: response.data.email,
-      phone: response.data.phone,
       user_type: response.data.user_type,
-      vehicle_type: response.data.vehicle_type,
       birthday: response.data.birthday
         ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
         : null,
@@ -97,7 +72,53 @@ const getDriverByID = async (id: string) => {
     console.error(error);
   }
 };
+const getDriverByEmail = async (email: string) => {
+  try {
+    const response: AxiosResponse<Driver> = await axiosClient.get(`/drivers/email/${email}`, {
+      timeout: 5000,
+    });
+    if (response.status === 200) {
+      return {
+        id: response.data.id,
+        name: response.data.name,
+        email: response.data.email,
+        user_type: response.data.user_type,
+        birthday: response.data.birthday
+          ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
+          : null,
+        picture_url: response.data.picture_url,
+      };
+    }
+    return null;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      // Handle Axios-specific errors
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        console.error('Error response:', error.response.data);
 
+        // You can handle specific status codes if needed
+        if (error.response.status === 404) {
+          console.error(`Driver with email ${email} not found`);
+        }
+
+        throw new Error(error.response.data.error || 'Error retrieving driver');
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+        throw new Error('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request
+        console.error('Request setup error:', error.message);
+        throw new Error(`Request failed: ${error.message}`);
+      }
+    } else {
+      // Handle non-Axios errors
+      console.error('Unexpected error:', error);
+      throw new Error('An unexpected error occurred');
+    }
+  }
+};
 /**
  * Retrieves all drivers from the database.
  * @returns An array of drivers or an empty array if an error occurs.
@@ -139,9 +160,7 @@ const updateDriver = async (driverId: string, driverObject: Partial<Driver>) => 
       id: response.data.id,
       name: response.data.name,
       email: response.data.email,
-      phone: response.data.phone,
       user_type: response.data.user_type,
-      vehicle_type: response.data.vehicle_type,
       birthday: response.data.birthday
         ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
         : null,
@@ -165,84 +184,6 @@ const deleteDriver = async (driverId: string): Promise<{message: string} | undef
     console.error(error);
   }
 };
-
-/**
- * Retrieves a history record by its ID.
- * @param historyId - The ID of the history record.
- * @returns The history object or undefined if an error occurs.
- */
-// const getHistoryByID = async (historyId: string): Promise<History | undefined> => {
-//   try {
-//     const response = await axiosClient.get<History>(`/history/${historyId}`);
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
-/**
- * Creates a new history record for a driver.
- * @param historyObject - The history data excluding the ID.
- * @returns The created history object or undefined if an error occurs.
- */
-// const createHistoryByDriverID = async (
-//   historyObject: Omit<History, 'id'>,
-// ): Promise<History | undefined> => {
-//   try {
-//     const response = await axiosClient.post<History>('/history', historyObject);
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
-/**
- * Updates an existing history record by ID.
- * @param historyId - The ID of the history record to update.
- * @param updateObject - The updated history data.
- * @returns The updated history object or undefined if an error occurs.
- */
-// const updateHistoryByID = async (
-//   historyId: string,
-//   updateObject: Partial<History>,
-// ): Promise<History | undefined> => {
-//   try {
-//     const response = await axiosClient.put<History>(`/history/${historyId}`, updateObject);
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
-/**
- * Deletes a history record by its ID.
- * @param historyId - The ID of the history record to delete.
- * @returns A success message or undefined if an error occurs.
- */
-// const deleteHistoryByID = async (historyId: string): Promise<{message: string} | undefined> => {
-//   try {
-//     const response = await axiosClient.delete<{message: string}>(`/history/${historyId}`);
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
-/**
- * Retrieves all history records for a specific driver.
- * @param driverId - The ID of the driver.
- * @returns An array of history records or an empty array if an error occurs.
- */
-// const getAllHistoryFromDriver = async (driverId: string): Promise<History[]> => {
-//   try {
-//     const response = await axiosClient.get<History[]>(`/history/driver/${driverId}`);
-//     return response.data;
-//   } catch (error) {
-//     console.error(error);
-//     return [];
-//   }
-// };
-
 //ToDo: Plan to do refactoring in the next sprint
 const logFaceDetectionSessionData = async (
   sessionData: FDSessionType,
@@ -399,17 +340,12 @@ const updateInvitationStatus = async (
 export {
   Driver,
   uploadImage,
-  // History,
+  getDriverByEmail,
   getDriverByID,
   getAllDrivers,
   createDriver,
   updateDriver,
   deleteDriver,
-  // getHistoryByID,
-  // createHistoryByDriverID,
-  // updateHistoryByID,
-  // deleteHistoryByID,
-  // getAllHistoryFromDriver,
   logFaceDetectionSessionData,
   getFaceDetectionHistoryDataByDay,
   getFaceDetectionHistoryDataByWeek,

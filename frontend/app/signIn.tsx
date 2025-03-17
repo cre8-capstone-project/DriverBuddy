@@ -2,7 +2,6 @@ import {useState} from 'react';
 import {
   View,
   TextInput,
-  Button,
   Alert,
   StyleSheet,
   Image,
@@ -13,6 +12,7 @@ import auth from '@react-native-firebase/auth';
 import {useRouter} from 'expo-router';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 import FullWidthButton from '@/components/FullWidthButton';
+import {getDriverByEmail} from '@/api/api';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -21,8 +21,13 @@ export default function SignInScreen() {
 
   const handleAuth = async () => {
     try {
-      await auth().signInWithEmailAndPassword(email, password);
-      router.replace('/'); // Redirect to home after login
+      const driver = await getDriverByEmail(email);
+      if (driver) {
+        await auth().signInWithEmailAndPassword(email, password);
+        router.replace('/'); // Redirect to home after login
+      } else {
+        throw new Error(`There is no driver with this email: ${email}`);
+      }
     } catch (error: any) {
       Alert.alert('Authentication Error', error.message);
     }
@@ -55,9 +60,9 @@ export default function SignInScreen() {
       />
 
       <View style={styles.buttonsContainer}>
-        <FullWidthButton title="SIGN IN" type="primary" onPress={handleAuth} />
+        <FullWidthButton title="Sign In" type="primary" onPress={handleAuth} />
         <FullWidthButton
-          title="NO ACCOUNT? SIGN UP"
+          title="No account? Sign up"
           type="secondary"
           onPress={() => router.replace('/signUp')}
         />

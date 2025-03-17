@@ -6,8 +6,8 @@ const driverRoutes = driverCollection => {
 
   router.post('/', async (req, res) => {
     try {
-      const {id, name, email, phone, vehicle_type, user_type, picture_url, company_id} = req.body;
-      const newDriver = {id, name, email, phone, vehicle_type, user_type, picture_url, company_id};
+      const {id, name, email, user_type, picture_url, company_id} = req.body;
+      const newDriver = {id, name, email, user_type, picture_url, company_id};
       await driverCollection.doc(id).set(newDriver);
       res.status(201).send({id, ...newDriver});
     } catch (error) {
@@ -35,6 +35,32 @@ const driverRoutes = driverCollection => {
       res.status(500).send({error: `Failed to fetch driver: ${error}`});
     }
   });
+  router.get('/email/:email', async (req, res) => {
+    try {
+      const {email} = req.params;
+      const querySnapshot = await driverCollection.where('email', '==', email).get();
+
+      // Create an array to store the documents
+      const dbData = [];
+
+      // Loop through the documents and add them to the array
+      querySnapshot.forEach(doc => {
+        dbData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      // Check if any documents were found
+      if (dbData.length > 0) {
+        res.status(200).send(dbData);
+      } else {
+        // Return 404 if no driver found with the given email
+        res.status(404).send({error: `No driver exists with this email: ${email}`});
+      }
+    } catch (error) {
+      res.status(500).send({error: `Failed to fetch driver: ${error.message}`});
+    }
+  });
   router.get('/company/:company_id', async (req, res) => {
     try {
       const {company_id} = req.params;
@@ -59,8 +85,7 @@ const driverRoutes = driverCollection => {
   router.put('/:id', async (req, res) => {
     try {
       const {id} = req.params;
-      const {name, email, phone, birthday, vehicle_type, user_type, company_id, picture_url} =
-        req.body;
+      const {name, email, birthday, user_type, company_id, picture_url} = req.body;
 
       // Create a new driver object with the updated fields - only include defined values
       const updatedDriver = {};
@@ -68,8 +93,6 @@ const driverRoutes = driverCollection => {
       // Only add fields that are defined
       if (name !== undefined) updatedDriver.name = name;
       if (email !== undefined) updatedDriver.email = email;
-      if (phone !== undefined) updatedDriver.phone = phone;
-      if (vehicle_type !== undefined) updatedDriver.vehicle_type = vehicle_type;
       if (user_type !== undefined) updatedDriver.user_type = user_type;
       if (company_id !== undefined) updatedDriver.company_id = company_id;
       if (birthday !== undefined) updatedDriver.birthday = birthday;

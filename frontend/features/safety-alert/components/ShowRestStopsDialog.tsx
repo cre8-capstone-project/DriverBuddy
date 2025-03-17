@@ -11,7 +11,7 @@ type ShowRestStopsDialogProps = {
 };
 
 // Default auto-close time for modal in milliseconds
-const AUTO_CLOSE_DELAY = 10000;
+const AUTO_CLOSE_DELAY = 8000;
 
 export const ShowRestStopsDialog = ({
   isVisible,
@@ -25,7 +25,7 @@ export const ShowRestStopsDialog = ({
   // ADDED OR UPDATED 16 MAR: Flag to prevent calling onConfirmNo twice
   const hasResponded = useRef(false);
 
-  // ADDED OR UPDATED 16 MAR: Start the auto-close timer only when isVisible or autoCloseDelay changes, and reset the response flag.
+  // ADDED OR UPDATED 16 MAR: Start the auto-close timer only when isVisible or autoCloseDelay changes, and reset the response flag
   useEffect(() => {
     if (isVisible) {
       hasResponded.current = false; // Reset response flag when modal becomes visible
@@ -51,7 +51,7 @@ export const ShowRestStopsDialog = ({
   });
 
   return (
-    // ADDED OR UPDATED 16 MAR: Removed onBackdropPress prop to avoid double dismissal when clicking buttons.
+    // ADDED OR UPDATED 16 MAR: Removed onBackdropPress prop to avoid double dismissal when clicking buttons
     <Dialog isVisible={isVisible}>
       <View style={styles.container}>
         <View style={{width: '100%', height: 4, backgroundColor: '#ddd', overflow: 'hidden'}}>

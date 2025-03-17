@@ -7,6 +7,7 @@ import * as Location from 'expo-location';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {ShowRestStopsDialog} from '@/features/safety-alert/components/ShowRestStopsDialog';
 import theme from '@/components/Theme';
+import SearchHereToDrive from '@/components/SearchHereToDrive';
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -76,6 +77,8 @@ export const Map = forwardRef((props: Props, ref) => {
   const [showRestStopsModal, setShowRestStopsModal] = useState(false);
   // ADDED OR UPDATED 16 MAR: State to track the alertCount when the modal was closed
   const [lastModalAlertCount, setLastModalAlertCount] = useState(0);
+  // ADDED OR UPDATED 16 MAR: Show or hide continue driving button
+const [showContinueDriving, setShowContinueDriving] = useState(false);
   // ADDED OR UPDATED 16 MAR: State to track the cycle count to trigger modal (separate from alertCount)
   const [cycle, setCycle] = useState(0);
   // UPDATED 14 MAR: Access alertCount and resetAlertCount from FaceDetectionContext
@@ -250,7 +253,7 @@ export const Map = forwardRef((props: Props, ref) => {
       const restStopRadius = 10000;
       const restStopType = 'gas_station';
       const restStopKeyword = '';
-      const restStopResults = 5;
+      const restStopResults = 3;
       const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(
         `${currentLocation.latitude},${currentLocation.longitude}`,
       )}&radius=${restStopRadius}&type=${restStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
@@ -310,6 +313,9 @@ export const Map = forwardRef((props: Props, ref) => {
         console.log('Zoom out to show nearby rest stops');
         mapRef.current?.animateToRegion(region, 1000);
         setDisableUserLocationChange(true);
+
+        // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
+        setShowContinueDriving(true);
       } else {
         Alert.alert('No gas stations found nearby');
       }
@@ -346,6 +352,23 @@ export const Map = forwardRef((props: Props, ref) => {
     setCycle(0);
     setPrevAlertCount(alertCount);
     setLastModalAlertCount(alertCount); // Reset the trigger counter on dismissal
+  };
+
+  // ADDED OR UPDATED 16 MAR: Logic for continue driving
+  const handleContinueDriving = () => {
+    console.log('Continue driving pressed');
+    setRestStops([]); // Clear rest stop pins
+    // setDrivingMode(true);
+
+    const currentLocation = deviceLocation || origin;
+    if (mapRef.current && currentLocation) {
+      mapRef.current.animateCamera(
+        {center: currentLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
+        {duration: 1000},
+      );
+    }
+    // Hide continue driving button
+    setShowContinueDriving(false);
   };
 
   // Function to geocode a place name using Google Geocoding API
@@ -630,7 +653,7 @@ export const Map = forwardRef((props: Props, ref) => {
           />
         ))}
       </MapView>
-      {/* UPDATED 14 MAR: Old Nearby Stops button commented out
+      {/* UPDATED 14 MAR: Nearby Stops (Test) button
       {drivingMode && (
         <View style={styles.nearbyStopsButtonContainer}>
           <TouchableOpacity style={styles.nearbyStopsButton} onPress={handleNearbyStops}>
@@ -639,6 +662,16 @@ export const Map = forwardRef((props: Props, ref) => {
         </View>
       )}
       */}
+
+      {/* ADDED OR UPDATED 16 MAR: Continue driving button */}
+      {showContinueDriving && (
+        <View style={styles.continueDrivingButtonContainer}>
+          <TouchableOpacity style={styles.continueDrivingButton} onPress={handleContinueDriving}>
+            <Icon name="navigate" type="ionicon" size={20} />
+            <Text style={styles.continueDrivingButtonText}>Continue driving</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* ADDED OR UPDATED 16 MAR: Show rest stops modal */}
       {showRestStopsModal && (
@@ -896,5 +929,34 @@ const styles = StyleSheet.create({
   },
   destinationCardClose: {
     padding: 5,
+  },
+
+  // ADDED OR UPDATED 16 MAR: Continue driving button
+  continueDrivingButtonContainer: {
+    position: 'absolute',
+    bottom: 110,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  continueDrivingButton: {
+    backgroundColor: theme.lightColors.white,
+    paddingVertical: 16,
+    paddingLeft: 20,
+    paddingRight: 20,
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  continueDrivingButtonText: {
+    fontSize: 19,
+    fontWeight: '400',
+    paddingLeft: 6,
   },
 });

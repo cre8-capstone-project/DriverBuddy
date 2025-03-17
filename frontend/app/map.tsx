@@ -5,6 +5,9 @@ import {Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
+import {ShowRestStopsDialog} from '@/features/safety-alert/components/ShowRestStopsDialog';
+
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
 console.log('GOOGLE_MAPS_APIKEY:', GOOGLE_MAPS_APIKEY);
@@ -67,9 +70,40 @@ export const Map = forwardRef((props: Props, ref) => {
   const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
   // UPDATED 04 MAR: Static polyline to prevent the it from blinking when handleUserLocationChange executes
   // const [routeOrigin, setRouteOrigin] = useState<Region | null>(null); // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
-
   // UPDATED 14 MAR: Show or hide a destination card
   const [showDestinationCard, setShowDestinationCard] = useState(false);
+  // UPDATED 14 MAR: For showing/hiding the ShowRestStopsDialog
+  const [showRestStopsModal, setShowRestStopsModal] = useState(false);
+  // ADDED OR UPDATED 16 MAR: State to track the alertCount when the modal was closed
+  const [lastModalAlertCount, setLastModalAlertCount] = useState(0);
+  // ADDED OR UPDATED 16 MAR: State to track the cycle count to trigger modal (separate from alertCount)
+  const [cycle, setCycle] = useState(0);
+  // UPDATED 14 MAR: Access alertCount and resetAlertCount from FaceDetectionContext
+  const {alertCount, resetAlertCount} = useFaceDetectionContext();
+  // ADDED OR UPDATED 16 MAR: State to track the previous alertCount when the modal was closed
+  const [prevAlertCount, setPrevAlertCount] = useState(alertCount);
+  // ADDED OR UPDATED 16 MAR: Update the cycle count
+  useEffect(() => {
+    if (!showRestStopsModal && drivingMode) {
+      const delta = alertCount - prevAlertCount;
+      if (delta > 0) {
+        setCycle(prev => {
+          const cycleCount = prev + delta;
+          console.log(`Cycle Count: ${cycleCount}`);
+          return cycleCount;
+        });
+        setPrevAlertCount(alertCount);
+      }
+    }
+  }, [alertCount, drivingMode, showRestStopsModal, prevAlertCount]);
+
+  // ADDED OR UPDATED 16 MAR: Show the rest stop modal when drivingMode: true and cycle count: 3
+  useEffect(() => {
+    console.log('alertCount:', alertCount); // Preserve original logging
+    if (!showRestStopsModal && drivingMode && cycle >= 3) {
+      setShowRestStopsModal(true);
+    }
+  }, [cycle, drivingMode, showRestStopsModal, alertCount]);
 
   // Updates drive status when destination or driving mode changes
   useEffect(() => {
@@ -109,6 +143,9 @@ export const Map = forwardRef((props: Props, ref) => {
       }
     }
     setDrivingMode(true);
+    // ADDED OR UPDATED 16 MAR: Reset cycle count and prevAlertCount when entering driving mode
+    setCycle(0);
+    setPrevAlertCount(alertCount);
 
     // UPDATED 14 MAR: Dismiss the destination card when user clicks Start Driving
     setShowDestinationCard(false);
@@ -170,7 +207,7 @@ export const Map = forwardRef((props: Props, ref) => {
       }
       // UPDATED 04 MAR: If not in driving mode and initial zoom hasn't been done, perform initial zoom.
       else if (!initialZoom) {
-        console.log('Zoom to user current location'); // Log the first user location change
+        console.log('Zoom in to user current location'); // Log the first user location change
         setOrigin({
           latitude: coordinate.latitude,
           longitude: coordinate.longitude,
@@ -202,6 +239,7 @@ export const Map = forwardRef((props: Props, ref) => {
 
   // UPDATED 11 MAR: Function to handle Nearby Stops button press using nearbysearch endpoint with radius parameter, displaying ALL gas stations within the perimeter
   const handleNearbyStops = async () => {
+    console.log('handleNearbyStops is invoked');
     const currentLocation = deviceLocation || origin;
     if (!currentLocation) {
       Alert.alert('Current location not available');
@@ -213,7 +251,9 @@ export const Map = forwardRef((props: Props, ref) => {
       const restStopType = 'gas_station';
       const restStopKeyword = '';
       const restStopResults = 5;
-      const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(`${currentLocation.latitude},${currentLocation.longitude}`)}&radius=${restStopRadius}&type=${restStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
+      const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(
+        `${currentLocation.latitude},${currentLocation.longitude}`,
+      )}&radius=${restStopRadius}&type=${restStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
       const response = await fetch(url);
       const data = await response.json();
       if (data.status === 'OK' && data.results && data.results.length > 0) {
@@ -266,8 +306,8 @@ export const Map = forwardRef((props: Props, ref) => {
           latitudeDelta,
           longitudeDelta,
         };
-
-        // Animate to the calculated region
+        // Zoom out to show nearby rest stops
+        console.log('Zoom out to show nearby rest stops');
         mapRef.current?.animateToRegion(region, 1000);
         setDisableUserLocationChange(true);
       } else {
@@ -277,6 +317,35 @@ export const Map = forwardRef((props: Props, ref) => {
       console.error(error);
       Alert.alert('Error', 'An error occurred while fetching nearby gas stations.');
     }
+  };
+
+  // ADDED OR UPDATED 16 MAR: Actions when user clicks YES on modal
+  const handleRestStopsYes = () => {
+    console.log('User clicked YES on map.tsx');
+    setShowRestStopsModal(false);
+    setCycle(0);
+    setPrevAlertCount(alertCount);
+    setLastModalAlertCount(alertCount); // Reset the trigger counter when modal is dismissed
+    if (mapRef.current && deviceLocation) {
+      mapRef.current.animateCamera(
+        {center: deviceLocation, pitch: 0, heading: 0, zoom: 18},
+        {duration: 1000},
+      );
+    }
+    handleNearbyStops();
+  };
+
+  // ADDED OR UPDATED 16 MAR: Actions when user clicks NO on modal
+  const handleRestStopsNo = (autoClosed?: boolean) => {
+    if (autoClosed) {
+      console.log('Modal has auto closed'); // Log auto-close message
+    } else {
+      console.log('User clicked NO on map.tsx');
+    }
+    setShowRestStopsModal(false);
+    setCycle(0);
+    setPrevAlertCount(alertCount);
+    setLastModalAlertCount(alertCount); // Reset the trigger counter on dismissal
   };
 
   // Function to geocode a place name using Google Geocoding API
@@ -411,7 +480,7 @@ export const Map = forwardRef((props: Props, ref) => {
     Keyboard.dismiss();
   };
 
-  // UPDATED 14 MAR: Close the destination card and zoom back to origin
+  // ADDED OR UPDATED 16 MAR: Close the destination card and zoom back to origin
   const closeDestinationCard = () => {
     setDestination(null);
     savedDestination = null;
@@ -492,7 +561,7 @@ export const Map = forwardRef((props: Props, ref) => {
         latitudeDelta: latDiff * 1.5 || 0.05,
         longitudeDelta: lngDiff * 1.5 || 0.05,
       };
-      console.log('Showing recommended route');
+      console.log('Show recommended route using latitude and destination');
       mapRef.current?.animateToRegion(region, 1000);
     }
     if (field === 'destination' && origin) {
@@ -506,7 +575,7 @@ export const Map = forwardRef((props: Props, ref) => {
         latitudeDelta: latDiff * 1.5 || 0.05,
         longitudeDelta: lngDiff * 1.5 || 0.05,
       };
-      console.log('Showing recommended route');
+      console.log('Show recommended route using origin and latitude');
       mapRef.current?.animateToRegion(region, 1000);
     }
   };
@@ -561,7 +630,7 @@ export const Map = forwardRef((props: Props, ref) => {
           />
         ))}
       </MapView>
-      {/* UPDATED 11 MAR: Nearby Stops button (visible only in driving mode) */}
+      {/* UPDATED 14 MAR: Old Nearby Stops button commented out
       {drivingMode && (
         <View style={styles.nearbyStopsButtonContainer}>
           <TouchableOpacity style={styles.nearbyStopsButton} onPress={handleNearbyStops}>
@@ -569,17 +638,22 @@ export const Map = forwardRef((props: Props, ref) => {
           </TouchableOpacity>
         </View>
       )}
+      */}
 
-      {/* UPDATED 14 MAR: Show destination card */}
+      {/* ADDED OR UPDATED 16 MAR: Show rest stops modal */}
+      {showRestStopsModal && (
+        <ShowRestStopsDialog
+          isVisible={showRestStopsModal}
+          onConfirmYes={handleRestStopsYes}
+          onConfirmNo={handleRestStopsNo}
+        />
+      )}
+
+      {/* UPDATED 14 MAR: Destination card */}
       {showDestinationCard && (
         <View style={styles.destinationCard}>
-          <Text style={styles.destinationCardText}>
-            {destinationLabel}
-          </Text>
-          <TouchableOpacity
-            style={styles.destinationCardClose}
-            onPress={closeDestinationCard}
-          >
+          <Text style={styles.destinationCardText}>{destinationLabel}</Text>
+          <TouchableOpacity style={styles.destinationCardClose} onPress={closeDestinationCard}>
             <Icon name="close" type="ionicon" />
           </TouchableOpacity>
         </View>

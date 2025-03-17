@@ -7,7 +7,6 @@ import * as Location from 'expo-location';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {ShowRestStopsDialog} from '@/features/safety-alert/components/ShowRestStopsDialog';
 import theme from '@/components/Theme';
-import SearchHereToDrive from '@/components/SearchHereToDrive';
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -59,6 +58,8 @@ export const Map = forwardRef((props: Props, ref) => {
   const inputRef = useRef<any>(null);
   // State to track if driving mode is active
   const [drivingMode, setDrivingMode] = useState(false);
+  // ADDED OR UPDATED 16 MAR: Temporarily disable the driving watch position if true
+  const [disableDrivingWatchPosition, setDisableDrivingWatchPosition] = useState(false);
   // UPDATED 04 MAR: Flag to ensure initial zoom only happens once after the map loads
   const [initialZoom, setInitialZoom] = useState(false);
   // UPDATED 11 MAR: Added flag to disable onUserLocationChange when Nearby Stops is active
@@ -78,16 +79,16 @@ export const Map = forwardRef((props: Props, ref) => {
   // ADDED OR UPDATED 16 MAR: State to track the alertCount when the modal was closed
   const [lastModalAlertCount, setLastModalAlertCount] = useState(0);
   // ADDED OR UPDATED 16 MAR: Show or hide continue driving button
-const [showContinueDriving, setShowContinueDriving] = useState(false);
+  const [showContinueDriving, setShowContinueDriving] = useState(false);
   // ADDED OR UPDATED 16 MAR: State to track the cycle count to trigger modal (separate from alertCount)
   const [cycle, setCycle] = useState(0);
   // UPDATED 14 MAR: Access alertCount and resetAlertCount from FaceDetectionContext
   const {alertCount, resetAlertCount} = useFaceDetectionContext();
   // ADDED OR UPDATED 16 MAR: State to track the previous alertCount when the modal was closed
   const [prevAlertCount, setPrevAlertCount] = useState(alertCount);
-  // ADDED OR UPDATED 16 MAR: Update the cycle count
+  // ADDED OR UPDATED 16 MAR: Update the cycle count, only increment if disableDrivingWatchPosition is false
   useEffect(() => {
-    if (!showRestStopsModal && drivingMode) {
+    if (!showRestStopsModal && drivingMode && !disableDrivingWatchPosition) {
       const delta = alertCount - prevAlertCount;
       if (delta > 0) {
         setCycle(prev => {
@@ -98,15 +99,17 @@ const [showContinueDriving, setShowContinueDriving] = useState(false);
         setPrevAlertCount(alertCount);
       }
     }
-  }, [alertCount, drivingMode, showRestStopsModal, prevAlertCount]);
+  }, [alertCount, drivingMode, disableDrivingWatchPosition, showRestStopsModal, prevAlertCount]);
 
   // ADDED OR UPDATED 16 MAR: Show the rest stop modal when drivingMode: true and cycle count: 3
   useEffect(() => {
-    console.log('alertCount:', alertCount); // Preserve original logging
-    if (!showRestStopsModal && drivingMode && cycle >= 3) {
+    console.log('alertCount:', alertCount);
+    // ADDED OR UPDATED 16 MAR: Added disableDrivingWatchPosition so modal won't appear while rest stops are displayed
+    if (!showRestStopsModal && drivingMode && !disableDrivingWatchPosition && cycle >= 3) {
       setShowRestStopsModal(true);
+      setPrevAlertCount(alertCount); // ADDED OR UPDATED 16 MAR: Reset prevAlertCount to prevent unwanted cycleCount increments
     }
-  }, [cycle, drivingMode, showRestStopsModal, alertCount]);
+  }, [cycle, drivingMode, disableDrivingWatchPosition, showRestStopsModal, alertCount]);
 
   // Updates drive status when destination or driving mode changes
   useEffect(() => {
@@ -313,6 +316,11 @@ const [showContinueDriving, setShowContinueDriving] = useState(false);
         console.log('Zoom out to show nearby rest stops');
         mapRef.current?.animateToRegion(region, 1000);
         setDisableUserLocationChange(true);
+        // ADDED OR UPDATED 16 MAR: Turn off driving watch position so the camera won't zoom to user's location, and reset counters
+        console.log('disableDrivingWatchPosition is TRUE');
+        setCycle(0);
+        setPrevAlertCount(alertCount);
+        setDisableDrivingWatchPosition(true);
 
         // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
         setShowContinueDriving(true);
@@ -328,10 +336,12 @@ const [showContinueDriving, setShowContinueDriving] = useState(false);
   // ADDED OR UPDATED 16 MAR: Actions when user clicks YES on modal
   const handleRestStopsYes = () => {
     console.log('User clicked YES on map.tsx');
-    setShowRestStopsModal(false);
+    // Reset counters first
     setCycle(0);
     setPrevAlertCount(alertCount);
-    setLastModalAlertCount(alertCount); // Reset the trigger counter when modal is dismissed
+    setLastModalAlertCount(alertCount);
+    // Then close the modal
+    setShowRestStopsModal(false);
     if (mapRef.current && deviceLocation) {
       mapRef.current.animateCamera(
         {center: deviceLocation, pitch: 0, heading: 0, zoom: 18},
@@ -348,17 +358,26 @@ const [showContinueDriving, setShowContinueDriving] = useState(false);
     } else {
       console.log('User clicked NO on map.tsx');
     }
-    setShowRestStopsModal(false);
+    // Reset counters first
     setCycle(0);
     setPrevAlertCount(alertCount);
-    setLastModalAlertCount(alertCount); // Reset the trigger counter on dismissal
+    setLastModalAlertCount(alertCount);
+    // Then close the modal
+    setShowRestStopsModal(false);
   };
 
   // ADDED OR UPDATED 16 MAR: Logic for continue driving
   const handleContinueDriving = () => {
     console.log('Continue driving pressed');
-    setRestStops([]); // Clear rest stop pins
-    // setDrivingMode(true);
+    // Clear rest stop pins
+    setRestStops([]);
+    // ADDED OR UPDATED 16 MAR: Re-enable driving mode, just in case it's disabled (turn this off if buggy)
+    setDrivingMode(true);
+    // ADDED OR UPDATED 16 MAR: Turn on driving watch position again so the camera zooms to user's location, and reset counters
+    console.log('disableDrivingWatchPosition is FALSE');
+    setDisableDrivingWatchPosition(false);
+    setCycle(0);
+    setPrevAlertCount(alertCount);
 
     const currentLocation = deviceLocation || origin;
     if (mapRef.current && currentLocation) {
@@ -444,7 +463,8 @@ const [showContinueDriving, setShowContinueDriving] = useState(false);
   // Effect to update the map in driving mode with realtime location updates
   useEffect(() => {
     let subscription: any;
-    if (drivingMode) {
+    // ADDED OR UPDATED 16 MAR: Skip driving watch position if true
+    if (drivingMode && !disableDrivingWatchPosition) {
       (async () => {
         subscription = await Location.watchPositionAsync(
           {
@@ -475,7 +495,7 @@ const [showContinueDriving, setShowContinueDriving] = useState(false);
         subscription.remove();
       }
     };
-  }, [drivingMode]);
+  }, [drivingMode, disableDrivingWatchPosition]);
 
   // Expose the openSearch function to parent via ref
   useImperativeHandle(ref, () => ({

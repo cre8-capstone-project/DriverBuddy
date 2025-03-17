@@ -1,10 +1,10 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useWindowDimensions} from 'react-native';
 import {Frame} from 'react-native-vision-camera';
 import {Face, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
 import {useFaceBounds} from '@/features/safety-alert/hooks/useFaceBounds';
 import {useSpeech} from '@/hooks/useSpeech';
-import {useOpenAI} from '@/hooks/useOpenAI';
+// import {useOpenAI} from '@/hooks/useOpenAI';
 import {AlertService} from '@/services/AlertService';
 import {useDrowsinessDetection} from '@/features/safety-alert/hooks/useDrowsinessDetection';
 import {useLookAwayDetection} from '@/features/safety-alert/hooks/useLookAwayDetection';
@@ -13,17 +13,31 @@ import {logFaceDetectionSessionData} from '@/api/api';
 import uuid from 'react-native-uuid';
 import {useAuth} from '@/contexts/AuthProvider';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
+import {
+  DRAWSINESS_ALERT_MESSAGE,
+  DISTRACTED_WARNING_MESSAGE,
+} from '@/features/safety-alert/constants/messages';
+// import {Audio} from 'expo-av';
+// import type {AVPlaybackSource} from 'expo-av';
 
 export const useFaceDetection = () => {
   const {user} = useAuth();
   const {width, height} = useWindowDimensions();
   const {speak, isSpeaking} = useSpeech();
-  const {generateMessage} = useOpenAI();
-  const alertRef = useRef(false);
-  const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
-  const {checkDrowsiness, leftEyeStatus, rightEyeStatus, blinkCount} = useDrowsinessDetection();
-  const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
+  const [isAlerting, setIsAlerting] = useState(false);
+  const [isWarning, setIsWarning] = useState(false);
 
+  useEffect(() => {
+    if (isAlerting && !isSpeaking) {
+      setIsAlerting(false);
+    }
+  }, [isSpeaking]);
+
+  // const {generateMessage} = useOpenAI();
+  const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
+  const {checkDrowsiness, leftEyeStatus, rightEyeStatus, eyeBlinkRate, eyeBlinkRateData} =
+    useDrowsinessDetection();
+  const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
   const {alertCount, setAlertCount} = useFaceDetectionContext();
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
@@ -93,9 +107,19 @@ export const useFaceDetection = () => {
         showFaceBorder();
         updateFaceBounds(face);
 
-        const prompt = `Give a short sentence of encouragement to a drowsy driver.`;
-        checkDrowsiness(face, () => triggerAlert(() => generateMessage(prompt)));
-        checkLookingAway(face, () => triggerAlert(() => generateMessage(prompt)));
+        // Note: The prompt message is randomly selected from the array. Not using Open AI API
+        // const prompt = `Give a short sentence of encouragement to a drowsy driver.`;
+        const drowsinessAlertMessage =
+          DRAWSINESS_ALERT_MESSAGE[Math.floor(Math.random() * DRAWSINESS_ALERT_MESSAGE.length)];
+        checkDrowsiness(face, () =>
+          triggerAlert(drowsinessAlertMessage.message, drowsinessAlertMessage.sound),
+        );
+
+        const distractedWarningMessage =
+          DISTRACTED_WARNING_MESSAGE[Math.floor(Math.random() * DISTRACTED_WARNING_MESSAGE.length)]
+            .message;
+
+        checkLookingAway(face, () => triggerWarning(distractedWarningMessage));
       } else {
         // console.log('No face detected');
         hideFaceBorder();
@@ -106,13 +130,16 @@ export const useFaceDetection = () => {
     }
   };
 
-  const triggerAlert = async (alertFunction: () => Promise<string>) => {
+  const triggerAlert = async (alertMessage: string, alertSound: string) => {
     try {
-      alertRef.current = true;
+      setIsAlerting(true);
+
+      // Load and play the warning sound
+      // const {sound} = await Audio.Sound.createAsync(alertSound);
+      // await sound.playAsync();
 
       // Execute text to speech to read out the message
-      const message = await alertFunction();
-      speak(message);
+      speak(alertMessage);
 
       // Log the alert to SQLite
       await AlertService.logAlert({
@@ -121,10 +148,18 @@ export const useFaceDetection = () => {
         userId: user?.uid ?? '',
         timestamp: new Date().toISOString(),
       });
-
       setAlertCount((prev: number) => prev + 1);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-      alertRef.current = false;
+  const triggerWarning = async (warningMessage: string) => {
+    try {
+      setIsWarning(true);
+
+      // Execute text to speech to read out the message
+      speak(warningMessage);
     } catch (error) {
       console.error(error);
     }
@@ -137,8 +172,11 @@ export const useFaceDetection = () => {
     leftEyeStatus,
     rightEyeStatus,
     pitchAngleStatus,
-    blinkCount,
-    isWarning: isSpeaking,
+    eyeBlinkRate,
+    eyeBlinkRateData,
+    isSpeaking,
+    isAlerting,
+    isWarning,
     alertCount,
   };
 };

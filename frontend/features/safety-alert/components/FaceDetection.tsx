@@ -3,7 +3,7 @@ import {View, StyleSheet, Text, Image, Dimensions} from 'react-native';
 import {Camera} from 'react-native-vision-camera-face-detector';
 import Animated from 'react-native-reanimated';
 import {useFaceDetection} from '@/features/safety-alert/hooks/useFaceDetection';
-import {WarningMessage} from '@/features/safety-alert/components/WarningMessage';
+import {AlertingMessage} from '@/features/safety-alert/components/AlertingMessage';
 import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {Icon} from '@rneui/themed';
@@ -36,8 +36,9 @@ const FaceDetection = ({device, viewMode}: Props) => {
     leftEyeStatus,
     rightEyeStatus,
     pitchAngleStatus,
-    blinkCount,
-    isWarning,
+    eyeBlinkRate,
+    eyeBlinkRateData,
+    isAlerting,
   } = useFaceDetection();
 
   return (
@@ -51,7 +52,7 @@ const FaceDetection = ({device, viewMode}: Props) => {
         faceDetectionOptions={faceDetectionOptions}
       />
       <Animated.View style={faceBorderStyle} />
-      <WarningMessage isWarning={isWarning} />
+      <AlertingMessage isWarning={isAlerting} />
       {viewMode === 'cameraView' && <FaceDetectingLabel />}
       {viewMode === 'mapView' && (
         <>
@@ -74,7 +75,9 @@ const FaceDetection = ({device, viewMode}: Props) => {
             {'\n'}
             Right Eye={rightEyeStatus ? 'closed' : 'open'}
             {'\n'}
-            Blinks/min: {blinkCount}
+            Eye Blink Rate: {eyeBlinkRate}/min
+            {'\n'}
+            Eye Blink Rate (Data): {eyeBlinkRateData}
             {'\n'}
             Face Direction: {pitchAngleStatus}
           </Text>
@@ -111,11 +114,11 @@ const styles = StyleSheet.create({
   debugContainer: {
     position: 'absolute',
     top: '5%',
-    right: '5%',
+    left: '50%',
   },
   debugText: {
     color: 'lightgreen',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

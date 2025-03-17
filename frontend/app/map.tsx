@@ -4,9 +4,9 @@ import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import {Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {ShowRestStopsDialog} from '@/features/safety-alert/components/ShowRestStopsDialog';
+import theme from '@/components/Theme';
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -137,7 +137,7 @@ export const Map = forwardRef((props: Props, ref) => {
       const currentLocation = deviceLocation || origin; // UPDATED 04 MAR: If deviceLocation is not ready, fallback to origin
       if (currentLocation) {
         mapRef.current.animateCamera(
-          {center: currentLocation, pitch: 55, heading: 0, zoom: 18, altitude: 150},
+          {center: currentLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
           {duration: 1000},
         );
       }
@@ -435,7 +435,7 @@ export const Map = forwardRef((props: Props, ref) => {
               mapRef.current.animateCamera(
                 {
                   center: {latitude, longitude},
-                  pitch: 55, // Slightly angled view
+                  pitch: 45, // Slightly angled view
                   heading: heading || 0,
                   zoom: 18, // Adjust zoom level as needed
                   altitude: 150, // Added altitude to support pitch animation
@@ -609,8 +609,8 @@ export const Map = forwardRef((props: Props, ref) => {
             origin={origin} // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
             destination={destination}
             apikey={GOOGLE_MAPS_APIKEY}
-            strokeWidth={4}
-            strokeColor="blue"
+            strokeWidth={6}
+            strokeColor={theme.lightColors.primary}
             // UPDATED 07 MAR: Added props
             mode="DRIVING" // Allowed values are DRIVING, BICYCLING, WALKING, and TRANSIT
             resetOnChange={false} // Prevents polyline from blinking when updating
@@ -654,7 +654,7 @@ export const Map = forwardRef((props: Props, ref) => {
         <View style={styles.destinationCard}>
           <Text style={styles.destinationCardText}>{destinationLabel}</Text>
           <TouchableOpacity style={styles.destinationCardClose} onPress={closeDestinationCard}>
-            <Icon name="close" type="ionicon" />
+            <Icon name="close-circle-outline" type="ionicon" />
           </TouchableOpacity>
         </View>
       )}
@@ -684,7 +684,11 @@ export const Map = forwardRef((props: Props, ref) => {
             leftIcon={<Icon name="arrow-back" type="ionicon" onPress={closeSearch} />}
             rightIcon={
               coordinateInput ? (
-                <Icon name="close" type="ionicon" onPress={() => setCoordinateInput('')} />
+                <Icon
+                  name="close-circle-outline"
+                  type="ionicon"
+                  onPress={() => setCoordinateInput('')}
+                />
               ) : undefined
             }
           />
@@ -844,7 +848,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startButton: {
-    backgroundColor: 'blue',
+    backgroundColor: theme.lightColors.primary,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 50,
@@ -873,14 +877,17 @@ const styles = StyleSheet.create({
   // UPDATED 14 MAR: Destination card
   destinationCard: {
     position: 'absolute',
-    bottom: 81,
+    bottom: 96,
     left: 0,
     right: 0,
     backgroundColor: 'white',
     padding: 10,
+    paddingLeft: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.lightColors.grey3,
   },
   destinationCardText: {
     flex: 1,

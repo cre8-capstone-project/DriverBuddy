@@ -497,6 +497,25 @@ export const Map = forwardRef((props: Props, ref) => {
     };
   }, [drivingMode, disableDrivingWatchPosition]);
 
+  // ADDED OR UPDATED 16 MAR: Reset counters when the modal closes
+  // Prevents unwanted cycleCount increments while the modal is open
+  const wasModalOpen = useRef(false);
+
+  useEffect(() => {
+    if (showRestStopsModal && !wasModalOpen.current) {
+      // Modal is opening
+      wasModalOpen.current = true;
+    } else if (!showRestStopsModal && wasModalOpen.current) {
+      // Modal is closing
+      wasModalOpen.current = false;
+
+      // Force reset counters when the modal closes
+      setCycle(0);
+      setPrevAlertCount(alertCount);
+      setLastModalAlertCount(alertCount);
+    }
+  }, [showRestStopsModal, alertCount]);
+
   // Expose the openSearch function to parent via ref
   useImperativeHandle(ref, () => ({
     openSearch: (field: 'origin' | 'destination') => {

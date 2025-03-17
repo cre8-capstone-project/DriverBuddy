@@ -668,7 +668,7 @@ const [showContinueDriving, setShowContinueDriving] = useState(false);
         <View style={styles.continueDrivingButtonContainer}>
           <TouchableOpacity style={styles.continueDrivingButton} onPress={handleContinueDriving}>
             <Icon name="navigate" type="ionicon" size={20} />
-            <Text style={styles.continueDrivingButtonText}>Continue driving</Text>
+            <Text style={styles.continueDrivingButtonText}>Re-center</Text>
           </TouchableOpacity>
         </View>
       )}

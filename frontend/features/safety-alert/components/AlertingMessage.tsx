@@ -6,7 +6,7 @@ type Props = {
   isWarning: boolean;
 };
 
-export const WarningMessage = ({isWarning}: Props) => {
+export const AlertingMessage = ({isWarning}: Props) => {
   return (
     isWarning && (
       <View style={styles.warningContainer}>

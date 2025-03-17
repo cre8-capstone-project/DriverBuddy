@@ -10,7 +10,7 @@ export const useLookAwayDetection = () => {
   const [pitchAngleStatus, setPitchAngleStatus] = useState<'up' | 'center' | 'down'>('center');
   const startTimeRef = useRef<number | null>(null);
 
-  const checkLookingAway = (face: Face, triggerAlert: () => Promise<void>) => {
+  const checkLookingAway = (face: Face, triggerWarning: () => Promise<void>) => {
     const isLookingDown = face.pitchAngle < PITCH_DOWN_ANGLE_THRESHOLD;
     const isLookingUp = face.pitchAngle > PITCH_UP_ANGLE_THRESHOLD;
     setPitchAngleStatus(isLookingUp ? 'up' : isLookingDown ? 'down' : 'center');
@@ -19,7 +19,8 @@ export const useLookAwayDetection = () => {
       if (startTimeRef.current === null) {
         startTimeRef.current = Date.now();
       } else if (Date.now() - startTimeRef.current > LOOKDOWN_TIME_THRESHOLD) {
-        triggerAlert();
+        // Note: will not trigger alert but send warning message to the driver
+        triggerWarning();
         startTimeRef.current = null;
         console.log('Looking down time threshold exceeded');
       }

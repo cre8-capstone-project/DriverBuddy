@@ -14,7 +14,7 @@ export const ViewModeButtons = ({displayMode, setDisplayMode, setStartDate}: Pro
     <ButtonGroup
       containerStyle={styles.container}
       buttonContainerStyle={styles.buttonContainer}
-      buttonStyle={styles.button}
+      // buttonStyle={styles.button}
       selectedButtonStyle={styles.selectedButton}
       selectedTextStyle={styles.selectedButtonText}
       textStyle={styles.buttonText}

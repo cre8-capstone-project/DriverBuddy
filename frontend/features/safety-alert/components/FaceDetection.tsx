@@ -52,7 +52,7 @@ const FaceDetection = ({device, viewMode}: Props) => {
         faceDetectionOptions={faceDetectionOptions}
       />
       <Animated.View style={faceBorderStyle} />
-      <AlertingMessage isWarning={isAlerting} />
+      <AlertingMessage isAlerting={isAlerting} />
       {viewMode === 'cameraView' && <FaceDetectingLabel />}
       {viewMode === 'mapView' && (
         <>

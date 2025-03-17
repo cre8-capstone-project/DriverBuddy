@@ -12,6 +12,7 @@ export const useDrowsinessDetection = () => {
   const [leftEyeStatus, setLeftEyeStatus] = useState(false);
   const [rightEyeStatus, setRightEyeStatus] = useState(false);
   const {pitchAngleStatus} = useLookAwayDetection();
+  const isAlertingRef = useRef(false);
 
   const startTimeDrowsinessRef = useRef<number | null>(null);
   const blinkTimestampsRef = useRef<number[]>([]);
@@ -84,8 +85,6 @@ export const useDrowsinessDetection = () => {
   };
 
   const checkDrowsiness = (face: Face, triggerAlert: () => Promise<void>) => {
-    if (pitchAngleStatus !== 'center') return;
-
     const isLeftEyeClosed = face.leftEyeOpenProbability < OPEN_EYE_PROBABILITY_THRESHOLD;
     const isRightEyeClosed = face.rightEyeOpenProbability < OPEN_EYE_PROBABILITY_THRESHOLD;
 
@@ -102,9 +101,15 @@ export const useDrowsinessDetection = () => {
       if (startTimeDrowsinessRef.current === null) {
         startTimeDrowsinessRef.current = Date.now();
       } else if (Date.now() - startTimeDrowsinessRef.current > EYECLOSURE_TIME_THRESHOLD) {
+        if (pitchAngleStatus !== 'center') return; // Skip if the driver is not looking straight
+        if (!isAlertingRef.current) {
+          isAlertingRef.current = true;
+          triggerAlert().finally(() => {
+            isAlertingRef.current = false;
+          });
+          console.log('Eye closure time threshold exceeded');
+        }
         startTimeDrowsinessRef.current = null;
-        triggerAlert();
-        console.log('Eye closure time threshold exceeded');
       }
     } else {
       blinkStatusRef.current = 'open';

@@ -17,8 +17,7 @@ import {
   DRAWSINESS_ALERT_MESSAGE,
   DISTRACTED_WARNING_MESSAGE,
 } from '@/features/safety-alert/constants/messages';
-// import {Audio} from 'expo-av';
-// import type {AVPlaybackSource} from 'expo-av';
+import {Audio} from 'expo-av';
 
 export const useFaceDetection = () => {
   const {user} = useAuth();
@@ -26,6 +25,8 @@ export const useFaceDetection = () => {
   const {speak, isSpeaking} = useSpeech();
   const [isAlerting, setIsAlerting] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
+  const alertSoundRef = useRef<Audio.Sound | null>(null);
+  const warningSoundRef = useRef<Audio.Sound | null>(null);
 
   useEffect(() => {
     if (isAlerting && !isSpeaking) {
@@ -58,6 +59,12 @@ export const useFaceDetection = () => {
   useEffect(() => {
     console.log('[DEBUG] useFaceDetection component is mounted');
     return () => {
+      if (alertSoundRef.current) {
+        alertSoundRef.current.unloadAsync();
+      }
+      if (warningSoundRef.current) {
+        warningSoundRef.current.unloadAsync();
+      }
       console.log('[DEBUG] useFaceDetection component is unmounted');
     };
   }, []);
@@ -116,10 +123,10 @@ export const useFaceDetection = () => {
         );
 
         const distractedWarningMessage =
-          DISTRACTED_WARNING_MESSAGE[Math.floor(Math.random() * DISTRACTED_WARNING_MESSAGE.length)]
-            .message;
-
-        checkLookingAway(face, () => triggerWarning(distractedWarningMessage));
+          DISTRACTED_WARNING_MESSAGE[Math.floor(Math.random() * DISTRACTED_WARNING_MESSAGE.length)];
+        checkLookingAway(face, () =>
+          triggerWarning(distractedWarningMessage.message, distractedWarningMessage.sound),
+        );
       } else {
         // console.log('No face detected');
         hideFaceBorder();
@@ -130,15 +137,18 @@ export const useFaceDetection = () => {
     }
   };
 
-  const triggerAlert = async (alertMessage: string, alertSound: string) => {
+  const triggerAlert = async (alertMessage: string, alertSound: any) => {
     try {
       setIsAlerting(true);
 
       // Load and play the warning sound
-      // const {sound} = await Audio.Sound.createAsync(alertSound);
-      // await sound.playAsync();
+      if (alertSoundRef.current) {
+        await alertSoundRef.current.unloadAsync();
+      }
+      const {sound} = await Audio.Sound.createAsync(alertSound);
+      alertSoundRef.current = sound;
+      await sound.playAsync();
 
-      // Execute text to speech to read out the message
       speak(alertMessage);
 
       // Log the alert to SQLite
@@ -154,11 +164,17 @@ export const useFaceDetection = () => {
     }
   };
 
-  const triggerWarning = async (warningMessage: string) => {
+  const triggerWarning = async (warningMessage: string, warningSound: any) => {
     try {
       setIsWarning(true);
 
-      // Execute text to speech to read out the message
+      if (warningSoundRef.current) {
+        await warningSoundRef.current.unloadAsync();
+      }
+      const {sound} = await Audio.Sound.createAsync(warningSound);
+      warningSoundRef.current = sound;
+      await sound.playAsync();
+
       speak(warningMessage);
     } catch (error) {
       console.error(error);

@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Text, StyleSheet, Animated, Easing} from 'react-native';
 import {Dialog, Button} from '@rneui/themed';
+import theme from '@/components/Theme';
 
 // Define props to match those passed from map.tsx
 type ShowRestStopsDialogProps = {
@@ -59,7 +60,7 @@ export const ShowRestStopsDialog = ({
             style={{
               width: lineWidth,
               height: '100%',
-              backgroundColor: 'blue',
+              backgroundColor: theme.lightColors.primary,
             }}
           />
         </View>

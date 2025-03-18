@@ -5,7 +5,7 @@ import {Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
-import {ShowRestStopsDialog} from '@/features/safety-alert/components/ShowRestStopsDialog';
+import {ShowRestStopsDialog} from '@/features/map/components/ShowRestStopsDialog';
 import theme from '@/components/Theme';
 
 // Get API key from .env

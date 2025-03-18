@@ -1,11 +1,17 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Icon} from '@rneui/themed';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 
 export const FaceDetectingLabel = () => {
+  const {alertStatus} = useFaceDetectionContext();
   return (
     <View style={styles.faceDetectingContainer}>
-      <View style={styles.faceDetectingLabel}>
+      <View
+        style={[
+          styles.faceDetectingLabel,
+          {backgroundColor: alertStatus ? '#FF4B4B' : 'lightgreen'},
+        ]}>
         <Icon name="visibility" color="black" size={14} />
         <Text style={styles.faceDetectingText}>Detecting</Text>
       </View>

@@ -1,4 +1,4 @@
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState, useEffect} from 'react';
 import {View, StyleSheet, Text, Image, ImageSourcePropType} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
@@ -31,6 +31,14 @@ export default function HomeScreen() {
   const [startDialogStatus, setStartDialogStatus] = useState(false);
   const [endDialogStatus, setEndDialogStatus] = useState(false);
   const [mapKey, setMapKey] = useState(0);
+
+  // Cocoy's Update: Swap map and camera view when destination is selected
+  useEffect(() => {
+    if (driveDestinationStatus && viewMode === 'cameraView') {
+      setViewMode('mapView');
+      setViewModeContext('mapView');
+    }
+  }, [driveDestinationStatus, viewMode, setViewModeContext]);
 
   useFocusEffect(
     useCallback(() => {

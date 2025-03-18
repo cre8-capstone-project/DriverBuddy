@@ -79,6 +79,7 @@ export default function SignUpScreen() {
         setInvitation(response);
         setValidCode(true);
       }
+      // setValidCode(true); //REMOVE THIS AND UNCOMMENT ABOVE!!!!!!!
     } catch (e) {
       console.error(e);
     }

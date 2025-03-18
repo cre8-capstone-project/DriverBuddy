@@ -316,18 +316,8 @@ export default function ProfileScreen() {
                   </View>
                   <View style={styles.buttonContainer}>
                     <FullWidthButton title="Save Changes" type="primary" onPress={saveChanges} />
-                    {/* <Button size="md" buttonStyle={styles.fullWidthButton} onPress={saveChanges}>
-                      Save Changes
-                    </Button> */}
 
                     <FullWidthButton title="Cancel" type="secondary" onPress={toggleEdit} />
-                    {/* <Button
-                      type="outline"
-                      size="md"
-                      buttonStyle={styles.fullWidthButton}
-                      onPress={toggleEdit}>
-                      Cancel
-                    </Button> */}
                   </View>
                 </View>
               ) : (
@@ -358,8 +348,6 @@ export default function ProfileScreen() {
                 <FullWidthButton title="Sign out" type="tertiary" onPress={handleSignOut} />
               </View>
             </View>
-
-            {/* <Button onPress={handleSignOut}>Sign out</Button> */}
           </ScrollView>
         </KeyboardAvoidingView>
       ) : (
@@ -367,7 +355,7 @@ export default function ProfileScreen() {
           <View style={styles.infoTextContainer}>
             <Text style={styles.infoText}>No user information found</Text>
           </View>
-          <Button onPress={handleSignOut}>Sign out</Button>
+          <FullWidthButton title="Sign out" type="tertiary" onPress={handleSignOut} />
         </View>
       )}
     </>

@@ -1,4 +1,5 @@
-import {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useEffect} from 'react';
+import {useSharedValue, useAnimatedStyle, withTiming, runOnJS} from 'react-native-reanimated';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 
 export const useFaceBounds = () => {
@@ -8,11 +9,18 @@ export const useFaceBounds = () => {
   const aFaceX = useSharedValue(0);
   const aFaceY = useSharedValue(0);
   const borderWidth = useSharedValue(4);
+  const borderColor = useSharedValue('lightgreen');
+
+  useEffect(() => {
+    runOnJS(() => {
+      borderColor.value = alertStatus ? '#FF4B4B' : 'lightgreen';
+    })();
+  }, [alertStatus]);
 
   const faceBorderStyle = useAnimatedStyle(() => ({
     position: 'absolute',
     borderWidth: borderWidth.value,
-    borderColor: alertStatus ? '#FF4B4B' : 'lightgreen',
+    borderColor: borderColor.value,
     width: withTiming(aFaceW.value, {duration: 100}),
     height: withTiming(aFaceH.value, {duration: 100}),
     left: withTiming(aFaceX.value, {duration: 100}),

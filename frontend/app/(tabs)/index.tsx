@@ -1,8 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text, TouchableOpacity, Image, ImageSourcePropType} from 'react-native';
-import {Button, Icon} from '@rneui/themed';
+import React, {useState} from 'react';
+import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {Icon} from '@rneui/themed';
 import {StartConfirmationDialog} from '@/components/StartConfirmationDialog';
-import StartYourJourneyButton from '@/assets/images/StartYourJourneyButton.png';
 import OnboardingTour from '@/components/OnboardingTour';
 import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
 import {LinearGradient} from 'expo-linear-gradient';

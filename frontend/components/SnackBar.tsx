@@ -14,7 +14,7 @@ export const useSnackBar = () => {
     message: string,
     options: SnackBarOption = {
       duration: Toast.durations.SHORT,
-      position: Dimensions.get('window').height - 160,
+      position: Dimensions.get('window').height - 220,
     },
   ) => {
     if (toastRef.current) {

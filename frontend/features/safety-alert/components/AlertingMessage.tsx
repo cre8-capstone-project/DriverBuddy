@@ -1,17 +1,19 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import {View, StyleSheet, Image} from 'react-native';
+
+const alertIcon = require('@/assets/images/icon_alert.png');
 
 type Props = {
-  isWarning: boolean;
+  isAlerting: boolean;
 };
 
-export const AlertingMessage = ({isWarning}: Props) => {
+export const AlertingMessage = ({isAlerting}: Props) => {
   return (
-    isWarning && (
+    isAlerting && (
       <View style={styles.warningContainer}>
-        <Icon style={styles.warningIcon} name="warning" />
-        <Text style={styles.warningText}>Warning</Text>
+        <Image source={alertIcon} />
+        {/* <Icon style={styles.warningIcon} name="warning" />
+        <Text style={styles.warningText}>Warning</Text> */}
       </View>
     )
   );

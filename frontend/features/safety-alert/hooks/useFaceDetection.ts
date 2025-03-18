@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef} from 'react';
 import {useWindowDimensions} from 'react-native';
 import {Frame} from 'react-native-vision-camera';
 import {Face, FaceDetectionOptions} from 'react-native-vision-camera-face-detector';
@@ -17,28 +17,27 @@ import {
   DRAWSINESS_ALERT_MESSAGE,
   DISTRACTED_WARNING_MESSAGE,
 } from '@/features/safety-alert/constants/messages';
-// import {Audio} from 'expo-av';
-// import type {AVPlaybackSource} from 'expo-av';
+import {Audio} from 'expo-av';
 
 export const useFaceDetection = () => {
   const {user} = useAuth();
   const {width, height} = useWindowDimensions();
   const {speak, isSpeaking} = useSpeech();
-  const [isAlerting, setIsAlerting] = useState(false);
-  const [isWarning, setIsWarning] = useState(false);
-
-  useEffect(() => {
-    if (isAlerting && !isSpeaking) {
-      setIsAlerting(false);
-    }
-  }, [isSpeaking]);
+  const alertSoundRef = useRef<Audio.Sound | null>(null);
+  const warningSoundRef = useRef<Audio.Sound | null>(null);
 
   // const {generateMessage} = useOpenAI();
   const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
   const {checkDrowsiness, leftEyeStatus, rightEyeStatus, eyeBlinkRate, eyeBlinkRateData} =
     useDrowsinessDetection();
   const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
-  const {alertCount, setAlertCount} = useFaceDetectionContext();
+  const {alertCount, setAlertCount, alertStatus, setAlertStatus} = useFaceDetectionContext();
+
+  useEffect(() => {
+    if (alertStatus && !isSpeaking) {
+      setAlertStatus(false);
+    }
+  }, [isSpeaking]);
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
@@ -58,6 +57,12 @@ export const useFaceDetection = () => {
   useEffect(() => {
     console.log('[DEBUG] useFaceDetection component is mounted');
     return () => {
+      if (alertSoundRef.current) {
+        alertSoundRef.current.unloadAsync();
+      }
+      if (warningSoundRef.current) {
+        warningSoundRef.current.unloadAsync();
+      }
       console.log('[DEBUG] useFaceDetection component is unmounted');
     };
   }, []);
@@ -116,10 +121,10 @@ export const useFaceDetection = () => {
         );
 
         const distractedWarningMessage =
-          DISTRACTED_WARNING_MESSAGE[Math.floor(Math.random() * DISTRACTED_WARNING_MESSAGE.length)]
-            .message;
-
-        checkLookingAway(face, () => triggerWarning(distractedWarningMessage));
+          DISTRACTED_WARNING_MESSAGE[Math.floor(Math.random() * DISTRACTED_WARNING_MESSAGE.length)];
+        checkLookingAway(face, () =>
+          triggerAlert(distractedWarningMessage.message, distractedWarningMessage.sound),
+        );
       } else {
         // console.log('No face detected');
         hideFaceBorder();
@@ -130,16 +135,21 @@ export const useFaceDetection = () => {
     }
   };
 
-  const triggerAlert = async (alertMessage: string, alertSound: string) => {
+  const triggerAlert = async (alertMessage: string, alertSound: any) => {
     try {
-      setIsAlerting(true);
+      setAlertStatus(true);
 
       // Load and play the warning sound
-      // const {sound} = await Audio.Sound.createAsync(alertSound);
-      // await sound.playAsync();
+      if (alertSoundRef.current) {
+        await alertSoundRef.current.unloadAsync();
+      }
+      const {sound} = await Audio.Sound.createAsync(alertSound);
+      alertSoundRef.current = sound;
+      await sound.playAsync();
 
-      // Execute text to speech to read out the message
-      speak(alertMessage);
+      setTimeout(() => {
+        speak(alertMessage);
+      }, 1000);
 
       // Log the alert to SQLite
       await AlertService.logAlert({
@@ -154,16 +164,20 @@ export const useFaceDetection = () => {
     }
   };
 
-  const triggerWarning = async (warningMessage: string) => {
-    try {
-      setIsWarning(true);
+  // const triggerWarning = async (warningMessage: string, warningSound: any) => {
+  //   try {
+  //     if (warningSoundRef.current) {
+  //       await warningSoundRef.current.unloadAsync();
+  //     }
+  //     const {sound} = await Audio.Sound.createAsync(warningSound);
+  //     warningSoundRef.current = sound;
+  //     await sound.playAsync();
 
-      // Execute text to speech to read out the message
-      speak(warningMessage);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  //     speak(warningMessage);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   return {
     faceDetectionOptions,
@@ -175,8 +189,6 @@ export const useFaceDetection = () => {
     eyeBlinkRate,
     eyeBlinkRateData,
     isSpeaking,
-    isAlerting,
-    isWarning,
     alertCount,
   };
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {Dialog, Button} from '@rneui/themed';
+import {Dialog} from '@rneui/themed';
 import {useSnackBar} from './SnackBar';
 import {useNavigation} from '@react-navigation/native';
 import PairButtons from '@/components/PairButtons';

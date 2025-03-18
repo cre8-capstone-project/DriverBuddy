@@ -6,17 +6,27 @@ type FaceDetectionContextType = {
   setAlertCount: React.Dispatch<React.SetStateAction<number>>;
   viewModeContext: ViewModeType;
   setViewModeContext: React.Dispatch<React.SetStateAction<ViewModeType>>;
+  alertStatus: boolean;
+  setAlertStatus: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const FaceDetectionContext = createContext<FaceDetectionContextType | undefined>(undefined);
 
 export const FaceDetectionProvider = ({children}: {children: ReactNode}) => {
   const [alertCount, setAlertCount] = useState(0);
+  const [alertStatus, setAlertStatus] = useState(false);
   const [viewModeContext, setViewModeContext] = useState<ViewModeType>('mapView');
 
   return (
     <FaceDetectionContext.Provider
-      value={{alertCount, setAlertCount, viewModeContext, setViewModeContext}}>
+      value={{
+        alertCount,
+        setAlertCount,
+        viewModeContext,
+        setViewModeContext,
+        alertStatus,
+        setAlertStatus,
+      }}>
       {children}
     </FaceDetectionContext.Provider>
   );

@@ -3,8 +3,8 @@ import {View, StyleSheet, Text, Image, ImageSourcePropType} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
-import {StartConfirmationDialog} from '@/features/safety-alert/components/StartConfirmationDialog';
-import {EndConfirmationDialog} from '@/features/safety-alert/components/EndConfirmationDialog';
+import {StartConfirmationDialog} from '@/components/StartConfirmationDialog';
+import {EndConfirmationDialog} from '@/components/EndConfirmationDialog';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import type {ViewModeType} from '@/types/ViewModeType';
 import GoogleMapImage from '@/assets/images/google-map.png';
@@ -17,12 +17,12 @@ import EndRouteButton from '@/components/EndRouteButton';
 
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
-const eyeIcon = require('@/assets/images/eye-closed.png');
+const eyeIcon = require('@/assets/images/icon_detecting.png');
 
 export default function HomeScreen() {
   const {alertCount} = useFaceDetectionContext();
-  const {setViewModeContext} = useFaceDetectionContext();
-  const [viewMode, setViewMode] = useState<ViewModeType>('mapView');
+  const {setViewModeContext, alertStatus} = useFaceDetectionContext();
+  const [viewMode, setViewMode] = useState<ViewModeType>('cameraView');
   const [driveDestinationStatus, setDriveDestinationStatus] = useState(false);
   const [driveModeStatus, setDriveModeStatus] = useState(false);
   const [startDriveStatus, setStartDriveStatus] = useState(false);
@@ -88,7 +88,7 @@ export default function HomeScreen() {
           viewMode === 'cameraView'
             ? styles.visible
             : isFaceDetectionActive
-              ? styles.miniWindowView
+              ? [styles.miniWindowView, {borderColor: alertStatus ? '#FF4B4B' : 'lightgreen'}]
               : styles.invisible,
         ]}>
         <CameraView

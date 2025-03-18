@@ -8,10 +8,13 @@ import {
   Image,
   ImageSourcePropType,
   Platform,
+  Pressable,
 } from 'react-native';
-import {Button} from '@rneui/themed';
+import theme from './Theme';
 import {BlurView} from 'expo-blur';
 import StartDetectionButton from '@/assets/images/StartDetectionButton.png';
+import FullWidthButton from './FullWidthButton';
+import StepsIndicator from './StepsIndicator';
 
 const {width, height} = Dimensions.get('window');
 
@@ -76,7 +79,7 @@ type OnboardingProps = {
   onComplete: () => void;
 };
 const OnboardingTour: React.FC<OnboardingProps> = ({onComplete}) => {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const canUseBlurView = Platform.OS === 'ios';
 
   return (
@@ -94,11 +97,11 @@ const OnboardingTour: React.FC<OnboardingProps> = ({onComplete}) => {
           <View style={[styles.caret, steps[step].caretTop ? steps[step].caretTop : {}]} />
           <View style={styles.content}>
             <View style={styles.closeButtonContainer}>
-              <Button
-                onPress={onComplete}
-                style={styles.closeButton}
-                title={step === steps.length - 1 ? 'Close' : 'Skip'}
-              />
+              <Pressable onPress={onComplete} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>
+                  {step === steps.length - 1 ? 'Close' : 'Skip'}
+                </Text>
+              </Pressable>
             </View>
             <View>
               <Text style={styles.title}>{steps[step].title}</Text>
@@ -118,25 +121,20 @@ const OnboardingTour: React.FC<OnboardingProps> = ({onComplete}) => {
             )}
 
             {/* Step Indicators */}
-            <View style={styles.indicatorContainer}>
-              {steps.map((_, i) => (
-                <View key={i} style={[styles.indicator, step === i && styles.activeIndicator]} />
-              ))}
-            </View>
+            <StepsIndicator stepsNumber={5} currentStep={step} />
 
             {/* Navigation Buttons */}
             <View style={styles.buttonContainer}>
-              <Button
-                onPress={() => (step === steps.length - 1 ? onComplete() : setStep(step + 1))}
-                style={styles.button}>
-                <Text style={styles.buttonText}>
-                  {step === steps.length - 1 ? 'Get Started' : 'Next'}
-                </Text>
-              </Button>
+              <FullWidthButton
+                title={step === steps.length ? 'Get Started' : 'Next'}
+                onPress={() => (step === steps.length ? onComplete() : setStep(step + 1))}
+              />
               {step > 0 && (
-                <Button onPress={() => setStep(step - 1)} style={styles.button}>
-                  <Text style={styles.buttonText}>Go Back</Text>
-                </Button>
+                <FullWidthButton
+                  type="secondary"
+                  onPress={() => setStep(step - 1)}
+                  title="Go back"
+                />
               )}
             </View>
           </View>
@@ -174,7 +172,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     shadowOffset: {width: 0, height: 2},
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    width: '100%',
   },
   title: {
     fontSize: 24,
@@ -187,6 +186,7 @@ const styles = StyleSheet.create({
   indicatorContainer: {
     flexDirection: 'row',
     marginVertical: 10,
+    alignSelf: 'center',
   },
   indicator: {
     width: 8,
@@ -203,20 +203,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginTop: 10,
     width: '100%',
+    gap: 10,
   },
   closeButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     textAlign: 'right',
     width: '100%',
+    padding: 15,
   },
-  closeButton: {},
-  button: {
-    padding: 8,
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
-    marginHorizontal: 5,
-    width: '100%',
+  closeButton: {
+    backgroundColor: 'white',
+  },
+  closeButtonText: {
+    color: theme.lightColors?.primary,
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   buttonText: {
     color: 'white',

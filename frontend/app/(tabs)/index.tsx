@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import {Icon} from '@rneui/themed';
 import {StartConfirmationDialog} from '@/components/StartConfirmationDialog';
@@ -9,6 +9,10 @@ import {LinearGradient} from 'expo-linear-gradient';
 export default function HomeScreen() {
   const [dialogStatus, setDialogStatus] = useState(false);
   const {showOnboarding, setShowOnboarding} = useOnboardingTourContext();
+
+  useEffect(() => {
+    setShowOnboarding(true);
+  }, []);
 
   const toggleStartDialog = () => {
     setDialogStatus(!dialogStatus);

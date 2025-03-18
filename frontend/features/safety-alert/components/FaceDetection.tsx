@@ -7,6 +7,7 @@ import {AlertingMessage} from '@/features/safety-alert/components/AlertingMessag
 import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {Icon} from '@rneui/themed';
+import {BLINK_MONITORING_DURATION_WINDOW} from '@/features/safety-alert/constants/thresholds';
 import type {ViewModeType} from '@/types/ViewModeType';
 
 const eyeIcon = require('@/assets/images/icon_detecting.png');
@@ -20,7 +21,7 @@ type Props = {
 };
 
 const FaceDetection = ({device, viewMode}: Props) => {
-  const {alertCount, alertStatus} = useFaceDetectionContext();
+  const {alertCount, alertStatus, message} = useFaceDetectionContext();
 
   useEffect(() => {
     console.log('[DEBUG] FaceDetection component is mounted');
@@ -37,7 +38,6 @@ const FaceDetection = ({device, viewMode}: Props) => {
     rightEyeStatus,
     pitchAngleStatus,
     eyeBlinkRate,
-    eyeBlinkRateData,
   } = useFaceDetection();
 
   return (
@@ -74,16 +74,16 @@ const FaceDetection = ({device, viewMode}: Props) => {
       {DEBUG_MODE && (
         <View style={styles.debugContainer}>
           <Text style={[styles.debugText, {color: alertStatus ? '#FF4B4B' : 'lightgreen'}]}>
-            Debug Mode ON:{'\n'}
+            ----- Debug Mode -----{'\n'}
             Left Eye={leftEyeStatus ? 'closed' : 'open'}
             {'\n'}
             Right Eye={rightEyeStatus ? 'closed' : 'open'}
             {'\n'}
-            Eye Blink Rate: {eyeBlinkRate}/min
-            {'\n'}
-            Eye Blink Rate (Data): {eyeBlinkRateData}
+            Eye Blink Rate: {eyeBlinkRate}/{BLINK_MONITORING_DURATION_WINDOW / 1000}sec
             {'\n'}
             Face Direction: {pitchAngleStatus}
+            {'\n'}
+            Alert: {message}
           </Text>
         </View>
       )}

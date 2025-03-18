@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 15,
   },
-  dialogTitle: {fontWeight: 'bold', fontSize: 20, textAlign: 'center'},
+  dialogTitle: {fontWeight: 'bold', fontSize: 20},
   // buttonStyle: {},
   // buttonContainer: {width: '100%', justifyContent: 'center'},
 });

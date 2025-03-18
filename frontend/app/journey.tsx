@@ -23,7 +23,7 @@ const eyeIcon = require('@/assets/images/icon_detecting.png');
 
 export default function HomeScreen() {
   const {alertCount} = useFaceDetectionContext();
-  const {setViewModeContext, alertStatus} = useFaceDetectionContext();
+  const {setViewModeContext, alertStatus, setInstructionStatus} = useFaceDetectionContext();
   const [viewMode, setViewMode] = useState<ViewModeType>('cameraView');
   const [driveDestinationStatus, setDriveDestinationStatus] = useState(false);
   const [driveModeStatus, setDriveModeStatus] = useState(false);
@@ -36,24 +36,32 @@ export default function HomeScreen() {
   const instructionSoundRef = useRef<Audio.Sound | null>(null);
 
   const triggerMessage = async (message: any) => {
+    setInstructionStatus(true);
     if (instructionSoundRef.current) {
       await instructionSoundRef.current.unloadAsync();
     }
-    const {sound} = await Audio.Sound.createAsync(message);
-    instructionSoundRef.current = sound;
+    const {sound: instructionMessageInstance} = await Audio.Sound.createAsync(message);
+    instructionSoundRef.current = instructionMessageInstance;
+    await instructionMessageInstance.playAsync();
 
     await new Promise<void>(resolve => {
-      sound.setOnPlaybackStatusUpdate(status => {
+      instructionMessageInstance.setOnPlaybackStatusUpdate(status => {
         if (status.isLoaded && status.didJustFinish) {
           resolve();
         }
       });
-      sound.playAsync();
     });
+    setInstructionStatus(false);
   };
 
   useEffect(() => {
     triggerMessage(INSTRUCTION_MESSAGE[0].voice);
+    return () => {
+      if (instructionSoundRef.current) {
+        instructionSoundRef.current.unloadAsync();
+      }
+      console.log('[DEBUG] Journey component is unmounted');
+    };
   }, []);
 
   // Cocoy's Update: Swap map and camera view when destination is selected

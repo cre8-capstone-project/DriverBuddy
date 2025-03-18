@@ -55,8 +55,6 @@ export default function SignUpScreen() {
         user_type: 'basic',
         name: name ? name : '',
         email: email,
-        phone: '',
-        vehicle_type: '',
         birthday: Timestamp.fromDate(new Date()),
         picture_url: downloadURL ? downloadURL : '',
         company_id: invitation?.company_id,
@@ -185,7 +183,12 @@ export default function SignUpScreen() {
             <FullWidthButton
               title="Have an account? Sign In"
               type="tertiary"
-              onPress={() => router.replace('/signIn')}
+              onPress={() =>
+                router.replace({
+                  pathname: '/signIn',
+                  params: {showOnboardingSlide: 'false'},
+                })
+              }
             />
 
             {/* <Button title="Create an account" onPress={validateCode} />

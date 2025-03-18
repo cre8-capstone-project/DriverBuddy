@@ -14,6 +14,8 @@ import StartDrivingButton from '@/components/StartDrivingButton';
 import TurnOnDetectionButton from '@/components/TurnOnDetectionButton';
 import TurnOffDetectionButton from '@/components/TurnOffDetectionButton';
 import EndRouteButton from '@/components/EndRouteButton';
+import {INSTRUCTION_MESSAGE} from '@/features/safety-alert/constants/messages';
+import {Audio} from 'expo-av';
 
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
@@ -31,6 +33,28 @@ export default function HomeScreen() {
   const [startDialogStatus, setStartDialogStatus] = useState(false);
   const [endDialogStatus, setEndDialogStatus] = useState(false);
   const [mapKey, setMapKey] = useState(0);
+  const instructionSoundRef = useRef<Audio.Sound | null>(null);
+
+  const triggerMessage = async (message: any) => {
+    if (instructionSoundRef.current) {
+      await instructionSoundRef.current.unloadAsync();
+    }
+    const {sound} = await Audio.Sound.createAsync(message);
+    instructionSoundRef.current = sound;
+
+    await new Promise<void>(resolve => {
+      sound.setOnPlaybackStatusUpdate(status => {
+        if (status.isLoaded && status.didJustFinish) {
+          resolve();
+        }
+      });
+      sound.playAsync();
+    });
+  };
+
+  useEffect(() => {
+    triggerMessage(INSTRUCTION_MESSAGE[0].voice);
+  }, []);
 
   // Cocoy's Update: Swap map and camera view when destination is selected
   useEffect(() => {

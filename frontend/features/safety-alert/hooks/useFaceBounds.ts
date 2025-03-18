@@ -2,7 +2,7 @@ import {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanima
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 
 export const useFaceBounds = () => {
-  const {viewModeContext} = useFaceDetectionContext();
+  const {viewModeContext, alertStatus} = useFaceDetectionContext();
   const aFaceW = useSharedValue(0);
   const aFaceH = useSharedValue(0);
   const aFaceX = useSharedValue(0);
@@ -12,7 +12,7 @@ export const useFaceBounds = () => {
   const faceBorderStyle = useAnimatedStyle(() => ({
     position: 'absolute',
     borderWidth: borderWidth.value,
-    borderColor: 'lightgreen',
+    borderColor: alertStatus ? '#FF4B4B' : 'lightgreen',
     width: withTiming(aFaceW.value, {duration: 100}),
     height: withTiming(aFaceH.value, {duration: 100}),
     left: withTiming(aFaceX.value, {duration: 100}),

@@ -12,16 +12,12 @@ const soundMap: {[key: string]: any} = {
 
 export const DRAWSINESS_ALERT_MESSAGE: Message[] = [
   {
-    message: "If your eyelids are heavier than your car, it's time for a break!",
-    sound: soundMap['loud-siren.mp3'],
+    message: 'Why not take a short break? A quick rest can help you stay sharp!',
+    sound: soundMap['3-beeps-mid-pitch.mp3'],
   },
   {
-    message: 'Your destination will wait. Sleep now, arrive safely later!',
-    sound: soundMap['loud-siren.mp3'],
-  },
-  {
-    message: 'Sleep is free, but accidents are expensive. Rest up!',
-    sound: soundMap['loud-siren.mp3'],
+    message: 'Hey, you’re looking a little sleepy!',
+    sound: soundMap['3-beeps-mid-pitch.mp3'],
   },
 ];
 

@@ -9,7 +9,7 @@ import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {Icon} from '@rneui/themed';
 import type {ViewModeType} from '@/types/ViewModeType';
 
-const eyeIcon = require('@/assets/images/eye-closed.png');
+const eyeIcon = require('@/assets/images/icon_detecting.png');
 const {width} = Dimensions.get('window');
 
 const DEBUG_MODE = true;
@@ -20,7 +20,7 @@ type Props = {
 };
 
 const FaceDetection = ({device, viewMode}: Props) => {
-  const {alertCount} = useFaceDetectionContext();
+  const {alertCount, alertStatus} = useFaceDetectionContext();
 
   useEffect(() => {
     console.log('[DEBUG] FaceDetection component is mounted');
@@ -38,7 +38,6 @@ const FaceDetection = ({device, viewMode}: Props) => {
     pitchAngleStatus,
     eyeBlinkRate,
     eyeBlinkRateData,
-    isAlerting,
   } = useFaceDetection();
 
   return (
@@ -52,7 +51,7 @@ const FaceDetection = ({device, viewMode}: Props) => {
         faceDetectionOptions={faceDetectionOptions}
       />
       <Animated.View style={faceBorderStyle} />
-      <AlertingMessage isAlerting={isAlerting} />
+      <AlertingMessage isAlerting={alertStatus} />
       {viewMode === 'cameraView' && <FaceDetectingLabel />}
       {viewMode === 'mapView' && (
         <>
@@ -60,8 +59,13 @@ const FaceDetection = ({device, viewMode}: Props) => {
             <Image source={eyeIcon} style={styles.icon} />
             <Text style={styles.alertText}>{alertCount} times</Text>
           </View>
-          <View style={[styles.alertContainer, {bottom: 0, backgroundColor: 'lightgreen'}]}>
-            <Icon name="visibility" color="black" size={55} />
+          <View
+            style={[
+              styles.alertContainer,
+              {bottom: 0, backgroundColor: 'lightgreen'},
+              {backgroundColor: alertStatus ? '#FF4B4B' : 'lightgreen'},
+            ]}>
+            <Icon name="visibility" color="black" size={65} />
             <Text style={[styles.alertText, {color: 'black'}]}>Detecting</Text>
           </View>
         </>
@@ -69,7 +73,7 @@ const FaceDetection = ({device, viewMode}: Props) => {
 
       {DEBUG_MODE && (
         <View style={styles.debugContainer}>
-          <Text style={styles.debugText}>
+          <Text style={[styles.debugText, {color: alertStatus ? '#FF4B4B' : 'lightgreen'}]}>
             Debug Mode ON:{'\n'}
             Left Eye={leftEyeStatus ? 'closed' : 'open'}
             {'\n'}
@@ -107,9 +111,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   icon: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
+    width: 75,
+    height: 75,
   },
   debugContainer: {
     position: 'absolute',

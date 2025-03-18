@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
   View,
   TextInput,
@@ -9,12 +9,30 @@ import {
   Dimensions,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import {useRouter} from 'expo-router';
+import {useRouter, useLocalSearchParams} from 'expo-router';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 import FullWidthButton from '@/components/FullWidthButton';
 import {getDriverByEmail} from '@/api/api';
+import Onboarding from '@/components/Onboarding';
 
 export default function SignInScreen() {
+  const {showOnboardingSlide} = useLocalSearchParams();
+  const [showOnboarding, setShowOnboarding] = useState(
+    showOnboardingSlide ? showOnboardingSlide : true,
+  );
+  useEffect(() => {
+    console.log(showOnboardingSlide);
+    if (showOnboardingSlide == 'false') {
+      setShowOnboarding(false);
+    } else {
+      setShowOnboarding(true);
+    }
+  }, [showOnboardingSlide]);
+
+  return showOnboarding ? <Onboarding callback={setShowOnboarding} /> : <SignInForm />;
+}
+
+const SignInForm = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +50,6 @@ export default function SignInScreen() {
       Alert.alert('Authentication Error', error.message);
     }
   };
-
   return (
     <View style={styles.container}>
       {/* Logo Container */}
@@ -72,7 +89,7 @@ export default function SignInScreen() {
       </View>
     </View>
   );
-}
+};
 
 const {width} = Dimensions.get('window');
 

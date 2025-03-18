@@ -7,18 +7,18 @@ import {
   BLINK_COUNT_THRESHOLD_HIGH,
 } from '../constants/thresholds';
 import {useLookAwayDetection} from './useLookAwayDetection';
+import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 
 export const useDrowsinessDetection = () => {
+  const {alertStatus} = useFaceDetectionContext();
   const [leftEyeStatus, setLeftEyeStatus] = useState(false);
   const [rightEyeStatus, setRightEyeStatus] = useState(false);
   const {pitchAngleStatus} = useLookAwayDetection();
   const isAlertingRef = useRef(false);
-
   const startTimeDrowsinessRef = useRef<number | null>(null);
   const blinkTimestampsRef = useRef<number[]>([]);
   const blinkStatusRef = useRef<'closed' | 'open'>('open');
   const blinkRegisteredRef = useRef<boolean>(false);
-
   const eyeBlinkRateRef = useRef<number>(0);
   const blinkCountsPer10SecRef = useRef<number[]>([]);
   const blinkCountsPer30SecRef = useRef<number[]>([]);
@@ -101,7 +101,9 @@ export const useDrowsinessDetection = () => {
       if (startTimeDrowsinessRef.current === null) {
         startTimeDrowsinessRef.current = Date.now();
       } else if (Date.now() - startTimeDrowsinessRef.current > EYECLOSURE_TIME_THRESHOLD) {
-        if (pitchAngleStatus !== 'center') return; // Skip if the driver is not looking straight
+        // Skip if the driver is not looking straight or alerting
+        if (pitchAngleStatus !== 'center' || alertStatus) return;
+
         if (!isAlertingRef.current) {
           isAlertingRef.current = true;
           triggerAlert().finally(() => {

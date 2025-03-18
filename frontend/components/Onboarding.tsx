@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import {useRouter} from 'expo-router';
+import StepsIndicator from './StepsIndicator';
 interface OnboardingProps {
   callback?: (state: boolean) => void;
 }
@@ -33,13 +34,13 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
   };
 
   const handleCreateAccount = () => {
-    if (callback) {
-      callback(false);
-    }
+    router.replace('/signUp');
   };
 
   const handleSignIn = () => {
-    router.push('/signUp');
+    if (callback) {
+      callback(false);
+    }
   };
 
   const renderStep = () => {
@@ -99,15 +100,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
     <View style={styles.container}>
       {renderStep()}
 
-      {/* Dots indicator */}
-      <View style={styles.dotsContainer}>
-        {[1, 2, 3].map(step => (
-          <View
-            key={step}
-            style={[styles.dot, onboardingStep === step ? styles.activeDot : null]}
-          />
-        ))}
-      </View>
+      <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
 
       {/* Navigation buttons */}
       {onboardingStep < 3 ? (
@@ -207,25 +200,6 @@ const styles = StyleSheet.create({
     color: '#4A80F0',
     fontSize: 16,
     fontWeight: '600',
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    position: 'absolute',
-    bottom: 100,
-    left: 0,
-    right: 0,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#E0E0E0',
-    marginHorizontal: 5,
-  },
-  activeDot: {
-    backgroundColor: '#4A80F0',
-    width: 20,
   },
   navigationContainer: {
     flexDirection: 'row',

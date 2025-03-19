@@ -153,22 +153,6 @@ const OnboardingTour: React.FC<OnboardingProps> = ({onComplete}) => {
     return null;
   };
 
-  // Debug function to check if the illustration is rendered
-  const debugIllustration = () => {
-    const currentStep = steps[step];
-    console.log('Current step:', step);
-    console.log('Has illustration:', Boolean(currentStep.illustration));
-    if (currentStep.illustration) {
-      console.log('Has component:', Boolean(currentStep.illustration.component));
-      console.log('Position:', currentStep.illustration.position);
-    }
-  };
-
-  // Call debug function whenever step changes
-  useEffect(() => {
-    debugIllustration();
-  }, [step]);
-
   return (
     <Modal transparent visible>
       {canUseBlurView ? (

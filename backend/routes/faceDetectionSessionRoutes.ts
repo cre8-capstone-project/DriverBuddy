@@ -1,7 +1,6 @@
 import express from 'express';
 import admin from 'firebase-admin';
 import {fromZonedTime, toZonedTime} from 'date-fns-tz'; // eslint-disable-line import/no-extraneous-dependencies
-import {set} from 'date-fns';
 
 type FaceDetectionSession = {
   faceDetectionSessionId: string;
@@ -70,6 +69,33 @@ const faceDetectionSessionRoutes = (
     } catch (error) {
       console.error('Error registering session:', error);
       res.status(500).json({error: `Failed to register session: ${error}`});
+    }
+  });
+
+  // !!! THIS IS FOR DEMO DATA PREPARATION !!!
+  // DELETE: /face-detection-session/delete/:userId
+  router.delete('/delete/:userId', async (req, res) => {
+    try {
+      const {userId} = req.params;
+
+      if (!userId || typeof userId !== 'string') {
+        return res.status(400).json({error: 'Invalid userId parameter.'});
+      }
+
+      const snapshot = await faceDetectionSessionCollection.where('userId', '==', userId).get();
+
+      if (snapshot.empty) {
+        return res.status(404).json({message: 'No sessions found for the given userId.'});
+      }
+
+      const deletePromises = snapshot.docs.map(doc => doc.ref.delete());
+      await Promise.all(deletePromises);
+
+      console.log(`All sessions for userId ${userId} have been deleted.`);
+      res.status(200).json({message: `All sessions for userId ${userId} have been deleted.`});
+    } catch (error) {
+      console.error('Error deleting sessions:', error);
+      res.status(500).json({error: `Failed to delete sessions: ${error}`});
     }
   });
 

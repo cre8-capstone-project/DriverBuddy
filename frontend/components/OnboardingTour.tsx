@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -8,28 +8,59 @@ import {
   Image,
   ImageSourcePropType,
   Platform,
+  Pressable,
+  ViewStyle,
 } from 'react-native';
-import {Button} from '@rneui/themed';
+import theme from './Theme';
 import {BlurView} from 'expo-blur';
 import StartDetectionButton from '@/assets/images/StartDetectionButton.png';
+import FullWidthButton from './FullWidthButton';
+import StepsIndicator from './StepsIndicator';
+import TabsIllustration from './TabsIllustration';
+import DetectionIllustration from './DetectionIllustration';
 
 const {width, height} = Dimensions.get('window');
 
-const steps = [
+// Define proper types for our step configuration using React Native types
+type IllustrationPosition = {
+  top?: number | string;
+  bottom?: number | string;
+  left?: number | string;
+  right?: number | string;
+};
+
+type StepIllustration = {
+  position?: ViewStyle; // Use ViewStyle instead of custom type
+  component?: React.ComponentType;
+  source?: React.ReactNode;
+};
+
+type OnboardingStep = {
+  title: string;
+  text: string[];
+  position: {top: number};
+  image?: ImageSourcePropType;
+  caretTop?: ViewStyle;
+  caretBottom?: ViewStyle;
+  illustration?: StepIllustration;
+};
+
+// Define steps with proper typing
+const steps: OnboardingStep[] = [
   {
     title: 'Drowsiness Detection',
     text: [
       'Activate the DriveBuddy drowsiness detection by tapping the Start Detection button.',
       'Make sure to have detection on before you start your trip!',
     ],
-    image: StartDetectionButton,
+    image: StartDetectionButton as ImageSourcePropType,
     position: {top: 25},
   },
   {
     title: 'Drowsiness Detection',
     text: [
-      'You’ll know if the detection is on when this indicator is present.',
-      'DriveBuddy will alert you when it notices signs of drowsiness.',
+      `You'll know if the detection is on when this indicator is present.`,
+      `DriveBuddy will alert you when it notices signs of drowsiness.`,
     ],
     position: {top: 50},
     caretTop: {
@@ -41,10 +72,16 @@ const steps = [
       borderBottomColor: 'white',
       marginBottom: -5,
     },
+    illustration: {
+      position: {
+        top: 0,
+      },
+      component: DetectionIllustration,
+    },
   },
   {
     title: 'Map',
-    text: ['Start your trip navigation just the way  you’re used to with Google Maps.'],
+    text: [`Start your trip navigation just the way  you're used to with Google Maps.`],
     position: {top: height / 5},
   },
   {
@@ -62,22 +99,59 @@ const steps = [
       borderTopColor: 'white',
       marginBottom: height / 4 - 5,
     },
+    illustration: {
+      position: {
+        bottom: 0,
+      },
+      component: TabsIllustration,
+    },
   },
   {
     title: `You're All Set!`,
     text: [
-      'That’s the gist of it!',
+      `That's the gist of it!`,
       ' Ready to take DriveBuddy drowsiness detection on a test drive?',
     ],
     position: {top: height / 5},
   },
 ];
+
 type OnboardingProps = {
   onComplete: () => void;
 };
+
 const OnboardingTour: React.FC<OnboardingProps> = ({onComplete}) => {
   const [step, setStep] = useState(0);
   const canUseBlurView = Platform.OS === 'ios';
+
+  const renderIllustration = () => {
+    const currentStep = steps[step];
+    if (!currentStep.illustration) {
+      return null;
+    }
+
+    // Get position style, ensuring it's compatible with ViewStyle
+    const positionStyle = currentStep.illustration.position || {};
+
+    // If we have a component property, render it
+    if (currentStep.illustration.component) {
+      const IllustrationComponent = currentStep.illustration.component;
+      return (
+        <View style={[styles.illustration, positionStyle, {backgroundColor: 'red'}]}>
+          <IllustrationComponent />
+        </View>
+      );
+    }
+
+    // If we have a source property, render it directly
+    if (currentStep.illustration.source) {
+      return (
+        <View style={[styles.illustration, positionStyle]}>{currentStep.illustration.source}</View>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <Modal transparent visible>
@@ -91,14 +165,14 @@ const OnboardingTour: React.FC<OnboardingProps> = ({onComplete}) => {
       <View style={styles.overlay}>
         <View style={[styles.modalContainer, {top: steps[step].position.top}]}>
           {/* Caret (Triangle Pointer) */}
-          <View style={[styles.caret, steps[step].caretTop ? steps[step].caretTop : {}]} />
+          {steps[step].caretTop && <View style={[styles.caret, steps[step].caretTop]} />}
           <View style={styles.content}>
             <View style={styles.closeButtonContainer}>
-              <Button
-                onPress={onComplete}
-                style={styles.closeButton}
-                title={step === steps.length - 1 ? 'Close' : 'Skip'}
-              />
+              <Pressable onPress={onComplete} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>
+                  {step === steps.length - 1 ? 'Close' : 'Skip'}
+                </Text>
+              </Pressable>
             </View>
             <View>
               <Text style={styles.title}>{steps[step].title}</Text>
@@ -109,39 +183,35 @@ const OnboardingTour: React.FC<OnboardingProps> = ({onComplete}) => {
               </View>
             ))}
 
-            {steps[step].image ? (
+            {steps[step].image && (
               <View style={styles.indicatorContainer}>
-                <Image source={steps[step].image as ImageSourcePropType} />
+                <Image source={steps[step].image} />
               </View>
-            ) : (
-              ''
             )}
 
             {/* Step Indicators */}
-            <View style={styles.indicatorContainer}>
-              {steps.map((_, i) => (
-                <View key={i} style={[styles.indicator, step === i && styles.activeIndicator]} />
-              ))}
-            </View>
+            <StepsIndicator stepsNumber={5} currentStep={step + 1} />
 
             {/* Navigation Buttons */}
             <View style={styles.buttonContainer}>
-              <Button
+              <FullWidthButton
+                title={step === steps.length - 1 ? 'Get Started' : 'Next'}
                 onPress={() => (step === steps.length - 1 ? onComplete() : setStep(step + 1))}
-                style={styles.button}>
-                <Text style={styles.buttonText}>
-                  {step === steps.length - 1 ? 'Get Started' : 'Next'}
-                </Text>
-              </Button>
+              />
               {step > 0 && (
-                <Button onPress={() => setStep(step - 1)} style={styles.button}>
-                  <Text style={styles.buttonText}>Go Back</Text>
-                </Button>
+                <FullWidthButton
+                  type="secondary"
+                  onPress={() => setStep(step - 1)}
+                  title="Go back"
+                />
               )}
             </View>
           </View>
-          <View style={[styles.caret, steps[step].caretBottom ? steps[step].caretBottom : {}]} />
+          {steps[step].caretBottom && <View style={[styles.caret, steps[step].caretBottom]} />}
         </View>
+
+        {/* Render the illustration */}
+        {renderIllustration()}
       </View>
     </Modal>
   );
@@ -157,6 +227,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: width * 0.9,
     alignItems: 'center',
+  },
+  illustration: {
+    position: 'absolute',
+    width: '100%',
+    alignItems: 'center', // Center the illustration horizontally
+    zIndex: 999, // Make sure it's above everything else
   },
   caret: {
     width: 0,
@@ -174,7 +250,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     shadowOffset: {width: 0, height: 2},
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    width: '100%',
   },
   title: {
     fontSize: 24,
@@ -187,6 +264,7 @@ const styles = StyleSheet.create({
   indicatorContainer: {
     flexDirection: 'row',
     marginVertical: 10,
+    alignSelf: 'center',
   },
   indicator: {
     width: 8,
@@ -203,20 +281,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginTop: 10,
     width: '100%',
+    gap: 10,
   },
   closeButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     textAlign: 'right',
     width: '100%',
+    padding: 15,
   },
-  closeButton: {},
-  button: {
-    padding: 8,
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
-    marginHorizontal: 5,
-    width: '100%',
+  closeButton: {
+    backgroundColor: 'white',
+  },
+  closeButtonText: {
+    color: theme.lightColors?.primary,
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   buttonText: {
     color: 'white',

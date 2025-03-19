@@ -21,7 +21,6 @@ export default function SignInScreen() {
     showOnboardingSlide ? showOnboardingSlide : true,
   );
   useEffect(() => {
-    console.log(showOnboardingSlide);
     if (showOnboardingSlide == 'false') {
       setShowOnboarding(false);
     } else {

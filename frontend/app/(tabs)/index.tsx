@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity, ImageBackground} from 'react-native';
 import {Icon} from '@rneui/themed';
 import {StartConfirmationDialog} from '@/components/StartConfirmationDialog';
@@ -10,6 +10,10 @@ import HomeBackground from '@/assets/images/HomeBackground.png';
 export default function HomeScreen() {
   const [dialogStatus, setDialogStatus] = useState(false);
   const {showOnboarding, setShowOnboarding} = useOnboardingTourContext();
+
+  useEffect(() => {
+    setShowOnboarding(true);
+  }, []);
 
   const toggleStartDialog = () => {
     setDialogStatus(!dialogStatus);

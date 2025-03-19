@@ -1,7 +1,7 @@
 type Message = {
-  message: string;
+  message?: string;
   voice?: any;
-  sound: any;
+  sound?: any;
 };
 
 // Preload the sound files using require
@@ -11,6 +11,7 @@ const soundMap: {[key: string]: any} = {
   'message1-2.mp3': require('@/assets/sounds/message1-2.mp3'),
   'message2-1.mp3': require('@/assets/sounds/message2-1.mp3'),
   'message2-2.mp3': require('@/assets/sounds/message2-2.mp3'),
+  'message3-1.mp3': require('@/assets/sounds/message3-1.mp3'),
 };
 
 export const DRAWSINESS_ALERT_MESSAGE: Message[] = [
@@ -36,5 +37,12 @@ export const DISTRACTED_WARNING_MESSAGE: Message[] = [
     message: 'Keep your eyes on the road!',
     voice: soundMap['message2-2.mp3'],
     sound: soundMap['3-beeps-mid-pitch.mp3'],
+  },
+];
+
+export const INSTRUCTION_MESSAGE: Message[] = [
+  {
+    message: 'Face recognition has started. Please align your face to the center of the screen.',
+    voice: soundMap['message3-1.mp3'],
   },
 ];

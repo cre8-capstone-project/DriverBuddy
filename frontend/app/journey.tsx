@@ -14,6 +14,8 @@ import StartDrivingButton from '@/components/StartDrivingButton';
 import TurnOnDetectionButton from '@/components/TurnOnDetectionButton';
 import TurnOffDetectionButton from '@/components/TurnOffDetectionButton';
 import EndRouteButton from '@/components/EndRouteButton';
+import {INSTRUCTION_MESSAGE} from '@/features/safety-alert/constants/messages';
+import {Audio} from 'expo-av';
 
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
@@ -21,7 +23,7 @@ const eyeIcon = require('@/assets/images/icon_detecting.png');
 
 export default function HomeScreen() {
   const {alertCount} = useFaceDetectionContext();
-  const {setViewModeContext, alertStatus} = useFaceDetectionContext();
+  const {setViewModeContext, alertStatus, setInstructionStatus} = useFaceDetectionContext();
   const [viewMode, setViewMode] = useState<ViewModeType>('cameraView');
   const [driveDestinationStatus, setDriveDestinationStatus] = useState(false);
   const [driveModeStatus, setDriveModeStatus] = useState(false);
@@ -31,6 +33,36 @@ export default function HomeScreen() {
   const [startDialogStatus, setStartDialogStatus] = useState(false);
   const [endDialogStatus, setEndDialogStatus] = useState(false);
   const [mapKey, setMapKey] = useState(0);
+  const instructionSoundRef = useRef<Audio.Sound | null>(null);
+
+  const triggerMessage = async (message: any) => {
+    setInstructionStatus(true);
+    if (instructionSoundRef.current) {
+      await instructionSoundRef.current.unloadAsync();
+    }
+    const {sound: instructionMessageInstance} = await Audio.Sound.createAsync(message);
+    instructionSoundRef.current = instructionMessageInstance;
+    await instructionMessageInstance.playAsync();
+
+    await new Promise<void>(resolve => {
+      instructionMessageInstance.setOnPlaybackStatusUpdate(status => {
+        if (status.isLoaded && status.didJustFinish) {
+          resolve();
+        }
+      });
+    });
+    setInstructionStatus(false);
+  };
+
+  useEffect(() => {
+    triggerMessage(INSTRUCTION_MESSAGE[0].voice);
+    return () => {
+      if (instructionSoundRef.current) {
+        instructionSoundRef.current.unloadAsync();
+      }
+      console.log('[DEBUG] Journey component is unmounted');
+    };
+  }, []);
 
   // Cocoy's Update: Swap map and camera view when destination is selected
   useEffect(() => {

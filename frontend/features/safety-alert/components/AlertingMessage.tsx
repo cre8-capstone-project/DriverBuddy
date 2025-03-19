@@ -12,8 +12,6 @@ export const AlertingMessage = ({isAlerting}: Props) => {
     isAlerting && (
       <View style={styles.warningContainer}>
         <Image source={alertIcon} />
-        {/* <Icon style={styles.warningIcon} name="warning" />
-        <Text style={styles.warningText}>Warning</Text> */}
       </View>
     )
   );

@@ -1,15 +1,20 @@
 import {View, StyleSheet} from 'react-native';
 import theme from './Theme';
+import {useEffect, useState} from 'react';
 
 interface StepsIndicatorProps {
   stepsNumber: number;
   currentStep: number;
 }
 const StepsIndicator: React.FC<StepsIndicatorProps> = ({stepsNumber = 1, currentStep = 1}) => {
+  const [stepsArray, setStepsArray] = useState<number[]>([]);
+  useEffect(() => {
+    setStepsArray(Array.from(Array(stepsNumber).keys()).map(num => num + 1));
+  }, [stepsNumber]);
   return (
     <View style={styles.dotsContainer}>
-      {Array.from(Array(stepsNumber).keys()).map(step => (
-        <View key={step} style={[styles.dot, currentStep - 1 === step ? styles.activeDot : null]} />
+      {stepsArray.map(step => (
+        <View key={step + 1} style={[styles.dot, currentStep === step ? styles.activeDot : null]} />
       ))}
     </View>
   );

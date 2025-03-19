@@ -18,12 +18,13 @@ import {
 import {MaterialIcons} from '@expo/vector-icons';
 import {getDriverByID, updateDriver, uploadImage} from '@/api/api';
 import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
-import {Button} from '@rneui/base';
+// import {Button} from '@rneui/base';
 import * as ImagePicker from 'expo-image-picker';
 import {useAuth} from '@/contexts/AuthProvider';
 import auth from '@react-native-firebase/auth';
 import {useRouter} from 'expo-router';
 import FullWidthButton from '@/components/FullWidthButton';
+import {Input, Button, Icon} from 'react-native-elements';
 
 export default function ProfileScreen() {
   const {user} = useAuth();
@@ -259,7 +260,9 @@ export default function ProfileScreen() {
               </Pressable>
             </View>
 
-            <View style={styles.profileImageContainer}>
+            <View
+              style={[styles.profileImageContainer, editMode && styles.profileImageContainerEdit]}>
+              {' '}
               <Pressable
                 onPress={editMode ? pickImage : undefined}
                 style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
@@ -275,15 +278,39 @@ export default function ProfileScreen() {
             <View style={styles.container}>
               {editMode ? (
                 <View style={styles.form}>
-                  <View style={styles.formGroup}>
+                  {/* User Name Input */}
+                  <Input
+                    label="User Name"
+                    labelStyle={{fontSize: 15, fontWeight: 400, color: '#1E3A8A'}}
+                    placeholder="John Doe"
+                    value={driverName}
+                    onChangeText={setDriverName}
+                    containerStyle={{marginBottom: 10}}
+                    inputContainerStyle={{borderBottomWidth: 1, borderBottomColor: '#1E3A8A'}}
+                  />
+
+                  {/* <View style={styles.formGroup}>
                     <TextInput
                       style={styles.textInput}
                       value={driverName}
                       onChangeText={setDriverName}
                       placeholder="Name"
                     />
-                  </View>
-                  <View style={styles.formGroup}>
+                  </View> */}
+
+                  {/* Email Input */}
+                  <Input
+                    label="Email"
+                    labelStyle={{fontSize: 15, fontWeight: 400, color: '#1E3A8A'}}
+                    placeholder="johndoe@gmail.com"
+                    value={driverEmail}
+                    onChangeText={setDriverEmail}
+                    keyboardType="email-address"
+                    containerStyle={{marginBottom: 10}}
+                    inputContainerStyle={{borderBottomWidth: 1, borderBottomColor: '#1E3A8A'}}
+                  />
+
+                  {/* <View style={styles.formGroup}>
                     <TextInput
                       style={styles.textInput}
                       value={driverEmail}
@@ -291,10 +318,24 @@ export default function ProfileScreen() {
                       placeholder="Email"
                       inputMode="email"
                     />
-                  </View>
+                  </View> */}
 
-                  <View style={styles.formGroup}>
-                    {/* Date picker button */}
+                  {/* Birthday Input */}
+                  <Pressable onPress={() => setShowDatePicker(true)}>
+                    <Input
+                      label="Birthday"
+                      labelStyle={{fontSize: 15, fontWeight: 400, color: '#1E3A8A'}}
+                      placeholder="Select Birthday"
+                      value={driverBirthday ? driverBirthday.toDateString() : ''}
+                      rightIcon={<Icon name="calendar-today" size={20} color="gray" />}
+                      containerStyle={{marginBottom: 10}}
+                      inputContainerStyle={{borderBottomWidth: 1, borderBottomColor: '#1E3A8A'}}
+                      editable={false}
+                    />
+                  </Pressable>
+
+                  {/* <View style={styles.formGroup}>
+                    Date picker button
                     <Pressable
                       style={styles.datePickerButton}
                       onPress={() => setShowDatePicker(true)}>
@@ -302,18 +343,19 @@ export default function ProfileScreen() {
                         {driverBirthday ? driverBirthday.toDateString() : 'Select Birthday'}
                       </Text>
                       <MaterialIcons name="calendar-today" size={18} color="gray" />
-                    </Pressable>
+                    </Pressable> */}
 
-                    {/* Only show date picker when showDatePicker is true */}
-                    {showDatePicker && (
-                      <DateTimePicker
-                        value={driverBirthday || new Date()}
-                        mode="date"
-                        display="default"
-                        onChange={onChangeDate}
-                      />
-                    )}
-                  </View>
+                  {/* Only show date picker when showDatePicker is true */}
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={driverBirthday || new Date()}
+                      mode="date"
+                      display="default"
+                      onChange={onChangeDate}
+                    />
+                  )}
+                  {/* </View> */}
+
                   <View style={styles.buttonContainer}>
                     <FullWidthButton title="Save Changes" type="primary" onPress={saveChanges} />
 
@@ -325,7 +367,7 @@ export default function ProfileScreen() {
                   <Text style={styles.nameText}>{driver.name}</Text>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.label}>Company</Text>
+                    <Text style={styles.label}>Company:</Text>
                     <Text style={styles.value}>
                       {driver.company_name ? driver.company_name : '-'}
                     </Text>
@@ -413,13 +455,16 @@ const styles = StyleSheet.create({
   },
   profileImageContainer: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 24,
     backgroundColor: '#1E3A8A',
-    padding: 10,
+    padding: 20,
+  },
+  profileImageContainerEdit: {
+    backgroundColor: 'transparent',
   },
   profileImageWrapper: {
     position: 'relative',
-    borderRadius: 90,
+    borderRadius: 100,
     overflow: 'hidden',
   },
   profileImageWrapperEdit: {
@@ -428,8 +473,9 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   profileImage: {
-    width: 180,
-    height: 180,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
     backgroundColor: '#E0E0E0',
   },
   cameraIconOverlay: {
@@ -448,14 +494,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   nameText: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 48,
+    fontWeight: 500,
     textAlign: 'center',
     marginTop: 10,
   },
   profileInfoContainer: {
     flexDirection: 'column',
-    marginTop: 20,
+    // marginTop: 20,
     paddingHorizontal: 20,
   },
   form: {
@@ -488,12 +534,10 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginVertical: 20,
-    paddingVertical: 10,
+    paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#666666',
   },
   formGroup: {
     flexDirection: 'row',
@@ -504,9 +548,12 @@ const styles = StyleSheet.create({
   },
   label: {
     flexShrink: 1,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: 500,
+    color: '#666666',
   },
   value: {
+    fontSize: 18,
     color: 'black',
   },
   button: {

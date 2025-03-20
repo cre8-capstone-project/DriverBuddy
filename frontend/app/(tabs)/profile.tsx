@@ -46,7 +46,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        setLoading(false);
+        setLoading(true);
         const currentUserID: string = user ? user.uid : '';
         if (!currentUserID) {
           console.log('No user ID available');

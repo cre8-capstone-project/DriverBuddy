@@ -820,6 +820,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             let totalSessionHours = 0;
             let totalNumberOfAlert = 0;
             const result = {};
+            const userAlertCounts = {};
             querySnapshot.forEach(doc => {
                 const session = doc.data();
                 const sessionStart = session.startTime.toDate();
@@ -830,13 +831,17 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 let currentHour = currentTime.getHours();
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each hour
-                while (remainingDuration > 0) {
+                while (remainingDuration > 0 && currentTime < sessionEnd) {
                     const localTime = toZonedTime(currentTime, timeZone);
                     const localHourString = localTime.getHours();
                     const nextHour = new Date(currentTime);
                     nextHour.setHours(currentHour + 1, 0, 0, 0);
                     const EndTime = Math.min(nextHour.getTime(), sessionEnd.getTime());
                     const Duration = (EndTime - currentTime.getTime()) / 3600000;
+                    if (Duration <= 0) {
+                        console.warn('[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.');
+                        break;
+                    }
                     if (!result[localHourString]) {
                         result[localHourString] = { totalSessionHours: 0, totalNumberOfAlert: 0 };
                     }
@@ -856,6 +861,11 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     }
                     result[localAlertHourString].totalNumberOfAlert += 1;
                     totalNumberOfAlert += 1;
+                    // Count alerts per user
+                    if (!userAlertCounts[session.userId]) {
+                        userAlertCounts[session.userId] = 0;
+                    }
+                    userAlertCounts[session.userId] += 1;
                 });
             });
             const dayHours = Array.from({ length: 24 }, (_, i) => {
@@ -874,10 +884,12 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
+            const maxAlertsPerUser = Object.keys(userAlertCounts).length > 0 ? Math.max(...Object.values(userAlertCounts)) : 0;
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,
                 alertPerHour: parseFloat((totalNumberOfAlert / totalSessionHours).toFixed(2)),
+                maxAlertsPerUser,
                 data: processedData,
             });
         }
@@ -918,6 +930,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             let totalSessionHours = 0;
             let totalNumberOfAlert = 0;
             const result = {};
+            const userAlertCounts = {};
             querySnapshot.forEach(doc => {
                 const session = doc.data();
                 const sessionStart = session.startTime.toDate();
@@ -927,7 +940,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 const currentTime = new Date(sessionStart);
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
-                while (remainingDuration > 0) {
+                while (remainingDuration > 0 && currentTime < sessionEnd) {
                     const localCurrentTime = toZonedTime(currentTime, timeZone);
                     const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
                     const localNextDay = new Date(localCurrentTime);
@@ -954,6 +967,11 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     }
                     result[alertDateString].totalNumberOfAlert += 1;
                     totalNumberOfAlert += 1;
+                    // Count alerts per user
+                    if (!userAlertCounts[session.userId]) {
+                        userAlertCounts[session.userId] = 0;
+                    }
+                    userAlertCounts[session.userId] += 1;
                 });
             });
             const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -973,13 +991,12 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertPerHour.toFixed(2)),
                 };
             });
-            console.log('startOfWeek:', startOfWeek);
-            console.log('endOfWeek:', endOfWeek);
-            console.log('processedData:', processedData);
+            const maxAlertsPerUser = Object.keys(userAlertCounts).length > 0 ? Math.max(...Object.values(userAlertCounts)) : 0;
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,
                 alertPerHour: parseFloat((totalNumberOfAlert / totalSessionHours).toFixed(2)),
+                maxAlertsPerUser,
                 data: processedData,
             });
         }
@@ -1022,6 +1039,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             let totalSessionHours = 0;
             let totalNumberOfAlert = 0;
             const result = {};
+            const userAlertCounts = {};
             querySnapshot.forEach(doc => {
                 const session = doc.data();
                 const sessionStart = session.startTime.toDate();
@@ -1031,7 +1049,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 const currentTime = new Date(sessionStart);
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each day
-                while (remainingDuration > 0) {
+                while (remainingDuration > 0 && currentTime < sessionEnd) {
                     const localCurrentTime = toZonedTime(currentTime, timeZone);
                     const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
                     const localNextDay = new Date(localCurrentTime);
@@ -1058,6 +1076,11 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     }
                     result[alertDateString].totalNumberOfAlert += 1;
                     totalNumberOfAlert += 1;
+                    // Count alerts per user
+                    if (!userAlertCounts[session.userId]) {
+                        userAlertCounts[session.userId] = 0;
+                    }
+                    userAlertCounts[session.userId] += 1;
                 });
             });
             const daysInMonth = new Date(parseInt(year, 10), parseInt(month, 10), 0).getDate();
@@ -1078,10 +1101,12 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertPerHour.toFixed(2)),
                 };
             });
+            const maxAlertsPerUser = Object.keys(userAlertCounts).length > 0 ? Math.max(...Object.values(userAlertCounts)) : 0;
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,
                 alertPerHour: parseFloat((totalNumberOfAlert / totalSessionHours).toFixed(2)),
+                maxAlertsPerUser,
                 data: processedData,
             });
         }
@@ -1124,6 +1149,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
             let totalSessionHours = 0;
             let totalNumberOfAlert = 0;
             const result = {};
+            const userAlertCounts = {};
             querySnapshot.forEach(doc => {
                 const session = doc.data();
                 const sessionStart = session.startTime.toDate();
@@ -1133,7 +1159,7 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                 const currentTime = new Date(sessionStart);
                 let remainingDuration = session.sessionDuration / 3600;
                 // Allocate session duration to each month
-                while (remainingDuration > 0) {
+                while (remainingDuration > 0 && currentTime < sessionEnd) {
                     const localCurrentTime = toZonedTime(currentTime, timeZone);
                     const currentMonthString = localCurrentTime.toLocaleDateString('en-CA', {
                         year: 'numeric',
@@ -1167,6 +1193,11 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     }
                     result[alertMonthString].totalNumberOfAlert += 1;
                     totalNumberOfAlert += 1;
+                    // Count alerts per user
+                    if (!userAlertCounts[session.userId]) {
+                        userAlertCounts[session.userId] = 0;
+                    }
+                    userAlertCounts[session.userId] += 1;
                 });
             });
             const yearMonths = Array.from({ length: 12 }, (_, i) => {
@@ -1185,13 +1216,12 @@ const faceDetectionSessionRoutes = (faceDetectionSessionCollection) => {
                     alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
                 };
             });
-            console.log('startOfYear:', startOfYear);
-            console.log('endOfYear:', endOfYear);
-            console.log('processedData:', processedData);
+            const maxAlertsPerUser = Object.keys(userAlertCounts).length > 0 ? Math.max(...Object.values(userAlertCounts)) : 0;
             res.json({
                 totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
                 totalNumberOfAlert,
                 alertPerHour: parseFloat((totalNumberOfAlert / totalSessionHours).toFixed(2)),
+                maxAlertsPerUser,
                 data: processedData,
             });
         }

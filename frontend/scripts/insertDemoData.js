@@ -1,4 +1,4 @@
-const demoData = require('./demoData.json');
+const demoData = require('./demoData2.json');
 const axios = require('axios');
 
 // Ensure demoData is an array

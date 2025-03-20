@@ -1,6 +1,9 @@
 const axios = require('axios');
 
-const userIdToDelete = 'tPWXJfeDXkYZkPipb7Rdu96JwN42'; // Replace with the userId you want to delete
+const userIdToDelete = 'ZBjov5PGgJNqZjWlqJqkAEaILpJ2'; // Replace with the userId you want to delete
+//tPWXJfeDXkYZkPipb7Rdu96JwN42
+//ZBjov5PGgJNqZjWlqJqkAEaILpJ2
+
 const API_URL = `http://localhost:3000/face-detection-session/delete/${userIdToDelete}`;
 
 const deleteUserData = async () => {

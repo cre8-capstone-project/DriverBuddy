@@ -33,12 +33,12 @@ export default function HomeScreen() {
   const [mapKey, setMapKey] = useState(0);
 
   // Cocoy's Update: Swap map and camera view when destination is selected
-  useEffect(() => {
-    if (driveDestinationStatus && viewMode === 'cameraView') {
-      setViewMode('mapView');
-      setViewModeContext('mapView');
-    }
-  }, [driveDestinationStatus, viewMode, setViewModeContext]);
+  // useEffect(() => {
+  //   if (driveDestinationStatus && viewMode === 'cameraView') {
+  //     setViewMode('mapView');
+  //     setViewModeContext('mapView');
+  //   }
+  // }, [driveDestinationStatus, viewMode, setViewModeContext]);
 
   useFocusEffect(
     useCallback(() => {
@@ -83,6 +83,8 @@ export default function HomeScreen() {
           setDriveModeStatus={setDriveModeStatus}
           startDriveStatus={startDriveStatus}
           endDriveStatus={endDriveStatus}
+          setViewMode={setViewMode} // Cocoy's Update: Pass setViewMode
+          setViewModeContext={setViewModeContext} // Cocoy's Update: Pass setViewModeContext
         />
       </View>
       <View

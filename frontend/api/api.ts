@@ -33,11 +33,13 @@ axiosClient.interceptors.request.use(
   },
   error => Promise.reject(error),
 );
-
+interface Company {
+  id?: string;
+  name: string;
+}
 // Define types for driver and history records
 interface Driver {
   id?: string;
-  user_type?: string;
   name: string;
   email: string;
   birthday: Timestamp;
@@ -80,11 +82,11 @@ const getDriverByID = async (id: string) => {
       id: response.data.id,
       name: response.data.name,
       email: response.data.email,
-      user_type: response.data.user_type,
       birthday: response.data.birthday
         ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
         : null,
       picture_url: response.data.picture_url,
+      company_id: response.data.company_id,
     };
   } catch (error) {
     console.error(error);
@@ -100,7 +102,6 @@ const getDriverByEmail = async (email: string) => {
         id: response.data.id,
         name: response.data.name,
         email: response.data.email,
-        user_type: response.data.user_type,
         birthday: response.data.birthday
           ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
           : null,
@@ -178,7 +179,6 @@ const updateDriver = async (driverId: string, driverObject: Partial<Driver>) => 
       id: response.data.id,
       name: response.data.name,
       email: response.data.email,
-      user_type: response.data.user_type,
       birthday: response.data.birthday
         ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
         : null,
@@ -355,6 +355,20 @@ const updateInvitationStatus = async (
   }
 };
 
+const getCompanyByID = async (company_id: string | undefined) => {
+  try {
+    const response: AxiosResponse<Company> = await axiosClient.get(`/companies/${company_id}`, {
+      timeout: 5000,
+    });
+    return {
+      id: response.data.id,
+      name: response.data.name,
+    };
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export {
   Driver,
   uploadImage,
@@ -371,4 +385,5 @@ export {
   getFaceDetectionHistoryDataByYear,
   getInvitationCode,
   updateInvitationStatus,
+  getCompanyByID,
 };

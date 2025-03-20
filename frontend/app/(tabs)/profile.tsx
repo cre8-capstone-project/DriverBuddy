@@ -9,14 +9,13 @@ import {
   ActivityIndicator,
   ImageSourcePropType,
   Pressable,
-  TextInput,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
-import {getDriverByID, updateDriver, uploadImage} from '@/api/api';
+import {getDriverByID, updateDriver, uploadImage, getCompanyByID} from '@/api/api';
 import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
 // import {Button} from '@rneui/base';
 import * as ImagePicker from 'expo-image-picker';
@@ -24,7 +23,7 @@ import {useAuth} from '@/contexts/AuthProvider';
 import auth from '@react-native-firebase/auth';
 import {useRouter} from 'expo-router';
 import FullWidthButton from '@/components/FullWidthButton';
-import {Input, Button, Icon} from 'react-native-elements';
+import {Input, Icon} from 'react-native-elements';
 
 export default function ProfileScreen() {
   const {user} = useAuth();
@@ -32,8 +31,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [driver, setDriver] = useState<any>(undefined);
   const [driverName, setDriverName] = useState<string>('');
-  const [driverUserType, setDriverUserType] = useState<string>('');
-  const [driverVehicleType, setDriverVehicleType] = useState<string>('');
+  const [company, setCompany] = useState<any>(undefined);
   const [driverBirthday, setDriverBirthday] = useState<Date | null>(null);
   const [driverEmail, setDriverEmail] = useState<string>('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -57,7 +55,12 @@ export default function ProfileScreen() {
 
         setIsImageLoading(true);
         const driverInfo = await getDriverByID(currentUserID);
+
+        if (!driverInfo || !driverInfo.company_id)
+          throw new Error('Empty driverInfo or missing company_id');
+        const companyInfo = await getCompanyByID(driverInfo.company_id);
         setDriver(driverInfo);
+        setCompany(companyInfo);
 
         if (driverInfo?.picture_url) {
           setProfileImage(driverInfo.picture_url);
@@ -93,8 +96,6 @@ export default function ProfileScreen() {
   const resetEditFields = () => {
     if (driver) {
       setDriverName(driver.name || '');
-      setDriverUserType(driver.user_type || '');
-      setDriverVehicleType(driver.vehicle_type || '');
       setDriverBirthday(driver.birthday ? new Date(driver.birthday) : null);
       setDriverEmail(driver.email || '');
 
@@ -164,11 +165,9 @@ export default function ProfileScreen() {
 
       const driverObj = {
         id: driver.id,
-        user_type: driverUserType,
         name: driverName,
         email: driverEmail,
-        phone: driver.phone,
-        vehicle_type: driverVehicleType,
+        company_id: driver.company_id,
         birthday: birthdayTimestamp,
         picture_url: finalImageUrl,
       };
@@ -262,7 +261,6 @@ export default function ProfileScreen() {
 
             <View
               style={[styles.profileImageContainer, editMode && styles.profileImageContainerEdit]}>
-              {' '}
               <Pressable
                 onPress={editMode ? pickImage : undefined}
                 style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
@@ -368,9 +366,7 @@ export default function ProfileScreen() {
 
                   <View style={styles.infoRow}>
                     <Text style={styles.label}>Company:</Text>
-                    <Text style={styles.value}>
-                      {driver.company_name ? driver.company_name : '-'}
-                    </Text>
+                    <Text style={styles.value}>{company ? company.name : '-'}</Text>
                   </View>
 
                   <View style={styles.infoRow}>

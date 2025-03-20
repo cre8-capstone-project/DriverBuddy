@@ -7,10 +7,16 @@ import {
   Dimensions,
   TouchableOpacity,
   ImageSourcePropType,
+  ImageBackground,
 } from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 import {useRouter} from 'expo-router';
 import StepsIndicator from './StepsIndicator';
+import FullWidthButton from '@/components/FullWidthButton';
+import Welcome1 from '@/assets/images/Welcome1.png';
+import Welcome2 from '@/assets/images/Welcome2.png';
+import LogoHorizontal from '@/assets/images/drivebuddy-logo-name-horizontal.png';
+import LogoVertical from '@/assets/images/drivebuddy-logo-name.png';
 interface OnboardingProps {
   callback?: (state: boolean) => void;
 }
@@ -52,11 +58,24 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             exiting={FadeOut.duration(300)}
             style={styles.slide}
             key="slide1">
-            <Image source={'' as ImageSourcePropType} style={styles.image} resizeMode="contain" />
-            <Text style={styles.title}>Welcome to Our App</Text>
-            <Text style={styles.subtitle}>
+            <ImageBackground
+              source={Welcome1 as ImageSourcePropType}
+              style={styles.backgroundImage}
+              resizeMode="cover">
+              <View style={styles.overlay}>
+                <Image
+                  source={LogoHorizontal as ImageSourcePropType}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+                <Text style={styles.title}>
+                  Detect signs{'\n'}of drowsiness{'\n'}by face monitoring
+                </Text>
+              </View>
+            </ImageBackground>
+            {/* <Text style={styles.subtitle}>
               Discover amazing features that will change your life
-            </Text>
+            </Text> */}
           </Animated.View>
         );
       case 2:
@@ -66,11 +85,23 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             exiting={FadeOut.duration(300)}
             style={styles.slide}
             key="slide2">
-            <Image source={'' as ImageSourcePropType} style={styles.image} resizeMode="contain" />
-            <Text style={styles.title}>Powerful and Easy</Text>
-            <Text style={styles.subtitle}>
+            <ImageBackground
+              source={Welcome2 as ImageSourcePropType}
+              style={styles.backgroundImage}
+              resizeMode="cover">
+              <View style={styles.overlay}>
+                <Image
+                  source={LogoHorizontal as ImageSourcePropType}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+                <Text style={styles.title}>GPS Navigator and Rest Stop Suggestion</Text>
+              </View>
+            </ImageBackground>
+
+            {/* <Text style={styles.subtitle}>
               Simple to use yet powerful enough for all your needs
-            </Text>
+            </Text> */}
           </Animated.View>
         );
       case 3:
@@ -80,14 +111,31 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             exiting={FadeOut.duration(300)}
             style={styles.finalSlide}
             key="slide3">
-            <Text style={styles.finalText}>Ready to get started?</Text>
+            <Image
+              source={LogoVertical as ImageSourcePropType}
+              style={styles.finalLogo}
+              resizeMode="contain"
+            />
+
+            <Text style={styles.finalText}>Drive aware, get there!</Text>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.primaryButton} onPress={handleCreateAccount}>
+              <FullWidthButton
+                title="Create Account"
+                type="primary"
+                onPress={handleCreateAccount}
+              />
+              {/* <TouchableOpacity style={styles.primaryButton} onPress={handleCreateAccount}>
                 <Text style={styles.primaryButtonText}>Create Account</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.secondaryButton} onPress={handleSignIn}>
+              </TouchableOpacity> */}
+              <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
+                <Text>Already have an account? </Text>
+                <TouchableOpacity onPress={handleSignIn}>
+                  <Text style={{color: 'blue', fontWeight: 'bold'}}>Log In</Text>
+                </TouchableOpacity>
+              </View>{' '}
+              {/* <TouchableOpacity style={styles.secondaryButton} onPress={handleSignIn}>
                 <Text style={styles.secondaryButtonText}>Sign In</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </Animated.View>
         );
@@ -105,17 +153,22 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
       {/* Navigation buttons */}
       {onboardingStep < 3 ? (
         <View style={styles.navigationContainer}>
-          <TouchableOpacity style={styles.skipButton} onPress={() => setOnboardingStep(3)}>
+          <FullWidthButton title="Next" type="primary" onPress={handleNext} />
+
+          {/* <TouchableOpacity style={styles.navButton} onPress={handleNext}>
+            <Text style={styles.navButtonText}>Next</Text>
+          </TouchableOpacity> */}
+
+          <FullWidthButton title="Skip" type="tertiary" onPress={() => setOnboardingStep(3)} />
+
+          {/* <TouchableOpacity style={styles.skipButton} onPress={() => setOnboardingStep(3)}>
             <Text style={styles.skipButtonText}>Skip</Text>
-          </TouchableOpacity>
-          {onboardingStep > 1 && (
+          </TouchableOpacity> */}
+          {/* {onboardingStep > 1 && (
             <TouchableOpacity style={styles.navButton} onPress={handleBack}>
               <Text style={styles.navButtonText}>Back</Text>
             </TouchableOpacity>
-          )}
-          <TouchableOpacity style={styles.navButton} onPress={handleNext}>
-            <Text style={styles.navButtonText}>Next</Text>
-          </TouchableOpacity>
+          )} */}
         </View>
       ) : null}
     </View>
@@ -129,9 +182,9 @@ const styles = StyleSheet.create({
   },
   slide: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 30,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    // paddingHorizontal: 30,
   },
   finalSlide: {
     flex: 1,
@@ -146,9 +199,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
     marginBottom: 10,
     color: '#333',
   },
@@ -158,8 +212,12 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 20,
   },
+  finalLogo: {
+    width: '100%',
+    marginBottom: 20,
+  },
   finalText: {
-    fontSize: 28,
+    fontSize: 64,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 50,
@@ -202,8 +260,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   navigationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
     paddingHorizontal: 20,
     position: 'absolute',
     bottom: 40,
@@ -227,6 +285,24 @@ const styles = StyleSheet.create({
     color: '#333',
     fontSize: 16,
     fontWeight: '500',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  overlay: {
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 30,
+    alignItems: 'flex-start',
+  },
+  logo: {
+    width: 190,
+    height: 36,
+    marginBottom: 10,
   },
 });
 

@@ -10,6 +10,7 @@ import invitationsRoutes from './invitationsRoutes.js';
 import faceDetectionSessionRoutes from '../dist/faceDetectionSessionRoutes.js';
 import companyRoutes from './companyRoutes.js';
 import adminRoutes from './adminRoutes.js';
+import authenticateToken from '../authenticateToken.js';
 
 const router = express.Router();
 // Initialize Firebase Admin SDK
@@ -27,10 +28,13 @@ const faceDetectionSessionCollection = db.collection('face_detection_session');
 const adminsCollection = db.collection('admins');
 
 router.use('/drivers', driverRoutes(driverCollection));
-// router.use('/history', historyRoutes(historyCollection, driverCollection, admin));
-router.use('/invitations', invitationsRoutes(invitationsCollection, db));
-router.use('/companies', companyRoutes(companyCollection));
-router.use('/face-detection-session', faceDetectionSessionRoutes(faceDetectionSessionCollection));
+router.use('/invitations', authenticateToken, invitationsRoutes(invitationsCollection, db));
+router.use('/companies', authenticateToken, companyRoutes(companyCollection));
+router.use(
+  '/face-detection-session',
+  authenticateToken,
+  faceDetectionSessionRoutes(faceDetectionSessionCollection),
+);
 router.use('/admins', adminRoutes(adminsCollection));
 
 export default router;

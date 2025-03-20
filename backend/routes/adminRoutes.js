@@ -1,9 +1,10 @@
 /* eslint-disable camelcase */
 import express from 'express';
+import authenticateToken from '../authenticateToken';
 
 const adminsRoutes = adminsCollection => {
   const router = express.Router();
-  router.get('/:id', async (req, res) => {
+  router.get('/:id', authenticateToken, async (req, res) => {
     try {
       const {id} = req.params;
       if (!id) {
@@ -20,7 +21,7 @@ const adminsRoutes = adminsCollection => {
       res.status(500).json({error: `Failed to update invitation: ${error}`});
     }
   });
-  router.put('/:id', async (req, res) => {
+  router.put('/:id', authenticateToken, async (req, res) => {
     try {
       const {company_id, email, name} = req.body;
       await adminsCollection.doc(req.params.id).update({company_id, email, name});
@@ -40,7 +41,7 @@ const adminsRoutes = adminsCollection => {
       res.status(500).json({error: `Failed to update Admin: ${error}`});
     }
   });
-  router.delete('/:id', async (req, res) => {
+  router.delete('/:id', authenticateToken, async (req, res) => {
     try {
       await adminsCollection.delete(req.params.id);
       res.status(200).json({message: 'Admin deleted successfully'});

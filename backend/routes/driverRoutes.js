@@ -1,32 +1,11 @@
 /* eslint-disable camelcase */
 import express from 'express';
+// eslint-disable-next-line import/extensions
+import authenticateToken from '../authenticateToken.js';
 
 const driverRoutes = driverCollection => {
   const router = express.Router();
-
-  router.post('/', async (req, res) => {
-    try {
-      const {id, name, email, user_type, picture_url, company_id} = req.body;
-      const newDriver = {id, name, email, user_type, picture_url, company_id};
-      await driverCollection.doc(id).set(newDriver);
-      res.status(201).send({id, ...newDriver});
-    } catch (error) {
-      res.status(500).send({error: `Failed to create driver: ${error}`});
-    }
-  });
-
-  router.get('/', async (req, res) => {
-    console.log("Getting '/drivers'...");
-    try {
-      const snapshot = await driverCollection.get();
-      const drivers = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-      res.status(200).send(drivers);
-    } catch (error) {
-      res.status(500).send({error: `Failed to fetch drivers: ${error}`});
-    }
-  });
-
-  router.get('/:id', async (req, res) => {
+  router.get('/:id', authenticateToken, async (req, res) => {
     try {
       const doc = await driverCollection.doc(req.params.id).get();
       if (!doc.exists) return res.status(404).send({error: 'Driver not found'});
@@ -61,7 +40,7 @@ const driverRoutes = driverCollection => {
       res.status(500).send({error: `Failed to fetch driver: ${error.message}`});
     }
   });
-  router.get('/company/:company_id', async (req, res) => {
+  router.get('/company/:company_id', authenticateToken, async (req, res) => {
     try {
       const {company_id} = req.params;
       const querySnapshot = await driverCollection.where('company_id', '==', company_id).get();
@@ -81,8 +60,29 @@ const driverRoutes = driverCollection => {
       res.status(500).send({error: `Failed to fetch driver: ${error}`});
     }
   });
+  router.post('/', authenticateToken, async (req, res) => {
+    try {
+      const {id, name, email, user_type, picture_url, company_id} = req.body;
+      const newDriver = {id, name, email, user_type, picture_url, company_id};
+      await driverCollection.doc(id).set(newDriver);
+      res.status(201).send({id, ...newDriver});
+    } catch (error) {
+      res.status(500).send({error: `Failed to create driver: ${error}`});
+    }
+  });
 
-  router.put('/:id', async (req, res) => {
+  router.get('/', authenticateToken, async (req, res) => {
+    console.log("Getting '/drivers'...");
+    try {
+      const snapshot = await driverCollection.get();
+      const drivers = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+      res.status(200).send(drivers);
+    } catch (error) {
+      res.status(500).send({error: `Failed to fetch drivers: ${error}`});
+    }
+  });
+
+  router.put('/:id', authenticateToken, async (req, res) => {
     try {
       const {id} = req.params;
       const {name, email, birthday, user_type, company_id, picture_url} = req.body;
@@ -116,7 +116,7 @@ const driverRoutes = driverCollection => {
   });
 
   // ✅ Delete a driver by ID
-  router.delete('/:id', async (req, res) => {
+  router.delete('/:id', authenticateToken, async (req, res) => {
     try {
       await driverCollection.doc(req.params.id).delete();
       res.status(200).send({message: 'Driver deleted'});

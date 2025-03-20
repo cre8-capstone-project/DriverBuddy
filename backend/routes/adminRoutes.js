@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import express from 'express';
-import authenticateToken from '../authenticateToken';
+// eslint-disable-next-line import/extensions
+import authenticateToken from '../authenticateToken.js';
 
 const adminsRoutes = adminsCollection => {
   const router = express.Router();

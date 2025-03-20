@@ -1,7 +1,6 @@
 import express from 'express';
 import admin from 'firebase-admin';
 import {fromZonedTime, toZonedTime} from 'date-fns-tz'; // eslint-disable-line import/no-extraneous-dependencies
-import {set} from 'date-fns';
 
 type FaceDetectionSession = {
   faceDetectionSessionId: string;
@@ -70,6 +69,33 @@ const faceDetectionSessionRoutes = (
     } catch (error) {
       console.error('Error registering session:', error);
       res.status(500).json({error: `Failed to register session: ${error}`});
+    }
+  });
+
+  // !!! THIS IS FOR DEMO DATA PREPARATION !!!
+  // DELETE: /face-detection-session/delete/:userId
+  router.delete('/delete/:userId', async (req, res) => {
+    try {
+      const {userId} = req.params;
+
+      if (!userId || typeof userId !== 'string') {
+        return res.status(400).json({error: 'Invalid userId parameter.'});
+      }
+
+      const snapshot = await faceDetectionSessionCollection.where('userId', '==', userId).get();
+
+      if (snapshot.empty) {
+        return res.status(404).json({message: 'No sessions found for the given userId.'});
+      }
+
+      const deletePromises = snapshot.docs.map(doc => doc.ref.delete());
+      await Promise.all(deletePromises);
+
+      console.log(`All sessions for userId ${userId} have been deleted.`);
+      res.status(200).json({message: `All sessions for userId ${userId} have been deleted.`});
+    } catch (error) {
+      console.error('Error deleting sessions:', error);
+      res.status(500).json({error: `Failed to delete sessions: ${error}`});
     }
   });
 
@@ -978,6 +1004,7 @@ const faceDetectionSessionRoutes = (
       let totalSessionHours = 0;
       let totalNumberOfAlert = 0;
       const result: {[hour: string]: {totalSessionHours: number; totalNumberOfAlert: number}} = {};
+      const userAlertCounts: {[userId: string]: number} = {};
 
       querySnapshot.forEach(doc => {
         const session = doc.data() as FaceDetectionSession;
@@ -991,7 +1018,7 @@ const faceDetectionSessionRoutes = (
         let remainingDuration = session.sessionDuration / 3600;
 
         // Allocate session duration to each hour
-        while (remainingDuration > 0) {
+        while (remainingDuration > 0 && currentTime < sessionEnd) {
           const localTime = toZonedTime(currentTime, timeZone);
           const localHourString = localTime.getHours();
 
@@ -1000,6 +1027,12 @@ const faceDetectionSessionRoutes = (
 
           const EndTime = Math.min(nextHour.getTime(), sessionEnd.getTime());
           const Duration = (EndTime - currentTime.getTime()) / 3600000;
+          if (Duration <= 0) {
+            console.warn(
+              '[WARN] Duration is negative or zero, breaking the loop to avoid infinite loop.',
+            );
+            break;
+          }
 
           if (!result[localHourString]) {
             result[localHourString] = {totalSessionHours: 0, totalNumberOfAlert: 0};
@@ -1023,6 +1056,12 @@ const faceDetectionSessionRoutes = (
 
           result[localAlertHourString].totalNumberOfAlert += 1;
           totalNumberOfAlert += 1;
+
+          // Count alerts per user
+          if (!userAlertCounts[session.userId]) {
+            userAlertCounts[session.userId] = 0;
+          }
+          userAlertCounts[session.userId] += 1;
         });
       });
 
@@ -1046,10 +1085,14 @@ const faceDetectionSessionRoutes = (
         };
       });
 
+      const maxAlertsPerUser =
+        Object.keys(userAlertCounts).length > 0 ? Math.max(...Object.values(userAlertCounts)) : 0;
+
       res.json({
         totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
         totalNumberOfAlert,
         alertPerHour: parseFloat((totalNumberOfAlert / totalSessionHours).toFixed(2)),
+        maxAlertsPerUser,
         data: processedData,
       });
     } catch (error) {
@@ -1097,6 +1140,7 @@ const faceDetectionSessionRoutes = (
       let totalSessionHours = 0;
       let totalNumberOfAlert = 0;
       const result: {[date: string]: {totalSessionHours: number; totalNumberOfAlert: number}} = {};
+      const userAlertCounts: {[userId: string]: number} = {};
 
       querySnapshot.forEach(doc => {
         const session = doc.data() as FaceDetectionSession;
@@ -1109,7 +1153,7 @@ const faceDetectionSessionRoutes = (
         let remainingDuration = session.sessionDuration / 3600;
 
         // Allocate session duration to each day
-        while (remainingDuration > 0) {
+        while (remainingDuration > 0 && currentTime < sessionEnd) {
           const localCurrentTime = toZonedTime(currentTime, timeZone);
           const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
 
@@ -1142,6 +1186,12 @@ const faceDetectionSessionRoutes = (
 
           result[alertDateString].totalNumberOfAlert += 1;
           totalNumberOfAlert += 1;
+
+          // Count alerts per user
+          if (!userAlertCounts[session.userId]) {
+            userAlertCounts[session.userId] = 0;
+          }
+          userAlertCounts[session.userId] += 1;
         });
       });
 
@@ -1165,14 +1215,15 @@ const faceDetectionSessionRoutes = (
           alertPerHour: parseFloat(alertPerHour.toFixed(2)),
         };
       });
-      console.log('startOfWeek:', startOfWeek);
-      console.log('endOfWeek:', endOfWeek);
-      console.log('processedData:', processedData);
+
+      const maxAlertsPerUser =
+        Object.keys(userAlertCounts).length > 0 ? Math.max(...Object.values(userAlertCounts)) : 0;
 
       res.json({
         totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
         totalNumberOfAlert,
         alertPerHour: parseFloat((totalNumberOfAlert / totalSessionHours).toFixed(2)),
+        maxAlertsPerUser,
         data: processedData,
       });
     } catch (error) {
@@ -1222,6 +1273,7 @@ const faceDetectionSessionRoutes = (
       let totalSessionHours = 0;
       let totalNumberOfAlert = 0;
       const result: {[date: string]: {totalSessionHours: number; totalNumberOfAlert: number}} = {};
+      const userAlertCounts: {[userId: string]: number} = {};
 
       querySnapshot.forEach(doc => {
         const session = doc.data() as FaceDetectionSession;
@@ -1234,7 +1286,7 @@ const faceDetectionSessionRoutes = (
         let remainingDuration = session.sessionDuration / 3600;
 
         // Allocate session duration to each day
-        while (remainingDuration > 0) {
+        while (remainingDuration > 0 && currentTime < sessionEnd) {
           const localCurrentTime = toZonedTime(currentTime, timeZone);
           const currentDateString = localCurrentTime.toLocaleDateString('en-CA');
 
@@ -1267,6 +1319,12 @@ const faceDetectionSessionRoutes = (
 
           result[alertDateString].totalNumberOfAlert += 1;
           totalNumberOfAlert += 1;
+
+          // Count alerts per user
+          if (!userAlertCounts[session.userId]) {
+            userAlertCounts[session.userId] = 0;
+          }
+          userAlertCounts[session.userId] += 1;
         });
       });
 
@@ -1292,10 +1350,14 @@ const faceDetectionSessionRoutes = (
         };
       });
 
+      const maxAlertsPerUser =
+        Object.keys(userAlertCounts).length > 0 ? Math.max(...Object.values(userAlertCounts)) : 0;
+
       res.json({
         totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
         totalNumberOfAlert,
         alertPerHour: parseFloat((totalNumberOfAlert / totalSessionHours).toFixed(2)),
+        maxAlertsPerUser,
         data: processedData,
       });
     } catch (error) {
@@ -1345,6 +1407,7 @@ const faceDetectionSessionRoutes = (
       let totalSessionHours = 0;
       let totalNumberOfAlert = 0;
       const result: {[month: string]: {totalSessionHours: number; totalNumberOfAlert: number}} = {};
+      const userAlertCounts: {[userId: string]: number} = {};
 
       querySnapshot.forEach(doc => {
         const session = doc.data() as FaceDetectionSession;
@@ -1357,7 +1420,7 @@ const faceDetectionSessionRoutes = (
         let remainingDuration = session.sessionDuration / 3600;
 
         // Allocate session duration to each month
-        while (remainingDuration > 0) {
+        while (remainingDuration > 0 && currentTime < sessionEnd) {
           const localCurrentTime = toZonedTime(currentTime, timeZone);
           const currentMonthString = localCurrentTime.toLocaleDateString('en-CA', {
             year: 'numeric',
@@ -1397,6 +1460,12 @@ const faceDetectionSessionRoutes = (
 
           result[alertMonthString].totalNumberOfAlert += 1;
           totalNumberOfAlert += 1;
+
+          // Count alerts per user
+          if (!userAlertCounts[session.userId]) {
+            userAlertCounts[session.userId] = 0;
+          }
+          userAlertCounts[session.userId] += 1;
         });
       });
 
@@ -1419,14 +1488,15 @@ const faceDetectionSessionRoutes = (
           alertPerHour: parseFloat(alertsPerHour.toFixed(2)),
         };
       });
-      console.log('startOfYear:', startOfYear);
-      console.log('endOfYear:', endOfYear);
-      console.log('processedData:', processedData);
+
+      const maxAlertsPerUser =
+        Object.keys(userAlertCounts).length > 0 ? Math.max(...Object.values(userAlertCounts)) : 0;
 
       res.json({
         totalSessionHours: parseFloat(totalSessionHours.toFixed(2)),
         totalNumberOfAlert,
         alertPerHour: parseFloat((totalNumberOfAlert / totalSessionHours).toFixed(2)),
+        maxAlertsPerUser,
         data: processedData,
       });
     } catch (error) {

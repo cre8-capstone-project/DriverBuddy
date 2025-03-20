@@ -7,6 +7,7 @@ import * as Location from 'expo-location';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {ShowRestStopsDialog} from '@/features/map/components/ShowRestStopsDialog';
 import theme from '@/components/Theme';
+import type {ViewModeType} from '@/types/ViewModeType'; // ADDED OR UPDATED 19 MAR: Import ViewModeType
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -29,6 +30,8 @@ type Props = {
   setDriveModeStatus: (mode: boolean) => void;
   startDriveStatus: boolean;
   endDriveStatus: boolean;
+  setViewMode: (mode: ViewModeType) => void; // ADDED OR UPDATED 19 MAR: Accept setViewMode
+  setViewModeContext: (mode: ViewModeType) => void; // ADDED OR UPDATED 19 MAR: Accept setViewModeContext
 };
 
 // Save values temporarily so they can be used later even if the app is closed or reloaded
@@ -69,7 +72,14 @@ export const Map = forwardRef((props: Props, ref) => {
     [],
   );
   // Extracting properties from props related to drive status
-  const {setDriveDestinationStatus, setDriveModeStatus, startDriveStatus, endDriveStatus} = props;
+  const {
+    setDriveDestinationStatus,
+    setDriveModeStatus,
+    startDriveStatus,
+    endDriveStatus,
+    setViewMode, // ADDED OR UPDATED 19 MAR: Destructure setViewMode
+    setViewModeContext, // ADDED OR UPDATED 19 MAR: Destructure setViewModeContext
+  } = props;
   // UPDATED 04 MAR: Static polyline to prevent the it from blinking when handleUserLocationChange executes
   // const [routeOrigin, setRouteOrigin] = useState<Region | null>(null); // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
   // UPDATED 14 MAR: Show or hide a destination card
@@ -115,7 +125,14 @@ export const Map = forwardRef((props: Props, ref) => {
   useEffect(() => {
     setDriveDestinationStatus(destination ? true : false);
     setDriveModeStatus(drivingMode ? true : false);
-  }, [destination, drivingMode]);
+
+    // ADDED OR UPDATED 19 MAR: Switch to map view when destination is selected
+    if (destination) {
+      setViewMode('mapView');
+      setViewModeContext('mapView');
+    }
+
+  }, [destination, drivingMode, setViewMode, setViewModeContext]);
 
   // Starts the driving process when status is true
   useEffect(() => {

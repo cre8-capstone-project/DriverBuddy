@@ -132,7 +132,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
                 <TouchableOpacity onPress={handleSignIn}>
                   <Text style={{color: 'blue', fontWeight: 'bold'}}>Log In</Text>
                 </TouchableOpacity>
-              </View>{' '}
+              </View>
               {/* <TouchableOpacity style={styles.secondaryButton} onPress={handleSignIn}>
                 <Text style={styles.secondaryButtonText}>Sign In</Text>
               </TouchableOpacity> */}

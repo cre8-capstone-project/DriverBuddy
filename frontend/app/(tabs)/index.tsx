@@ -11,10 +11,6 @@ export default function HomeScreen() {
   const [dialogStatus, setDialogStatus] = useState(false);
   const {showOnboarding, setShowOnboarding} = useOnboardingTourContext();
 
-  useEffect(() => {
-    setShowOnboarding(true);
-  }, []);
-
   const toggleStartDialog = () => {
     setDialogStatus(!dialogStatus);
   };

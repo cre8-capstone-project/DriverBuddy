@@ -6,9 +6,9 @@ export const BLINK_DURATION_LONG_THRESHOLD = 1500;
 export const BLINK_MONITORING_DURATION_WINDOW = 10000;
 // Unnatural blink behaviour criteria - 1 (Normal-duration Blinks Count / Monitoring Duration Window)
 export const BLINK_COUNT_THRESHOLD_LOW = 0;
-export const BLINK_COUNT_THRESHOLD_HIGH = 10;
+export const BLINK_COUNT_THRESHOLD_HIGH = 8;
 // Unnatural blink behaviour criteria - 2 (Mid-duration Blinks Count / Monitoring Duration Window)
-export const BLINK_COUNT_THRESHOLD = 4;
+export const BLINK_COUNT_THRESHOLD = 3;
 export const BLINK_DURATION_MID_THRESHOLD = 500;
 
 // Head tilt criteria

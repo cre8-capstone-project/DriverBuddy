@@ -35,6 +35,7 @@ export default function ProfileScreen() {
   const [driverBirthday, setDriverBirthday] = useState<Date | null>(null);
   const [driverEmail, setDriverEmail] = useState<string>('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   // Added loading state for image operations
   const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
@@ -288,25 +289,76 @@ export default function ProfileScreen() {
                   {/* User Name Input */}
                   <Input
                     label="User Name"
+                    labelStyle={{
+                      fontSize: 15,
+                      fontWeight: '400',
+                      color: '#1E3A8A',
+                    }}
+                    placeholder="John Doe"
+                    value={driverName}
+                    onChangeText={setDriverName}
+                    onFocus={() => setFocusedInput('driverName')}
+                    onBlur={() => setFocusedInput(null)}
+                    containerStyle={{
+                      width: '100%',
+                      paddingHorizontal: 0,
+                    }}
+                    inputContainerStyle={{
+                      borderWidth: 1,
+                      borderColor: '#1E3A8A',
+                      borderRadius: 14,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      backgroundColor: focusedInput === 'driverName' ? '#E6FCFF' : 'white',
+                    }}
+                    inputStyle={{
+                      fontSize: 18,
+                      color: '#333',
+                    }}
+                  />
+
+                  {/* <Input
+                    label="User Name"
                     labelStyle={{fontSize: 15, fontWeight: 400, color: '#1E3A8A'}}
                     placeholder="John Doe"
                     value={driverName}
                     onChangeText={setDriverName}
                     containerStyle={{marginBottom: 10}}
                     inputContainerStyle={{borderBottomWidth: 1, borderBottomColor: '#1E3A8A'}}
-                  />
-
-                  {/* <View style={styles.formGroup}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={driverName}
-                      onChangeText={setDriverName}
-                      placeholder="Name"
-                    />
-                  </View> */}
+                  /> */}
 
                   {/* Email Input */}
                   <Input
+                    label="Email"
+                    labelStyle={{
+                      fontSize: 15,
+                      fontWeight: '400',
+                      color: '#1E3A8A',
+                    }}
+                    placeholder="johndoe@gmail.com"
+                    value={driverEmail}
+                    onChangeText={setDriverEmail}
+                    onFocus={() => setFocusedInput('driverEmail')}
+                    onBlur={() => setFocusedInput(null)}
+                    containerStyle={{
+                      width: '100%',
+                      paddingHorizontal: 0,
+                    }}
+                    inputContainerStyle={{
+                      borderWidth: 1,
+                      borderColor: '#1E3A8A',
+                      borderRadius: 14,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      backgroundColor: focusedInput === 'driverEmail' ? '#E6FCFF' : 'white',
+                    }}
+                    inputStyle={{
+                      fontSize: 18,
+                      color: '#333',
+                    }}
+                  />
+
+                  {/* <Input
                     label="Email"
                     labelStyle={{fontSize: 15, fontWeight: 400, color: '#1E3A8A'}}
                     placeholder="johndoe@gmail.com"
@@ -315,21 +367,42 @@ export default function ProfileScreen() {
                     keyboardType="email-address"
                     containerStyle={{marginBottom: 10}}
                     inputContainerStyle={{borderBottomWidth: 1, borderBottomColor: '#1E3A8A'}}
-                  />
-
-                  {/* <View style={styles.formGroup}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={driverEmail}
-                      onChangeText={setDriverEmail}
-                      placeholder="Email"
-                      inputMode="email"
-                    />
-                  </View> */}
+                  /> */}
 
                   {/* Birthday Input */}
                   <Pressable onPress={() => setShowDatePicker(true)}>
                     <Input
+                      label="Birthday"
+                      labelStyle={{
+                        fontSize: 15,
+                        fontWeight: '400',
+                        color: '#1E3A8A',
+                      }}
+                      placeholder="Select Birthday"
+                      value={driverBirthday ? driverBirthday.toDateString() : ''}
+                      rightIcon={<Icon name="calendar-today" size={20} color="gray" />}
+                      onFocus={() => setFocusedInput('driverBirthday')}
+                      onBlur={() => setFocusedInput(null)}
+                      containerStyle={{
+                        width: '100%',
+                        paddingHorizontal: 0,
+                      }}
+                      inputContainerStyle={{
+                        borderWidth: 1,
+                        borderColor: '#1E3A8A',
+                        borderRadius: 14,
+                        paddingHorizontal: 10,
+                        paddingVertical: 6,
+                        backgroundColor: focusedInput === 'driverBirthday' ? '#E6FCFF' : 'white',
+                      }}
+                      editable={false}
+                      inputStyle={{
+                        fontSize: 18,
+                        color: '#333',
+                      }}
+                    />
+
+                    {/* <Input
                       label="Birthday"
                       labelStyle={{fontSize: 15, fontWeight: 400, color: '#1E3A8A'}}
                       placeholder="Select Birthday"
@@ -338,19 +411,8 @@ export default function ProfileScreen() {
                       containerStyle={{marginBottom: 10}}
                       inputContainerStyle={{borderBottomWidth: 1, borderBottomColor: '#1E3A8A'}}
                       editable={false}
-                    />
+                    /> */}
                   </Pressable>
-
-                  {/* <View style={styles.formGroup}>
-                    Date picker button
-                    <Pressable
-                      style={styles.datePickerButton}
-                      onPress={() => setShowDatePicker(true)}>
-                      <Text style={styles.datePickerText}>
-                        {driverBirthday ? driverBirthday.toDateString() : 'Select Birthday'}
-                      </Text>
-                      <MaterialIcons name="calendar-today" size={18} color="gray" />
-                    </Pressable> */}
 
                   {/* Only show date picker when showDatePicker is true */}
                   {showDatePicker && (
@@ -431,7 +493,7 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
-    padding: 20,
+    // padding: 20,
     backgroundColor: 'white',
   },
   infoTextContainer: {

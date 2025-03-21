@@ -18,6 +18,7 @@ import {getDriverByEmail} from '@/api/api';
 import Onboarding from '@/components/Onboarding';
 import {Input} from 'react-native-elements';
 import {LinearGradient} from 'expo-linear-gradient';
+import {ensureDefaultSettings} from '@/utils/utils';
 
 export default function SignInScreen() {
   const {showOnboardingSlide} = useLocalSearchParams();
@@ -46,6 +47,7 @@ const SignInForm = () => {
       const driver = await getDriverByEmail(email);
       if (driver) {
         await auth().signInWithEmailAndPassword(email, password);
+        ensureDefaultSettings();
         router.replace('/'); // Redirect to home after login
       } else {
         throw new Error(`There is no driver with this email: ${email}`);

@@ -1,6 +1,7 @@
+/* eslint-disable import/extensions */
 /* eslint-disable camelcase */
 import express from 'express';
-import authenticateToken from '../authenticateToken';
+import authenticateToken from '../authenticateToken.js';
 
 const invitationsRoutes = invitationsCollection => {
   const router = express.Router();

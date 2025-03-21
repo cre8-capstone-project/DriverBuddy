@@ -141,6 +141,7 @@ export const useDrowsinessDetection = () => {
         triggerAlert();
         setMessage('Long Blink Duration');
         blinkTimestampsRef.current = [];
+        blinkMidTimestampsRef.current = [];
         startTimeDrowsinessRef.current = null;
       } else if (Date.now() - startTimeDrowsinessRef.current >= BLINK_DURATION_MID_THRESHOLD) {
         if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {

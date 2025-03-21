@@ -254,6 +254,13 @@ export default function ProfileScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={{flexGrow: 1}} keyboardShouldPersistTaps="handled">
             <View style={styles.header}>
+              {/* Cocoy's Update: Add settings icon */}
+              <Pressable
+                style={[styles.editButton, {right: 60}]}
+                onPress={() => router.push('/settings')}>
+                {/* ADDED OR UPDATED 19 MAR: Added cog icon to navigate to settings */}
+                <MaterialIcons name="settings" size={24} color="black" />
+              </Pressable>
               <Pressable style={styles.editButton} onPress={toggleEdit}>
                 <MaterialIcons name="edit" size={24} color="black" />
               </Pressable>

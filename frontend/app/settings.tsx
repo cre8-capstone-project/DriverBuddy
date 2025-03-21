@@ -1,13 +1,98 @@
+import React, {useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Icon, Button} from '@rneui/themed';
 import {useRouter} from 'expo-router';
 import StopTester from '@/components/StopTester';
+import {updateMapSettings} from '@/features/map/constants/settings'; // Cocoy's Update: Import updateMapSettings function
+import theme from '@/components/Theme'; // Cocoy's Update: Import theme
 
 export default function SettingsScreen() {
   const router = useRouter();
+
+  // Cocoy's Update:
+  // State for settings
+  const [restStopTypes, setRestStopTypes] = useState<string[]>(['gas_station']);
+  const [restStopCounts, setRestStopCounts] = useState<number>(3);
+  const [alertMsgAndSounds, setAlertMsgAndSounds] = useState<string>('standard');
+
+  // Rest stop types
+  const toggleRestStopType = (type: string) => {
+    if (restStopTypes.includes(type)) {
+      setRestStopTypes(restStopTypes.filter(t => t !== type));
+    } else {
+      setRestStopTypes([...restStopTypes, type]);
+    }
+  };
+
+  // Increment and decrement buttons
+  const decrementCount = () => {
+    setRestStopCounts(prev => Math.max(1, prev - 1));
+  };
+  const incrementCount = () => {
+    setRestStopCounts(prev => Math.min(10, prev + 1));
+  };
+
+  // Save and Cancel
+  const handleSave = () => {
+    // Build comma separated string from the selected types
+    const typesString = restStopTypes.join(',');
+    updateMapSettings(typesString, restStopCounts, alertMsgAndSounds);
+    router.push('/profile'); // Navigate back to profile
+  };
+
+  const handleCancel = () => {
+    router.push('/profile'); // Discard changes and navigate back to profile
+  };
+
   return (
     <View style={styles.container}>
-      <Button
+      {/* Cocoy's Update: New settings page */}
+      <Text style={styles.sectionHeading}>Type of Rest Stops</Text>
+      <View style={styles.toggleButtonContainer}>
+        <Button
+          title="Gas Stations"
+          type={restStopTypes.includes('gas_station') ? 'solid' : 'outline'}
+          onPress={() => toggleRestStopType('gas_station')}
+        />
+        <Button
+          title="Hotels & Lodging"
+          type={restStopTypes.includes('lodging') ? 'solid' : 'outline'}
+          onPress={() => toggleRestStopType('lodging')}
+        />
+        <Button
+          title="Convenience Stores"
+          type={restStopTypes.includes('convenience_store') ? 'solid' : 'outline'}
+          onPress={() => toggleRestStopType('convenience_store')}
+        />
+      </View>
+
+      <Text style={styles.sectionHeading}>Number of Rest Stops</Text>
+      <View style={styles.counterContainer}>
+        <Button title="-" onPress={decrementCount} />
+        <Text style={styles.countText}>{restStopCounts}</Text>
+        <Button title="+" onPress={incrementCount} />
+      </View>
+
+      <Text style={styles.sectionHeading}>Alert Message & Sound</Text>
+      <View style={styles.toggleButtonContainer}>
+        <Button
+          title="Standard"
+          type={alertMsgAndSounds === 'standard' ? 'solid' : 'outline'}
+          onPress={() => setAlertMsgAndSounds('standard')}
+        />
+        <Button
+          title="Comical"
+          type={alertMsgAndSounds === 'comical' ? 'solid' : 'outline'}
+          onPress={() => setAlertMsgAndSounds('comical')}
+        />
+      </View>
+
+      <View style={styles.buttonRow}>
+        <Button title="Save" onPress={handleSave} buttonStyle={styles.saveButton} />
+        <Button title="Cancel" onPress={handleCancel} buttonStyle={styles.cancelButton} />
+      </View>
+
+      {/* <Button
         buttonStyle={styles.menuButton}
         containerStyle={styles.menuButtonContainer}
         onPress={() => router.push('/history')}>
@@ -31,7 +116,7 @@ export default function SettingsScreen() {
         </View>
         <Icon name="chevron-right" style={styles.icon} />
       </Button>
-      <StopTester />
+      <StopTester /> */}
     </View>
   );
 }
@@ -73,5 +158,37 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 4,
     padding: 5,
+  },
+
+  // Cocoy's Update: New styles for the settings page TODO
+  sectionHeading: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  toggleButtonContainer: {
+    marginBottom: 10,
+  },
+  counterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  countText: {
+    fontSize: 18,
+    marginHorizontal: 20,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 30,
+  },
+  saveButton: {
+    paddingHorizontal: 20,
+  },
+  cancelButton: {
+    paddingHorizontal: 20,
   },
 });

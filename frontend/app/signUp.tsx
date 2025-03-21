@@ -29,6 +29,7 @@ import {InvitationCodeType} from '@/types/InvitationCodeType';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 import FullWidthButton from '@/components/FullWidthButton';
 import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
+import {ensureDefaultSettings} from '@/utils/utils.ts';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -45,6 +46,7 @@ export default function SignUpScreen() {
   const handleAuth = async () => {
     try {
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      ensureDefaultSettings();
       setShowOnboarding(true);
       let downloadURL: string | undefined = photoUri.trim();
       if (downloadURL !== '') {
@@ -52,7 +54,6 @@ export default function SignUpScreen() {
       }
       const newDriverObj: Driver = {
         id: userCredential.user.uid,
-        user_type: 'basic',
         name: name ? name : '',
         email: email,
         birthday: Timestamp.fromDate(new Date()),

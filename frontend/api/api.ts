@@ -8,6 +8,7 @@ import auth from '@react-native-firebase/auth';
 
 //const API_URL = 'http://10.128.242.200:3000';
 const API_URL = 'http://10.0.0.23:3000'; // replace with your own IP
+//const API_URL = 'https://drivebuddy.wmdd4950.com/api';
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,
@@ -23,12 +24,10 @@ axiosClient.interceptors.request.use(
       try {
         const token = await currentUser.getIdToken(true);
         config.headers['Authorization'] = `Bearer ${token}`;
-        console.log('Authorization header set:', config.headers['Authorization']);
       } catch (err) {
         console.error('Failed to get token:', err);
       }
     }
-    console.log('User not signing in. Not sending JWT');
     return config;
   },
   error => Promise.reject(error),

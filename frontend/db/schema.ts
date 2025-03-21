@@ -1,9 +1,29 @@
 import {sql} from 'drizzle-orm';
 import {integer, text, sqliteTable, real} from 'drizzle-orm/sqlite-core';
 
+// Settings Table
 export const settings = sqliteTable('settings', {
   id: integer({mode: 'number'}).primaryKey({autoIncrement: true}),
-  dark: integer({mode: 'boolean'}).notNull(),
+  restStopRadius: integer({mode: 'number'})
+    .notNull()
+    .default(sql`10`),
+  restStopCount: integer({mode: 'number'})
+    .notNull()
+    .default(sql`3`),
+  alertMsgAndSound: integer({mode: 'number'})
+    .notNull()
+    .default(sql`1`),
+});
+
+// Rest Stop Types Table (1-N Relationship)
+export const restStopTypes = sqliteTable('restStopTypes', {
+  id: integer({mode: 'number'}).primaryKey({autoIncrement: true}),
+  settingsId: integer({mode: 'number'})
+    .notNull()
+    .references(() => settings.id, {onDelete: 'cascade'}),
+  stopType: integer({mode: 'number'})
+    .notNull()
+    .default(sql`1`), // Default stop type is 1
 });
 
 export const faceDetectionSession = sqliteTable('FaceDetectionSession', {

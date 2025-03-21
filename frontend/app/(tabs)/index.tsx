@@ -1,16 +1,30 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Text, TouchableOpacity, ImageBackground} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ImageBackground,
+  ImageSourcePropType,
+} from 'react-native';
 import {Icon} from '@rneui/themed';
 import {StartConfirmationDialog} from '@/components/StartConfirmationDialog';
 import OnboardingTour from '@/components/OnboardingTour';
 import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
 import {LinearGradient} from 'expo-linear-gradient';
 import HomeBackground from '@/assets/images/HomeBackground.png';
+import {getSettings} from '@/services/SettingsService';
 
 export default function HomeScreen() {
   const [dialogStatus, setDialogStatus] = useState(false);
   const {showOnboarding, setShowOnboarding} = useOnboardingTourContext();
-
+  useEffect(() => {
+    const loadData = async () => {
+      const currentSettings = await getSettings();
+      console.log(currentSettings);
+    };
+    loadData();
+  }, []);
   const toggleStartDialog = () => {
     setDialogStatus(!dialogStatus);
   };
@@ -19,7 +33,10 @@ export default function HomeScreen() {
     <>
       {showOnboarding && <OnboardingTour onComplete={() => setShowOnboarding(false)} />}
       {/* <View style={styles.container} > */}
-      <ImageBackground source={HomeBackground} resizeMode="cover" style={styles.container}>
+      <ImageBackground
+        source={HomeBackground as ImageSourcePropType}
+        resizeMode="cover"
+        style={styles.container}>
         <View style={styles.overlay} />
         <View>
           <TouchableOpacity onPress={toggleStartDialog}>

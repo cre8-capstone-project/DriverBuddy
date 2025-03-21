@@ -55,12 +55,14 @@ export default function ProfileScreen() {
 
         setIsImageLoading(true);
         const driverInfo = await getDriverByID(currentUserID);
-
-        if (!driverInfo || !driverInfo.company_id)
-          throw new Error('Empty driverInfo or missing company_id');
-        const companyInfo = await getCompanyByID(driverInfo.company_id);
+        console.log(driverInfo);
+        if (!driverInfo || !driverInfo.company_id) {
+          console.error('Empty driverInfo or missing company_id');
+        } else {
+          const companyInfo = await getCompanyByID(driverInfo.company_id);
+          setCompany(companyInfo);
+        }
         setDriver(driverInfo);
-        setCompany(companyInfo);
 
         if (driverInfo?.picture_url) {
           setProfileImage(driverInfo.picture_url);

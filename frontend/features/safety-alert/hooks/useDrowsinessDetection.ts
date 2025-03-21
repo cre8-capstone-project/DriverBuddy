@@ -2,10 +2,11 @@ import {useState, useRef, useEffect} from 'react';
 import {Face} from 'react-native-vision-camera-face-detector';
 import {
   OPEN_EYE_PROBABILITY_THRESHOLD,
-  BLINK_DURATION_THRESHOLD,
+  BLINK_DURATION_LONG_THRESHOLD,
   BLINK_MONITORING_DURATION_WINDOW,
-  BLINK_COUNT_THRESHOLD_LOW,
   BLINK_COUNT_THRESHOLD_HIGH,
+  BLINK_DURATION_MID_THRESHOLD,
+  BLINK_COUNT_THRESHOLD,
 } from '../constants/thresholds';
 import {useLookAwayDetection} from './useLookAwayDetection';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
@@ -16,10 +17,17 @@ export const useDrowsinessDetection = () => {
   const [rightEyeStatus, setRightEyeStatus] = useState(false);
   const {pitchAngleStatus} = useLookAwayDetection();
   const startTimeDrowsinessRef = useRef<number | null>(null);
+
   const blinkTimestampsRef = useRef<number[]>([]);
+  const blinkMidTimestampsRef = useRef<number[]>([]);
+
   const blinkStatusRef = useRef<'closed' | 'open'>('open');
   const blinkRegisteredRef = useRef<boolean>(false);
+  const blinkMidRegisteredRef = useRef<boolean>(false);
+
   const eyeBlinkRateRef = useRef<number>(0);
+  const eyeBlinkRateRef2 = useRef<number>(0);
+
   const blinkCountsPer10SecRef = useRef<number[]>([]);
   const blinkCountsPer30SecRef = useRef<number[]>([]);
   const lastIntervalRef = useRef<number | null>(null);
@@ -52,56 +60,12 @@ export const useDrowsinessDetection = () => {
     blinkTimestampsRef.current.push(now);
   };
 
-  const calculateBlinkRateWithMovingAverage = (triggerAlert: () => Promise<void>) => {
+  const recordMidBlink = () => {
     const now = Date.now();
-
-    // Process every 10 seconds
-    if (lastIntervalRef.current === null) {
-      lastIntervalRef.current = now;
-      return;
-    }
-    if (now - lastIntervalRef.current >= 10000) {
-      lastIntervalRef.current = now;
-
-      // Get the latest 10 seconds blink count
-      const countInLast10Sec = blinkTimestampsRef.current.filter(
-        timestamp => now - timestamp <= 10000,
-      ).length;
-
-      // Keep the last 3 intervals
-      blinkCountsPer10SecRef.current.push(countInLast10Sec);
-      if (blinkCountsPer10SecRef.current.length > 3) {
-        blinkCountsPer10SecRef.current.shift();
-      }
-
-      // Calculate the moving average
-      if (blinkCountsPer10SecRef.current.length !== 3) return;
-      const totalBlinksOf30sec = blinkCountsPer10SecRef.current.reduce((sum, val) => sum + val, 0);
-
-      // Keep the last 3 moving averages
-      blinkCountsPer30SecRef.current.push(Math.round(totalBlinksOf30sec * 2));
-      if (blinkCountsPer30SecRef.current.length > 3) {
-        blinkCountsPer30SecRef.current.shift();
-      }
-      console.log('Eye Blink Rate (Data):', blinkCountsPer30SecRef.current);
-
-      // Calculate the average of the last 3 moving averages
-      if (blinkCountsPer30SecRef.current.length !== 3) return;
-      eyeBlinkRateRef.current = Math.round(
-        blinkCountsPer30SecRef.current.reduce((sum, val) => sum + val, 0) /
-          blinkCountsPer30SecRef.current.length,
-      );
-      console.log('Eye Blink Rate:', eyeBlinkRateRef.current);
-
-      if (
-        blinkCountsPer30SecRef.current.length === 3 &&
-        (eyeBlinkRateRef.current < BLINK_COUNT_THRESHOLD_LOW ||
-          eyeBlinkRateRef.current > BLINK_COUNT_THRESHOLD_HIGH)
-      ) {
-        triggerAlert();
-        console.log('Drowsiness alert triggered due to abnormal blinking pattern');
-      }
-    }
+    blinkMidTimestampsRef.current = blinkMidTimestampsRef.current.filter(
+      timestamp => now - timestamp <= 60000,
+    );
+    blinkMidTimestampsRef.current.push(now);
   };
 
   const calculateBlinkRate = (triggerAlert: () => Promise<void>) => {
@@ -114,17 +78,39 @@ export const useDrowsinessDetection = () => {
     // Note: To reduce burden on the system, we only check every 500ms
     if (now - lastIntervalRef.current >= 100) {
       lastIntervalRef.current = now;
+
+      // Check unnatural blink 1
       eyeBlinkRateRef.current = blinkTimestampsRef.current.filter(
         timestamp => now - timestamp <= BLINK_MONITORING_DURATION_WINDOW,
       ).length;
-      if (eyeBlinkRateRef.current > BLINK_COUNT_THRESHOLD_HIGH) {
+      if (eyeBlinkRateRef.current >= BLINK_COUNT_THRESHOLD_HIGH) {
         if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
           blinkTimestampsRef.current = [];
+          blinkMidTimestampsRef.current = [];
           return;
         }
         triggerAlert();
+        setMessage('Unnatural Blink 1');
         blinkTimestampsRef.current = [];
-        setMessage('Blink Rate');
+        blinkMidTimestampsRef.current = [];
+        startTimeDrowsinessRef.current = null;
+      }
+
+      // Check unnatural blink 2
+      eyeBlinkRateRef2.current = blinkMidTimestampsRef.current.filter(
+        timestamp => now - timestamp <= BLINK_MONITORING_DURATION_WINDOW,
+      ).length;
+      if (eyeBlinkRateRef2.current >= BLINK_COUNT_THRESHOLD) {
+        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
+          blinkTimestampsRef.current = [];
+          blinkMidTimestampsRef.current = [];
+          return;
+        }
+        triggerAlert();
+        setMessage('Unnatural Blink 2');
+        blinkTimestampsRef.current = [];
+        blinkMidTimestampsRef.current = [];
+        startTimeDrowsinessRef.current = null;
       }
     }
   };
@@ -141,41 +127,62 @@ export const useDrowsinessDetection = () => {
       if (blinkStatusRef.current !== 'closed') {
         blinkStatusRef.current = 'closed';
         blinkRegisteredRef.current = false; // Not count up while eyes are continuously closed
+        blinkMidRegisteredRef.current = false;
       }
 
       if (startTimeDrowsinessRef.current === null) {
         startTimeDrowsinessRef.current = Date.now();
-      } else if (Date.now() - startTimeDrowsinessRef.current > BLINK_DURATION_THRESHOLD) {
+      } else if (Date.now() - startTimeDrowsinessRef.current >= BLINK_DURATION_LONG_THRESHOLD) {
         // Skip if the driver is not looking straight or alerting
         if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
           startTimeDrowsinessRef.current = null;
           return;
         }
         triggerAlert();
+        setMessage('Long Blink Duration');
         blinkTimestampsRef.current = [];
-        setMessage('Blink Duration');
         startTimeDrowsinessRef.current = null;
+      } else if (Date.now() - startTimeDrowsinessRef.current >= BLINK_DURATION_MID_THRESHOLD) {
+        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
+          startTimeDrowsinessRef.current = null;
+          return;
+        }
+        if (
+          blinkStatusRef.current === 'closed' &&
+          !blinkMidRegisteredRef.current &&
+          !alertStatus &&
+          !instructionStatus
+        ) {
+          recordMidBlink();
+          blinkMidRegisteredRef.current = true;
+        }
       }
     } else {
       blinkStatusRef.current = 'open';
+      blinkRegisteredRef.current = true;
       startTimeDrowsinessRef.current = null;
     }
 
     // Record blink count
-    if (blinkStatusRef.current === 'closed' && !blinkRegisteredRef.current) {
+    if (
+      blinkStatusRef.current === 'closed' &&
+      !blinkRegisteredRef.current &&
+      !alertStatus &&
+      !instructionStatus
+    ) {
       recordBlink();
       blinkRegisteredRef.current = true;
     }
 
     // Check Blink Rate
     calculateBlinkRate(triggerAlert);
-    // calculateBlinkRateWithMovingAverage(triggerAlert);
   };
 
   return {
     leftEyeStatus,
     rightEyeStatus,
-    eyeBlinkRate: eyeBlinkRateRef.current,
+    eyeBlinkRate1: eyeBlinkRateRef.current,
+    eyeBlinkRate2: eyeBlinkRateRef2.current,
     checkDrowsiness,
   };
 };

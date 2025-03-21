@@ -49,15 +49,15 @@ export default function SettingsScreen() {
     router.back();
   };
 
-  //
-
   return (
     <>
       <View style={styles.customHeader}>
-        <Pressable style={styles.backRow} onPress={handleCancel}>
-          <Icon name="arrow-back" size={32} color="#000" style={styles.backIcon} />
-          <Text style={styles.backText}>Back</Text>
+        <Pressable style={styles.backArea} onPress={handleCancel}>
+          <Icon name="arrow-back" size={32} color="#000" />
         </Pressable>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Settings</Text>
+        </View>
       </View>
 
       <View style={styles.container}>
@@ -222,19 +222,27 @@ const styles = StyleSheet.create({
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
     backgroundColor: theme.lightColors!.white,
     zIndex: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ccc',
+    paddingHorizontal: 8,
+    position: 'relative',
   },
-  backRow: {
-    flexDirection: 'row',
+  backArea: {
+    paddingHorizontal: 4,
+  },
+  headerTitleContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
     alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
   },
-  backIcon: {
-    marginRight: 8,
-  },
-  backText: {
+  headerTitle: {
     fontSize: 20,
     fontWeight: '600',
+    color: '#000',
   },
 });

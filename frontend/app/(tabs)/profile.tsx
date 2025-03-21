@@ -250,7 +250,7 @@ export default function ProfileScreen() {
         </View>
       ) : driver ? (
         <KeyboardAvoidingView
-          style={{flex: 1}}
+          style={{flex: 1, backgroundColor: 'white'}}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={{flexGrow: 1}} keyboardShouldPersistTaps="handled">
             <View style={styles.header}>
@@ -423,6 +423,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'column',
     padding: 20,
+    backgroundColor: 'white',
   },
   infoTextContainer: {
     paddingVertical: 20,

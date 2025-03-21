@@ -140,10 +140,17 @@ export default function SignUpScreen() {
             </Pressable>
           </View>
           <View style={styles.buttonsContainer}>
-            <Button title="Skip this for now" onPress={handleAuth} />
+            <FullWidthButton type="secondary" title="Upload photo from phone" onPress={pickImage} />
+            {/* <Button title="Upload photo from phone" onPress={pickImage} /> */}
+            {photoUri !== '' ? (
+              <FullWidthButton type="primary" title="Complete" onPress={handleAuth} />
+            ) : (
+              ''
+            )}
+
+            <FullWidthButton type="tertiary" title="Skip this for now" onPress={handleAuth} />
+            {/* <Button title="Skip this for now" onPress={handleAuth} /> */}
             {/*<Button title="Take a photo with the camera" onPress={openCamera} />*/}
-            <Button title="Upload photo from phone" onPress={pickImage} />
-            {photoUri !== '' ? <Button title="Complete" onPress={handleAuth} /> : ''}
           </View>
         </>
       ) : (
@@ -205,6 +212,7 @@ const {width} = Dimensions.get('window');
 const styles = StyleSheet.create({
   buttonsContainer: {
     gap: 10,
+    width: '100%',
   },
   profileImageContainer: {
     alignItems: 'center',

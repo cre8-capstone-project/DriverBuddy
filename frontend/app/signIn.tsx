@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: 20,
     alignItems: 'center',
+    backgroundColor: 'white',
   },
   logoContainer: {
     width: width / 3, // 1/3 of the screen width

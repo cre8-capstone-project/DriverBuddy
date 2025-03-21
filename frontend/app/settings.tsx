@@ -1,149 +1,200 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, Pressable} from 'react-native';
-import {Icon, Button, Header} from '@rneui/themed';
-import {useRouter} from 'expo-router';
-import StopTester from '@/components/StopTester';
-import {updateMapSettings} from '@/features/map/constants/settings'; // Cocoy's Update: Import updateMapSettings function
-import theme from '@/components/Theme'; // Cocoy's Update: Import theme
+import React, {useEffect, useState} from 'react';
+import {View, Text, Alert, ScrollView, StyleSheet, Pressable} from 'react-native';
+import {
+  getSettings,
+  upsertSettings,
+  addRestStopType,
+  deleteRestStopType,
+} from '@/services/SettingsService';
+import {Icon, Button} from '@rneui/themed';
+import theme from '@/components/Theme';
 import FullWidthButton from '@/components/FullWidthButton';
+import {useRouter} from 'expo-router';
 
-export default function SettingsScreen() {
+const restStopOptions = [
+  {id: 1, label: 'Gas Stations'},
+  {id: 2, label: 'Hotels'},
+  {id: 3, label: 'Convenience Stores'},
+];
+
+const alertSoundOptions = [
+  {id: 1, label: 'Standard'},
+  {id: 2, label: 'Comical'},
+];
+
+const SettingsScreen = () => {
   const router = useRouter();
+  const [settings, setSettings] = useState({
+    restStopTypes: [1],
+    restStopCount: 3,
+    restStopRadius: 5,
+    alertMsgAndSound: 1,
+  });
 
-  // Cocoy's Update:
-  // State for settings
-  // const [restStopTypes, setRestStopTypes] = useState<string[]>(['gas_station']);
-  const [restStopTypes, setRestStopTypes] = useState<string>('gas_station'); // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
-  const [restStopCounts, setRestStopCounts] = useState<number>(3);
-  const [alertMsgAndSounds, setAlertMsgAndSounds] = useState<string>('standard');
+  const [initialSettings, setInitialSettings] = useState(settings);
 
-  // Rest stop types
-  const toggleRestStopType = (type: string) => {
-    // if (restStopTypes.includes(type)) {
-    //   setRestStopTypes(restStopTypes.filter(t => t !== type));
-    // } else {
-    //   setRestStopTypes([...restStopTypes, type]);
-    // }
-    setRestStopTypes(type); // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    const data = await getSettings();
+    if (data) {
+      setSettings(data);
+      setInitialSettings(data);
+    }
   };
 
-  // Increment and decrement buttons
-  const decrementCount = () => {
-    setRestStopCounts(prev => Math.max(1, prev - 1));
-  };
-  const incrementCount = () => {
-    setRestStopCounts(prev => Math.min(10, prev + 1));
+  const toggleRestStopType = (typeId: number) => {
+    setSettings(prev => {
+      const updatedTypes = prev.restStopTypes.includes(typeId)
+        ? prev.restStopTypes.filter(id => id !== typeId)
+        : [...prev.restStopTypes, typeId];
+      return {...prev, restStopTypes: updatedTypes};
+    });
   };
 
-  // Save and Cancel
-  const handleSave = () => {
-    // Build comma separated string from the selected types
-    // const typesString = restStopTypes.join(',');
-    const typesString = restStopTypes; // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
-    updateMapSettings(typesString, restStopCounts, alertMsgAndSounds);
-    router.push('/profile'); // Navigate back to profile
+  const changeRestStopCount = (change: number) => {
+    setSettings(prev => {
+      const newCount = Math.min(10, Math.max(1, prev.restStopCount + change));
+      return {...prev, restStopCount: newCount};
+    });
+  };
+
+  const selectAlertSound = (id: number) => {
+    setSettings(prev => ({...prev, alertMsgAndSound: id}));
+  };
+
+  const handleSave = async () => {
+    try {
+      await upsertSettings({
+        restStopCount: settings.restStopCount,
+        restStopRadius: settings.restStopRadius,
+        alertMsgAndSound: settings.alertMsgAndSound,
+      });
+
+      // Update rest stop types
+      const currentRestStops = await getSettings();
+      const currentTypes = currentRestStops?.restStopTypes || [];
+
+      const toAdd = settings.restStopTypes.filter(id => !currentTypes.includes(id));
+      const toDelete = currentTypes.filter(id => !settings.restStopTypes.includes(id));
+
+      await Promise.all(toAdd.map(id => addRestStopType(currentRestStops?.id!, id)));
+      await Promise.all(toDelete.map(id => deleteRestStopType(id)));
+
+      Alert.alert('Success', 'Settings updated successfully');
+      setInitialSettings(settings);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update settings');
+    }
   };
 
   const handleCancel = () => {
+    setSettings(initialSettings);
+  };
+  const handleBack = () => {
     // router.push('/profile'); // Discard changes and navigate back to profile
     router.back();
   };
 
+  const hasChanges = JSON.stringify(settings) !== JSON.stringify(initialSettings);
+
   return (
-    <>
+    <ScrollView contentContainerStyle={{flexGrow: 1}}>
       <View style={styles.customHeader}>
-        <Pressable style={styles.backArea} onPress={handleCancel}>
-          <Icon name="arrow-back" size={32} color="#000" />
+        <Pressable style={styles.backRow} onPress={handleBack}>
+          <Icon name="arrow-back" size={32} color="#000" style={styles.backIcon} />
+          <Text style={styles.backText}>Back</Text>
         </Pressable>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Settings</Text>
-        </View>
       </View>
-
       <View style={styles.container}>
-        {/* Cocoy's Update: New settings page */}
+        {/* Section 1: Type of Rest Stops */}
         <Text style={styles.sectionHeading}>Type of Rest Stops</Text>
-        <View style={styles.toggleButtonContainer}>
-          <Button
-            title="Gas Stations"
-            // type={restStopTypes.includes('gas_station') ? 'solid' : 'outline'}
-            type={restStopTypes === 'gas_station' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
-            buttonStyle={styles.toggleButtons}
-            onPress={() => toggleRestStopType('gas_station')}
-          />
-          <Button
-            title="Hotels"
-            // type={restStopTypes.includes('lodging') ? 'solid' : 'outline'}
-            type={restStopTypes === 'lodging' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
-            buttonStyle={styles.toggleButtons}
-            onPress={() => toggleRestStopType('lodging')}
-          />
-          <Button
-            title="Convenience Stores"
-            // type={restStopTypes.includes('convenience_store') ? 'solid' : 'outline'}
-            type={restStopTypes === 'convenience_store' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
-            buttonStyle={styles.toggleButtons}
-            onPress={() => toggleRestStopType('convenience_store')}
-          />
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 10,
+            flexWrap: 'wrap',
+            gap: 5,
+          }}>
+          {restStopOptions.map(option => (
+            <Button
+              key={option.id}
+              title={option.label}
+              onPress={() => toggleRestStopType(option.id)}
+              type={settings.restStopTypes.includes(option.id) ? 'solid' : 'outline'}
+            />
+          ))}
         </View>
 
+        {/* Section 2: Number of Rest Stops */}
         <Text style={styles.sectionHeading}>Number of Rest Stops</Text>
         <View style={styles.counterContainer}>
-          <Button title="-" onPress={decrementCount} />
-          <Text style={styles.countText}>{restStopCounts}</Text>
-          <Button title="+" onPress={incrementCount} />
+          <Button
+            disabled={settings.restStopCount === 1}
+            title="-"
+            onPress={() => changeRestStopCount(-1)}
+          />
+          <Text style={styles.countText}>{settings.restStopCount}</Text>
+          <Button
+            disabled={settings.restStopCount === 10}
+            title="+"
+            onPress={() => changeRestStopCount(1)}
+          />
         </View>
 
-        {/* <Text style={styles.sectionHeading}>Alert Message & Sound</Text>
-      <View style={styles.toggleButtonContainer}>
-        <Button
-          title="Standard"
-          type={alertMsgAndSounds === 'standard' ? 'solid' : 'outline'}
-          onPress={() => setAlertMsgAndSounds('standard')}
-        />
-        <Button
-          title="Comical"
-          type={alertMsgAndSounds === 'comical' ? 'solid' : 'outline'}
-          onPress={() => setAlertMsgAndSounds('comical')}
-        />
-      </View> */}
+        {/* Section 3: Radius of Rest Stops */}
+        <Text style={styles.sectionHeading}>Radius of Rest Stops</Text>
+        <View style={styles.counterContainer}>
+          <Button
+            title="-"
+            disabled={settings.restStopRadius === 1}
+            onPress={() =>
+              setSettings(prev => ({...prev, restStopRadius: Math.max(1, prev.restStopRadius - 1)}))
+            }
+          />
+          <Text style={styles.countText}>{settings.restStopRadius} miles</Text>
+          <Button
+            title="+"
+            disabled={settings.restStopRadius === 10}
+            onPress={() =>
+              setSettings(prev => ({
+                ...prev,
+                restStopRadius: Math.min(10, prev.restStopRadius + 1),
+              }))
+            }
+          />
+        </View>
 
+        {/* Section 4: Alert Sound Selection */}
+        <Text style={styles.sectionHeading}>Select Alert Sound</Text>
+        {alertSoundOptions.map(option => (
+          <Button
+            key={option.id}
+            title={option.label}
+            type={settings.alertMsgAndSound === option.id ? 'solid' : 'outline'}
+            onPress={() => selectAlertSound(option.id)}
+          />
+        ))}
+
+        {/* Buttons */}
         <View style={styles.buttonRow}>
           <FullWidthButton title="Save" type="primary" onPress={handleSave} />
-          <FullWidthButton title="Cancel" type="secondary" onPress={handleCancel} />
+          <FullWidthButton title="Cancel" type="secondary" onPress={handleBack} />
         </View>
-
-        {/* <Button
-        buttonStyle={styles.menuButton}
-        containerStyle={styles.menuButtonContainer}
-        onPress={() => router.push('/history')}>
-        <Icon name="history" style={styles.icon} />
-        <View style={styles.menuTextContainer}>
-          <Text style={styles.menuText}>Driving History</Text>
-          <Text style={styles.menuSubText}>See how long you've driven</Text>
-        </View>
-        <Icon name="chevron-right" style={styles.icon} />
-      </Button>
-
-      <Button
-        buttonStyle={styles.menuButton}
-        containerStyle={styles.menuButtonContainer}
-        onPress={() => router.push('/')}
-        disabled>
-        <Icon name="watch" style={styles.icon} />
-        <View style={styles.menuTextContainer}>
-          <Text style={styles.menuText}>Connect Smartwatch</Text>
-          <Text style={styles.menuSubText}>For better detection & reminders</Text>
-        </View>
-        <Icon name="chevron-right" style={styles.icon} />
-      </Button>
-      <StopTester /> */}
       </View>
-    </>
+    </ScrollView>
   );
-}
-
+};
 const styles = StyleSheet.create({
+  buttonsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+  },
   container: {
     flex: 1,
     flexDirection: 'column',
@@ -212,11 +263,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     gap: 20,
   },
-  saveButton: {
-    paddingHorizontal: 20,
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  cancelButton: {
-    paddingHorizontal: 20,
+  backIcon: {
+    marginRight: 8,
+  },
+  backText: {
+    fontSize: 20,
+    fontWeight: '600',
   },
   customHeader: {
     height: 56,
@@ -246,3 +302,4 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
+export default SettingsScreen;

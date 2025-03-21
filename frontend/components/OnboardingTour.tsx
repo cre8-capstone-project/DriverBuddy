@@ -17,7 +17,8 @@ import StartDetectionButton from '@/assets/images/StartDetectionButton.png';
 import FullWidthButton from './FullWidthButton';
 import StepsIndicator from './StepsIndicator';
 import TabsIllustration from './TabsIllustration';
-import DetectionIllustration from './DetectionIllustration';
+// import DetectionIllustration from './DetectionIllustration';
+import {FaceDetectingLabel} from '../features/safety-alert/components/FaceDetectingLabel';
 
 const {width, height} = Dimensions.get('window');
 
@@ -54,7 +55,7 @@ const steps: OnboardingStep[] = [
       'Make sure to have detection on before you start your trip!',
     ],
     image: StartDetectionButton as ImageSourcePropType,
-    position: {top: 25},
+    position: {top: 50},
   },
   {
     title: 'Drowsiness Detection',
@@ -62,7 +63,7 @@ const steps: OnboardingStep[] = [
       `You'll know if the detection is on when this indicator is present.`,
       `DriveBuddy will alert you when it notices signs of drowsiness.`,
     ],
-    position: {top: 50},
+    position: {top: 40},
     caretTop: {
       borderLeftWidth: 20,
       borderRightWidth: 20,
@@ -76,7 +77,8 @@ const steps: OnboardingStep[] = [
       position: {
         top: 0,
       },
-      component: DetectionIllustration,
+      component: FaceDetectingLabel,
+      // component: DetectionIllustration,
     },
   },
   {
@@ -89,7 +91,7 @@ const steps: OnboardingStep[] = [
     text: [
       'Check out the drowsiness detection analytics in your Driving History, which is in Settings.',
     ],
-    position: {top: height / 3.5},
+    position: {top: height / 2.5},
     caretBottom: {
       borderLeftWidth: 20,
       borderRightWidth: 20,
@@ -243,9 +245,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 15,
     backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 10,
-    paddingTop: 0,
+    borderRadius: 20,
+    padding: 20,
+    paddingTop: 10,
     shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -254,11 +256,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
+    fontWeight: 500,
     textAlign: 'center',
   },
   text: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'left',
   },
   indicatorContainer: {

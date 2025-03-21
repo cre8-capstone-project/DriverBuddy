@@ -10,6 +10,7 @@ import {
   Pressable,
   Dimensions,
   ImageSourcePropType,
+  TouchableOpacity,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {Timestamp} from 'firebase/firestore';
@@ -29,6 +30,8 @@ import {InvitationCodeType} from '@/types/InvitationCodeType';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 import FullWidthButton from '@/components/FullWidthButton';
 import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
+import {Input} from 'react-native-elements';
+import {LinearGradient} from 'expo-linear-gradient';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -41,6 +44,7 @@ export default function SignUpScreen() {
   const [photoUri, setPhotoUri] = useState<string>('');
   const cameraRef = useRef<Camera>(null);
   const {setShowOnboarding} = useOnboardingTourContext();
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   const handleAuth = async () => {
     try {
@@ -118,6 +122,8 @@ export default function SignUpScreen() {
   };
   return (
     <View style={styles.container}>
+      <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={StyleSheet.absoluteFill} />
+
       {validCode ? (
         <>
           <View style={styles.profileImageContainer}>
@@ -163,32 +169,136 @@ export default function SignUpScreen() {
               resizeMode="contain"
             />
           </View>
-          <TextInput
+          <Input
+            label="Email"
+            labelStyle={{
+              fontSize: 15,
+              fontWeight: '400',
+              color: '#1E3A8A',
+            }}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            onFocus={() => setFocusedInput('email')}
+            onBlur={() => setFocusedInput(null)}
+            containerStyle={{
+              width: '100%',
+              paddingHorizontal: 0,
+            }}
+            inputContainerStyle={{
+              borderWidth: 1,
+              borderColor: '#1E3A8A',
+              borderRadius: 14,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              backgroundColor: focusedInput === 'email' ? '#E6FCFF' : 'white',
+            }}
+            inputStyle={{
+              fontSize: 18,
+              color: '#333',
+            }}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+          {/* <TextInput
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
             style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
+          /> */}
+
+          <Input
+            label="Password"
+            labelStyle={{
+              fontSize: 15,
+              fontWeight: '400',
+              color: '#1E3A8A',
+            }}
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            onFocus={() => setFocusedInput('password')}
+            onBlur={() => setFocusedInput(null)}
+            containerStyle={{
+              width: '100%',
+              paddingHorizontal: 0,
+            }}
+            inputContainerStyle={{
+              borderWidth: 1,
+              borderColor: '#1E3A8A',
+              borderRadius: 14,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              backgroundColor: focusedInput === 'password' ? '#E6FCFF' : 'white',
+            }}
+            inputStyle={{
+              fontSize: 18,
+              color: '#333',
+            }}
           />
-          <TextInput
+          {/* <TextInput
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
+          /> */}
+
+          <Input
+            label="Verification code"
+            labelStyle={{
+              fontSize: 15,
+              fontWeight: '400',
+              color: '#1E3A8A',
+            }}
+            placeholder="Code"
+            value={code}
+            onChangeText={setCode}
+            onFocus={() => setFocusedInput('code')}
+            onBlur={() => setFocusedInput(null)}
+            containerStyle={{
+              width: '100%',
+              paddingHorizontal: 0,
+            }}
+            inputContainerStyle={{
+              borderWidth: 1,
+              borderColor: '#1E3A8A',
+              borderRadius: 14,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              backgroundColor: focusedInput === 'code' ? '#E6FCFF' : 'white',
+            }}
+            inputStyle={{
+              fontSize: 18,
+              color: '#333',
+            }}
           />
-          <TextInput
+          {/* <TextInput
             placeholder="Code"
             value={code}
             onChangeText={setCode}
             autoCapitalize="none"
             keyboardType="email-address"
             style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
-          />
+          /> */}
           <View style={styles.buttonsContainer}>
             <FullWidthButton title="Create an account" type="primary" onPress={validateCode} />
-            <FullWidthButton
+            <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
+              <Text>Have an account? </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  router.replace({
+                    pathname: '/signIn',
+                    params: {showOnboardingSlide: 'false'},
+                  })
+                }>
+                <Text style={{color: 'blue', fontWeight: 'bold'}}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+            {/* <FullWidthButton
               title="Have an account? Sign In"
               type="tertiary"
               onPress={() =>
@@ -197,7 +307,7 @@ export default function SignUpScreen() {
                   params: {showOnboardingSlide: 'false'},
                 })
               }
-            />
+            /> */}
 
             {/* <Button title="Create an account" onPress={validateCode} />
             <Button title="Have an account? Sign In" onPress={() => router.replace('/signIn')} /> */}

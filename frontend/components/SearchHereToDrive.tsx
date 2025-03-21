@@ -41,9 +41,10 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   text: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#000000',
     fontWeight: '500',
+    flexShrink: 1,
   },
 });
 

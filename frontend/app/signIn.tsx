@@ -1,12 +1,14 @@
 import {useEffect, useState} from 'react';
 import {
   View,
+  Text,
   TextInput,
   Alert,
   StyleSheet,
   Image,
   ImageSourcePropType,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {useRouter, useLocalSearchParams} from 'expo-router';
@@ -14,6 +16,8 @@ import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 import FullWidthButton from '@/components/FullWidthButton';
 import {getDriverByEmail} from '@/api/api';
 import Onboarding from '@/components/Onboarding';
+import {Input} from 'react-native-elements';
+import {LinearGradient} from 'expo-linear-gradient';
 
 export default function SignInScreen() {
   const {showOnboardingSlide} = useLocalSearchParams();
@@ -35,6 +39,7 @@ const SignInForm = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   const handleAuth = async () => {
     try {
@@ -51,6 +56,8 @@ const SignInForm = () => {
   };
   return (
     <View style={styles.container}>
+      <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={StyleSheet.absoluteFill} />
+
       {/* Logo Container */}
       <View style={styles.logoContainer}>
         <Image
@@ -59,29 +66,97 @@ const SignInForm = () => {
           resizeMode="contain"
         />
       </View>
-      <TextInput
+      <Input
+        label="Email"
+        labelStyle={{
+          fontSize: 15,
+          fontWeight: '400',
+          color: '#1E3A8A',
+        }}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        onFocus={() => setFocusedInput('email')}
+        onBlur={() => setFocusedInput(null)}
+        containerStyle={{
+          width: '100%',
+          paddingHorizontal: 0,
+        }}
+        inputContainerStyle={{
+          borderWidth: 1,
+          borderColor: '#1E3A8A',
+          borderRadius: 14,
+          paddingHorizontal: 10,
+          paddingVertical: 6,
+          backgroundColor: focusedInput === 'email' ? '#E6FCFF' : 'white',
+        }}
+        inputStyle={{
+          fontSize: 18,
+          color: '#333',
+        }}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      {/* <TextInput
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
         style={styles.input}
+      /> */}
+
+      <Input
+        label="Password"
+        labelStyle={{
+          fontSize: 15,
+          fontWeight: '400',
+          color: '#1E3A8A',
+        }}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        onFocus={() => setFocusedInput('password')}
+        onBlur={() => setFocusedInput(null)}
+        containerStyle={{
+          width: '100%',
+          paddingHorizontal: 0,
+        }}
+        inputContainerStyle={{
+          borderWidth: 1,
+          borderColor: '#1E3A8A',
+          borderRadius: 14,
+          paddingHorizontal: 10,
+          paddingVertical: 6,
+          backgroundColor: focusedInput === 'password' ? '#E6FCFF' : 'white',
+        }}
+        inputStyle={{
+          fontSize: 18,
+          color: '#333',
+        }}
       />
-      <TextInput
+      {/* <TextInput
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         style={styles.input}
-      />
+      /> */}
 
       <View style={styles.buttonsContainer}>
         <FullWidthButton title="Sign In" type="primary" onPress={handleAuth} />
-        <FullWidthButton
+        <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
+          <Text>I do not have an account yet </Text>
+          <TouchableOpacity onPress={() => router.replace('/signUp')}>
+            <Text style={{color: 'blue', fontWeight: 'bold'}}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
+        {/* <FullWidthButton
           title="No account? Sign up"
           type="secondary"
           onPress={() => router.replace('/signUp')}
-        />
+        /> */}
 
         {/* <Button title="Sign In" onPress={handleAuth} />
         <Button title="No account? Sign Up" onPress={() => router.replace('/signUp')} /> */}
@@ -98,7 +173,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: 20,
     alignItems: 'center',
-    backgroundColor: 'white',
   },
   logoContainer: {
     width: width / 3, // 1/3 of the screen width

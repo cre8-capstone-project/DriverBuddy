@@ -23,7 +23,8 @@ export const useFaceDetection = () => {
   const alertSoundRef = useRef<Audio.Sound | null>(null);
   const soundCacheRef = useRef<{[key: string]: Audio.Sound}>({});
   const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
-  const {checkDrowsiness, leftEyeStatus, rightEyeStatus, eyeBlinkRate} = useDrowsinessDetection();
+  const {checkDrowsiness, leftEyeStatus, rightEyeStatus, eyeBlinkRate1, eyeBlinkRate2} =
+    useDrowsinessDetection();
   const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
   const {alertCount, setAlertCount, setAlertStatus} = useFaceDetectionContext();
 
@@ -197,7 +198,8 @@ export const useFaceDetection = () => {
     leftEyeStatus,
     rightEyeStatus,
     pitchAngleStatus,
-    eyeBlinkRate,
+    eyeBlinkRate1,
+    eyeBlinkRate2,
     alertCount,
   };
 };

@@ -37,7 +37,8 @@ const FaceDetection = ({device, viewMode}: Props) => {
     leftEyeStatus,
     rightEyeStatus,
     pitchAngleStatus,
-    eyeBlinkRate,
+    eyeBlinkRate1,
+    eyeBlinkRate2,
   } = useFaceDetection();
 
   return (
@@ -79,7 +80,9 @@ const FaceDetection = ({device, viewMode}: Props) => {
             {'\n'}
             Right Eye={rightEyeStatus ? 'closed' : 'open'}
             {'\n'}
-            Eye Blink Rate: {eyeBlinkRate}/{BLINK_MONITORING_DURATION_WINDOW / 1000}sec
+            Eye Blink Rate1: {eyeBlinkRate1}/{BLINK_MONITORING_DURATION_WINDOW / 1000}sec
+            {'\n'}
+            Eye Blink Rate2: {eyeBlinkRate2}/{BLINK_MONITORING_DURATION_WINDOW / 1000}sec
             {'\n'}
             Face Direction: {pitchAngleStatus}
             {'\n'}

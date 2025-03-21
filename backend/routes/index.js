@@ -21,15 +21,14 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 const driverCollection = db.collection('driver');
-// const historyCollection = db.collection('history');
 const invitationsCollection = db.collection('invitations');
 const companyCollection = db.collection('companies');
 const faceDetectionSessionCollection = db.collection('face_detection_session');
 const adminsCollection = db.collection('admins');
 
 router.use('/drivers', driverRoutes(driverCollection));
-router.use('/invitations', authenticateToken, invitationsRoutes(invitationsCollection, db));
-router.use('/companies', authenticateToken, companyRoutes(companyCollection));
+router.use('/invitations', invitationsRoutes(invitationsCollection, db));
+router.use('/companies', companyRoutes(companyCollection));
 router.use(
   '/face-detection-session',
   authenticateToken,

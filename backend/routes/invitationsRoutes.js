@@ -1,15 +1,7 @@
 /* eslint-disable camelcase */
 import express from 'express';
-/*
-type Invitation = {
-  invitationsId: string;
-  userId: string;
-  startTime: admin.firestore.Timestamp;
-  endTime: admin.firestore.Timestamp;
-  sessionDuration: number;
-  alerts?: admin.firestore.Timestamp[];
-};
-*/
+import authenticateToken from '../authenticateToken';
+
 const invitationsRoutes = invitationsCollection => {
   const router = express.Router();
   router.get('/:code', async (req, res) => {
@@ -29,7 +21,7 @@ const invitationsRoutes = invitationsCollection => {
       res.status(500).json({error: `Failed to update invitation: ${error}`});
     }
   });
-  router.get('/', async (req, res) => {
+  router.get('/', authenticateToken, async (req, res) => {
     try {
       const {company_id} = req.query;
       const querySnapshot = await invitationsCollection.where('company_id', '==', company_id).get();
@@ -53,7 +45,25 @@ const invitationsRoutes = invitationsCollection => {
       res.status(500).json({error: `Failed to update invitation: ${error}`});
     }
   });
-  router.put('/:id', async (req, res) => {
+  router.post('/', authenticateToken, async (req, res) => {
+    try {
+      const {company_id, invitation_code, createdAt, recipient_email, recipient_name, status} =
+        req.body;
+      await invitationsCollection.add({
+        company_id,
+        invitation_code,
+        createdAt,
+        recipient_email,
+        recipient_name,
+        status,
+      });
+      res.status(200).json({message: 'Invitation status added successfully'});
+    } catch (error) {
+      console.error('Error posting invitation:', error);
+      res.status(500).json({error: `Failed to send invitation: ${error}`});
+    }
+  });
+  router.put('/:id', authenticateToken, async (req, res) => {
     try {
       const {company_id, invitation_code, createdAt, recipient_email, recipient_name, status} =
         req.body;
@@ -66,7 +76,7 @@ const invitationsRoutes = invitationsCollection => {
       res.status(500).json({error: `Failed to fetch daily history records: ${error}`});
     }
   });
-  router.delete('/:id', async (req, res) => {
+  router.delete('/:id', authenticateToken, async (req, res) => {
     try {
       await invitationsCollection.delete(req.params.id);
       res.status(200).json({message: 'Invitation deleted successfully'});

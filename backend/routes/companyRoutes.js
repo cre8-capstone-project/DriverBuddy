@@ -1,10 +1,11 @@
 /* eslint-disable camelcase */
 import express from 'express';
+import authenticateToken from '../authenticateToken';
 
 const companyRoutes = companyCollection => {
   const router = express.Router();
 
-  router.post('/', async (req, res) => {
+  router.post('/', authenticateToken, async (req, res) => {
     try {
       const {name} = req.body;
 
@@ -24,7 +25,7 @@ const companyRoutes = companyCollection => {
     }
   });
 
-  router.get('/', async (req, res) => {
+  router.get('/', authenticateToken, async (req, res) => {
     console.log("Getting '/companies'...");
     try {
       const snapshot = await companyCollection.get();
@@ -35,7 +36,7 @@ const companyRoutes = companyCollection => {
     }
   });
 
-  router.get('/:id', async (req, res) => {
+  router.get('/:id', authenticateToken, async (req, res) => {
     try {
       const doc = await companyCollection.doc(req.params.id).get();
       if (!doc.exists) return res.status(404).send({error: 'Company not found'});
@@ -45,7 +46,7 @@ const companyRoutes = companyCollection => {
     }
   });
 
-  router.put('/:id', async (req, res) => {
+  router.put('/:id', authenticateToken, async (req, res) => {
     try {
       const {id} = req.params;
       const {name} = req.body;
@@ -71,7 +72,7 @@ const companyRoutes = companyCollection => {
     }
   });
 
-  router.delete('/:id', async (req, res) => {
+  router.delete('/:id', authenticateToken, async (req, res) => {
     try {
       await companyCollection.doc(req.params.id).delete();
       res.status(200).send({message: 'Company deleted'});

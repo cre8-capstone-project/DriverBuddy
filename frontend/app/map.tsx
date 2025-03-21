@@ -8,6 +8,7 @@ import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {ShowRestStopsDialog} from '@/features/map/components/ShowRestStopsDialog';
 import theme from '@/components/Theme';
 import type {ViewModeType} from '@/types/ViewModeType'; // ADDED OR UPDATED 19 MAR: Import ViewModeType
+import {restStopType, restStopCount, alertMsgAndSound} from '@/features/map/constants/settings'; // ADDED OR UPDATED 19 MAR: Import settings
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -131,7 +132,6 @@ export const Map = forwardRef((props: Props, ref) => {
       setViewMode('mapView');
       setViewModeContext('mapView');
     }
-
   }, [destination, drivingMode, setViewMode, setViewModeContext]);
 
   // Starts the driving process when status is true
@@ -269,11 +269,15 @@ export const Map = forwardRef((props: Props, ref) => {
       return;
     }
     try {
-      // Return gas stations within the set perimeter
+      // Return rest stops with these parameters
       const restStopRadius = 10000;
-      const restStopType = 'gas_station';
+      // const restStopType = 'gas_station';
       const restStopKeyword = '';
-      const restStopResults = 3;
+      // const restStopResults = 3;
+      console.log(`Types of Rest Stops: ${restStopType}`);
+      console.log(`Number of Rest Stops: ${restStopCount}`);
+      console.log(`Alert Message & Sound: ${alertMsgAndSound}`);
+
       const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(
         `${currentLocation.latitude},${currentLocation.longitude}`,
       )}&radius=${restStopRadius}&type=${restStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
@@ -302,7 +306,7 @@ export const Map = forwardRef((props: Props, ref) => {
         // Sort stations by distance and get up to 5 nearest stations
         const nearestStations = allStations
           .sort((a, b) => a.distance - b.distance)
-          .slice(0, restStopResults);
+          .slice(0, restStopCount);
 
         // Set nearest stations
         setRestStops(nearestStations);
@@ -724,7 +728,7 @@ export const Map = forwardRef((props: Props, ref) => {
         <View style={styles.continueDrivingButtonContainer}>
           <TouchableOpacity style={styles.continueDrivingButton} onPress={handleContinueDriving}>
             <Icon name="navigate" type="ionicon" size={20} />
-            <Text style={styles.continueDrivingButtonText}>Re-center</Text>
+            <Text style={styles.continueDrivingButtonText}>Re-Center</Text>
           </TouchableOpacity>
         </View>
       )}

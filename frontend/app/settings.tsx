@@ -79,7 +79,7 @@ export default function SettingsScreen() {
         <Button title="+" onPress={incrementCount} />
       </View>
 
-      <Text style={styles.sectionHeading}>Alert Message & Sound</Text>
+      {/* <Text style={styles.sectionHeading}>Alert Message & Sound</Text>
       <View style={styles.toggleButtonContainer}>
         <Button
           title="Standard"
@@ -91,7 +91,7 @@ export default function SettingsScreen() {
           type={alertMsgAndSounds === 'comical' ? 'solid' : 'outline'}
           onPress={() => setAlertMsgAndSounds('comical')}
         />
-      </View>
+      </View> */}
 
       <View style={styles.buttonRow}>
         <Button title="Save" onPress={handleSave} buttonStyle={styles.saveButton} />

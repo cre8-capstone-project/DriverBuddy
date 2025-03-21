@@ -6,8 +6,9 @@ import type {InvitationCodeType} from '../types/InvitationCodeType';
 import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
 
-//const API_URL = 'http://10.128.242.200:3000';
-const API_URL = 'http://10.0.0.23:3000'; // replace with your own IP
+// const API_URL = 'http://10.128.242.200:3000';
+// const API_URL = 'https://drivebuddy.wmdd4950.com/api/';
+const API_URL = 'http://192.168.1.69:3000'; // replace with your own IP
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,

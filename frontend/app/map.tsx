@@ -693,7 +693,7 @@ export const Map = forwardRef((props: Props, ref) => {
             destination={destination}
             apikey={GOOGLE_MAPS_APIKEY}
             strokeWidth={6}
-            strokeColor={theme.lightColors.primary}
+            strokeColor={theme.lightColors!.primary}
             // UPDATED 07 MAR: Added props
             mode="DRIVING" // Allowed values are DRIVING, BICYCLING, WALKING, and TRANSIT
             resetOnChange={false} // Prevents polyline from blinking when updating
@@ -941,7 +941,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startButton: {
-    backgroundColor: theme.lightColors.primary,
+    backgroundColor: theme.lightColors!.primary,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 50,
@@ -980,7 +980,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: theme.lightColors.grey3,
+    borderBottomColor: theme.lightColors!.grey3,
   },
   destinationCardText: {
     flex: 1,
@@ -1000,7 +1000,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   continueDrivingButton: {
-    backgroundColor: theme.lightColors.white,
+    backgroundColor: theme.lightColors!.white,
     paddingVertical: 16,
     paddingLeft: 20,
     paddingRight: 20,

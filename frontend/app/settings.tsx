@@ -1,10 +1,11 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import {Icon, Button} from '@rneui/themed';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
+import {Icon, Button, Header} from '@rneui/themed';
 import {useRouter} from 'expo-router';
 import StopTester from '@/components/StopTester';
 import {updateMapSettings} from '@/features/map/constants/settings'; // Cocoy's Update: Import updateMapSettings function
 import theme from '@/components/Theme'; // Cocoy's Update: Import theme
+import FullWidthButton from '@/components/FullWidthButton';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -44,42 +45,56 @@ export default function SettingsScreen() {
   };
 
   const handleCancel = () => {
-    router.push('/profile'); // Discard changes and navigate back to profile
+    // router.push('/profile'); // Discard changes and navigate back to profile
+    router.back();
   };
 
+  //
+
   return (
-    <View style={styles.container}>
-      {/* Cocoy's Update: New settings page */}
-      <Text style={styles.sectionHeading}>Type of Rest Stops</Text>
-      <View style={styles.toggleButtonContainer}>
-        <Button
-          title="Gas Stations"
-          // type={restStopTypes.includes('gas_station') ? 'solid' : 'outline'}
-          type={restStopTypes === 'gas_station' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
-          onPress={() => toggleRestStopType('gas_station')}
-        />
-        <Button
-          title="Hotels"
-          // type={restStopTypes.includes('lodging') ? 'solid' : 'outline'}
-          type={restStopTypes === 'lodging' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
-          onPress={() => toggleRestStopType('lodging')}
-        />
-        <Button
-          title="Convenience Stores"
-          // type={restStopTypes.includes('convenience_store') ? 'solid' : 'outline'}
-          type={restStopTypes === 'convenience_store' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
-          onPress={() => toggleRestStopType('convenience_store')}
-        />
+    <>
+      <View style={styles.customHeader}>
+        <Pressable style={styles.backRow} onPress={handleCancel}>
+          <Icon name="arrow-back" size={32} color="#000" style={styles.backIcon} />
+          <Text style={styles.backText}>Back</Text>
+        </Pressable>
       </View>
 
-      <Text style={styles.sectionHeading}>Number of Rest Stops</Text>
-      <View style={styles.counterContainer}>
-        <Button title="-" onPress={decrementCount} />
-        <Text style={styles.countText}>{restStopCounts}</Text>
-        <Button title="+" onPress={incrementCount} />
-      </View>
+      <View style={styles.container}>
+        {/* Cocoy's Update: New settings page */}
+        <Text style={styles.sectionHeading}>Type of Rest Stops</Text>
+        <View style={styles.toggleButtonContainer}>
+          <Button
+            title="Gas Stations"
+            // type={restStopTypes.includes('gas_station') ? 'solid' : 'outline'}
+            type={restStopTypes === 'gas_station' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
+            buttonStyle={styles.toggleButtons}
+            onPress={() => toggleRestStopType('gas_station')}
+          />
+          <Button
+            title="Hotels"
+            // type={restStopTypes.includes('lodging') ? 'solid' : 'outline'}
+            type={restStopTypes === 'lodging' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
+            buttonStyle={styles.toggleButtons}
+            onPress={() => toggleRestStopType('lodging')}
+          />
+          <Button
+            title="Convenience Stores"
+            // type={restStopTypes.includes('convenience_store') ? 'solid' : 'outline'}
+            type={restStopTypes === 'convenience_store' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
+            buttonStyle={styles.toggleButtons}
+            onPress={() => toggleRestStopType('convenience_store')}
+          />
+        </View>
 
-      {/* <Text style={styles.sectionHeading}>Alert Message & Sound</Text>
+        <Text style={styles.sectionHeading}>Number of Rest Stops</Text>
+        <View style={styles.counterContainer}>
+          <Button title="-" onPress={decrementCount} />
+          <Text style={styles.countText}>{restStopCounts}</Text>
+          <Button title="+" onPress={incrementCount} />
+        </View>
+
+        {/* <Text style={styles.sectionHeading}>Alert Message & Sound</Text>
       <View style={styles.toggleButtonContainer}>
         <Button
           title="Standard"
@@ -93,12 +108,12 @@ export default function SettingsScreen() {
         />
       </View> */}
 
-      <View style={styles.buttonRow}>
-        <Button title="Save" onPress={handleSave} buttonStyle={styles.saveButton} />
-        <Button title="Cancel" onPress={handleCancel} buttonStyle={styles.cancelButton} />
-      </View>
+        <View style={styles.buttonRow}>
+          <FullWidthButton title="Save" type="primary" onPress={handleSave} />
+          <FullWidthButton title="Cancel" type="secondary" onPress={handleCancel} />
+        </View>
 
-      {/* <Button
+        {/* <Button
         buttonStyle={styles.menuButton}
         containerStyle={styles.menuButtonContainer}
         onPress={() => router.push('/history')}>
@@ -123,7 +138,8 @@ export default function SettingsScreen() {
         <Icon name="chevron-right" style={styles.icon} />
       </Button>
       <StopTester /> */}
-    </View>
+      </View>
+    </>
   );
 }
 
@@ -174,7 +190,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   toggleButtonContainer: {
-    marginBottom: 10,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  toggleButtons: {
+    width: 240,
   },
   counterContainer: {
     flexDirection: 'row',
@@ -187,14 +208,33 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-around',
-    marginBottom: 30,
+    gap: 20,
   },
   saveButton: {
     paddingHorizontal: 20,
   },
   cancelButton: {
     paddingHorizontal: 20,
+  },
+  customHeader: {
+    height: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    backgroundColor: theme.lightColors!.white,
+    zIndex: 10,
+  },
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backIcon: {
+    marginRight: 8,
+  },
+  backText: {
+    fontSize: 20,
+    fontWeight: '600',
   },
 });

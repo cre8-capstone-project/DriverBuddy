@@ -11,17 +11,19 @@ export default function SettingsScreen() {
 
   // Cocoy's Update:
   // State for settings
-  const [restStopTypes, setRestStopTypes] = useState<string[]>(['gas_station']);
+  // const [restStopTypes, setRestStopTypes] = useState<string[]>(['gas_station']);
+  const [restStopTypes, setRestStopTypes] = useState<string>('gas_station'); // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
   const [restStopCounts, setRestStopCounts] = useState<number>(3);
   const [alertMsgAndSounds, setAlertMsgAndSounds] = useState<string>('standard');
 
   // Rest stop types
   const toggleRestStopType = (type: string) => {
-    if (restStopTypes.includes(type)) {
-      setRestStopTypes(restStopTypes.filter(t => t !== type));
-    } else {
-      setRestStopTypes([...restStopTypes, type]);
-    }
+    // if (restStopTypes.includes(type)) {
+    //   setRestStopTypes(restStopTypes.filter(t => t !== type));
+    // } else {
+    //   setRestStopTypes([...restStopTypes, type]);
+    // }
+    setRestStopTypes(type); // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
   };
 
   // Increment and decrement buttons
@@ -35,7 +37,8 @@ export default function SettingsScreen() {
   // Save and Cancel
   const handleSave = () => {
     // Build comma separated string from the selected types
-    const typesString = restStopTypes.join(',');
+    // const typesString = restStopTypes.join(',');
+    const typesString = restStopTypes; // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
     updateMapSettings(typesString, restStopCounts, alertMsgAndSounds);
     router.push('/profile'); // Navigate back to profile
   };
@@ -51,17 +54,20 @@ export default function SettingsScreen() {
       <View style={styles.toggleButtonContainer}>
         <Button
           title="Gas Stations"
-          type={restStopTypes.includes('gas_station') ? 'solid' : 'outline'}
+          // type={restStopTypes.includes('gas_station') ? 'solid' : 'outline'}
+          type={restStopTypes === 'gas_station' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
           onPress={() => toggleRestStopType('gas_station')}
         />
         <Button
-          title="Hotels & Lodging"
-          type={restStopTypes.includes('lodging') ? 'solid' : 'outline'}
+          title="Hotels"
+          // type={restStopTypes.includes('lodging') ? 'solid' : 'outline'}
+          type={restStopTypes === 'lodging' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
           onPress={() => toggleRestStopType('lodging')}
         />
         <Button
           title="Convenience Stores"
-          type={restStopTypes.includes('convenience_store') ? 'solid' : 'outline'}
+          // type={restStopTypes.includes('convenience_store') ? 'solid' : 'outline'}
+          type={restStopTypes === 'convenience_store' ? 'solid' : 'outline'} // ADDED OR UPDATED 20 MAR: Select only 1 rest stop type (api limitation)
           onPress={() => toggleRestStopType('convenience_store')}
         />
       </View>

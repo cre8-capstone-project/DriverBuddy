@@ -13,18 +13,11 @@ import OnboardingTour from '@/components/OnboardingTour';
 import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
 import {LinearGradient} from 'expo-linear-gradient';
 import HomeBackground from '@/assets/images/HomeBackground.png';
-import {getSettings} from '@/services/SettingsService';
 
 export default function HomeScreen() {
   const [dialogStatus, setDialogStatus] = useState(false);
   const {showOnboarding, setShowOnboarding} = useOnboardingTourContext();
-  useEffect(() => {
-    const loadData = async () => {
-      const currentSettings = await getSettings();
-      console.log(currentSettings);
-    };
-    loadData();
-  }, []);
+
   const toggleStartDialog = () => {
     setDialogStatus(!dialogStatus);
   };

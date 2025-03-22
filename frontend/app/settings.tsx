@@ -83,8 +83,8 @@ const SettingsScreen = () => {
       const toDelete = currentTypes.filter(id => !settings.restStopTypes.includes(id));
 
       await Promise.all(toAdd.map(id => addRestStopType(currentRestStops?.id!, id)));
-      // await Promise.all(toDelete.map(id => deleteRestStopType(id)));
-      await Promise.all(toDelete.map(id => deleteRestStopType(currentRestStops?.id!, id)));
+      await Promise.all(toDelete.map(id => deleteRestStopType(id)));
+      //await Promise.all(toDelete.map(id => deleteRestStopType(currentRestStops?.id!, id)));
 
       // ADDED OR UPDATED 21 MAR: Update module settings so map.tsx gets the new values.
       const newPersistedSettings = await getSettings();
@@ -96,7 +96,7 @@ const SettingsScreen = () => {
         updateMapSettings(
           newPersistedSettings.restStopTypes[0].toString(),
           newPersistedSettings.restStopCount,
-          newPersistedSettings.alertMsgAndSound.toString()
+          newPersistedSettings.alertMsgAndSound.toString(),
         );
       }
 
@@ -144,8 +144,8 @@ const SettingsScreen = () => {
               key={option.id}
               title={option.label}
               onPress={() => toggleRestStopType(option.id)}
-              // type={settings.restStopTypes.includes(option.id) ? 'solid' : 'outline'}
-              type={settings.restStopTypes[0] === option.id ? 'solid' : 'outline'}
+              type={settings.restStopTypes.includes(option.id) ? 'solid' : 'outline'}
+              //type={settings.restStopTypes[0] === option.id ? 'solid' : 'outline'}
             />
           ))}
         </View>

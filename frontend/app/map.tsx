@@ -8,12 +8,7 @@ import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {ShowRestStopsDialog} from '@/features/map/components/ShowRestStopsDialog';
 import theme from '@/components/Theme';
 import type {ViewModeType} from '@/types/ViewModeType'; // ADDED OR UPDATED 19 MAR: Import ViewModeType
-import {
-  restStopType,
-  restStopCount,
-  alertMsgAndSound,
-  updateMapSettings,
-} from '@/features/map/constants/settings'; // ADDED OR UPDATED 19 MAR: Import settings
+import {mapRestStopType, mapSoundAlertType} from '@/features/map/constants/settings'; // ADDED OR UPDATED 19 MAR: Import settings
 import {getSettings} from '@/services/SettingsService';
 
 // Get API key from .env
@@ -78,6 +73,10 @@ export const Map = forwardRef((props: Props, ref) => {
   const [restStops, setRestStops] = useState<{latitude: number; longitude: number; name: string}[]>(
     [],
   );
+  const [restStopType, setRestStopType] = useState(['gas_station']);
+  const [restStopCount, setRestStopCount] = useState(3);
+  const [alertMsgAndSound, setAlertMsgAndSound] = useState('standard');
+
   // Extracting properties from props related to drive status
   const {
     setDriveDestinationStatus,
@@ -105,17 +104,19 @@ export const Map = forwardRef((props: Props, ref) => {
   const [prevAlertCount, setPrevAlertCount] = useState(alertCount);
 
   // ADDED OR UPDATED 21 MAR: Load persisted settings on mount
-  useEffect(() => {
-    async function loadPersistedSettings() {
-      const persisted = await getSettings();
-      if (persisted && persisted.restStopTypes && persisted.restStopTypes.length > 0) {
-        updateMapSettings(
-          persisted.restStopTypes[0].toString(),
-          persisted.restStopCount,
-          persisted.alertMsgAndSound.toString()
-        );
-      }
+  async function loadPersistedSettings() {
+    const persisted = await getSettings();
+    if (persisted && persisted.restStopTypes && persisted.restStopTypes.length > 0) {
+      setRestStopType(mapRestStopType(persisted.restStopTypes));
+      setRestStopCount(persisted.restStopCount);
+      setAlertMsgAndSound(mapSoundAlertType(persisted.alertMsgAndSound));
+      console.log('persisted settings:');
+      console.log(mapRestStopType(persisted.restStopTypes));
+      console.log(persisted.restStopCount);
+      console.log(mapSoundAlertType(persisted.alertMsgAndSound));
     }
+  }
+  useEffect(() => {
     loadPersistedSettings();
   }, []);
 
@@ -291,12 +292,13 @@ export const Map = forwardRef((props: Props, ref) => {
       return;
     }
     try {
+      await loadPersistedSettings();
       // Return rest stops with these parameters
       const restStopRadius = 10000;
       // const restStopType = 'gas_station';
       const restStopKeyword = '';
       // const restStopResults = 3;
-
+      /*
       // ADDED OR UPDATED 19 MAR: Mapping IDs to API type strings
       const restStopTypeMap: {[key: number]: string} = {
         1: 'gas_station',
@@ -313,10 +315,11 @@ export const Map = forwardRef((props: Props, ref) => {
 
       const mappedRestStopType = restStopTypeMap[numericRestStopType] || restStopType;
       const mappedAlertSound = alertSoundMap[numericAlertSound] || alertMsgAndSound;
+      */
 
-      console.log(`Type of Rest Stop: ${mappedRestStopType}`);
+      console.log(`Type of Rest Stop: ${restStopType}`);
       console.log(`Number of Rest Stops: ${restStopCount}`);
-      console.log(`Alert Message & Sound: ${mappedAlertSound}`);
+      console.log(`Alert Message & Sound: ${alertMsgAndSound}`);
 
       // console.log(`Types of Rest Stops: ${restStopType}`);
       // console.log(`Number of Rest Stops: ${restStopCount}`);
@@ -324,7 +327,7 @@ export const Map = forwardRef((props: Props, ref) => {
 
       const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(
         `${currentLocation.latitude},${currentLocation.longitude}`,
-      )}&radius=${restStopRadius}&type=${mappedRestStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
+      )}&radius=${restStopRadius}&type=${restStopType[0]}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
       const response = await fetch(url);
       const data = await response.json();
       if (data.status === 'OK' && data.results && data.results.length > 0) {

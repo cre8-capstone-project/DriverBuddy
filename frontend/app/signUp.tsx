@@ -2,8 +2,6 @@ import {useState, useRef} from 'react';
 import {
   View,
   Text,
-  TextInput,
-  Button,
   Alert,
   StyleSheet,
   Image,
@@ -32,7 +30,7 @@ import FullWidthButton from '@/components/FullWidthButton';
 import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
 import {Input} from 'react-native-elements';
 import {LinearGradient} from 'expo-linear-gradient';
-import {ensureDefaultSettings} from '@/utils/utils.ts';
+import {ensureDefaultSettings} from '@/utils/utils';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -64,9 +62,11 @@ export default function SignUpScreen() {
         picture_url: downloadURL ? downloadURL : '',
         company_id: invitation?.company_id,
       };
+      console.log(newDriverObj);
       await createDriver(newDriverObj);
       if (invitation) {
         invitation.status = 'accepted';
+        invitation.acceptedAt = Timestamp.fromDate(new Date());
         await updateInvitationStatus(invitation);
       }
     } catch (e) {
@@ -82,7 +82,6 @@ export default function SignUpScreen() {
         setInvitation(response);
         setValidCode(true);
       }
-      // setValidCode(true); //REMOVE THIS AND UNCOMMENT ABOVE!!!!!!!
     } catch (e) {
       console.error(e);
     }

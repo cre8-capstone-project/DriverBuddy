@@ -159,7 +159,32 @@ const createDriver = async (driverObject: Driver): Promise<Driver | undefined> =
     const response = await axiosClient.post<Driver>('/drivers', driverObject);
     return response.data;
   } catch (error) {
-    console.error(error);
+    if (axios.isAxiosError(error)) {
+      // Handle Axios-specific errors
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        console.error('Error response:', error.response.data);
+
+        // You can handle specific status codes if needed
+        if (error.response.status === 404) {
+          console.error('Driver not found');
+        }
+
+        throw new Error(error.response.data.error || 'Error retrieving driver');
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+        throw new Error('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request
+        console.error('Request setup error:', error.message);
+        throw new Error(`Request failed: ${error.message}`);
+      }
+    } else {
+      // Handle non-Axios errors
+      console.error('Unexpected error:', error);
+      throw new Error('An unexpected error occurred');
+    }
   }
 };
 

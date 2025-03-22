@@ -17,6 +17,7 @@ import Welcome1 from '@/assets/images/Welcome1.png';
 import Welcome2 from '@/assets/images/Welcome2.png';
 import LogoHorizontal from '@/assets/images/drivebuddy-logo-name-horizontal.png';
 import LogoVertical from '@/assets/images/drivebuddy-logo-name.png';
+import {LinearGradient} from 'expo-linear-gradient';
 interface OnboardingProps {
   callback?: (state: boolean) => void;
 }
@@ -73,9 +74,6 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
                 </Text>
               </View>
             </ImageBackground>
-            {/* <Text style={styles.subtitle}>
-              Discover amazing features that will change your life
-            </Text> */}
           </Animated.View>
         );
       case 2:
@@ -98,10 +96,6 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
                 <Text style={styles.title}>GPS Navigator and Rest Stop Suggestion</Text>
               </View>
             </ImageBackground>
-
-            {/* <Text style={styles.subtitle}>
-              Simple to use yet powerful enough for all your needs
-            </Text> */}
           </Animated.View>
         );
       case 3:
@@ -111,6 +105,8 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             exiting={FadeOut.duration(300)}
             style={styles.finalSlide}
             key="slide3">
+            <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={StyleSheet.absoluteFill} />
+
             <Image
               source={LogoVertical as ImageSourcePropType}
               style={styles.finalLogo}
@@ -124,18 +120,12 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
                 type="primary"
                 onPress={handleCreateAccount}
               />
-              {/* <TouchableOpacity style={styles.primaryButton} onPress={handleCreateAccount}>
-                <Text style={styles.primaryButtonText}>Create Account</Text>
-              </TouchableOpacity> */}
               <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
                 <Text>Already have an account? </Text>
                 <TouchableOpacity onPress={handleSignIn}>
                   <Text style={{color: 'blue', fontWeight: 'bold'}}>Log In</Text>
                 </TouchableOpacity>
               </View>
-              {/* <TouchableOpacity style={styles.secondaryButton} onPress={handleSignIn}>
-                <Text style={styles.secondaryButtonText}>Sign In</Text>
-              </TouchableOpacity> */}
             </View>
           </Animated.View>
         );
@@ -144,35 +134,37 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
     }
   };
 
-  return (
+  return onboardingStep === 3 ? (
+    <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={styles.container}>
+      {renderStep()}
+      <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
+    </LinearGradient>
+  ) : (
     <View style={styles.container}>
       {renderStep()}
-
       <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
-
-      {/* Navigation buttons */}
-      {onboardingStep < 3 ? (
-        <View style={styles.navigationContainer}>
-          <FullWidthButton title="Next" type="primary" onPress={handleNext} />
-
-          {/* <TouchableOpacity style={styles.navButton} onPress={handleNext}>
-            <Text style={styles.navButtonText}>Next</Text>
-          </TouchableOpacity> */}
-
-          <FullWidthButton title="Skip" type="tertiary" onPress={() => setOnboardingStep(3)} />
-
-          {/* <TouchableOpacity style={styles.skipButton} onPress={() => setOnboardingStep(3)}>
-            <Text style={styles.skipButtonText}>Skip</Text>
-          </TouchableOpacity> */}
-          {/* {onboardingStep > 1 && (
-            <TouchableOpacity style={styles.navButton} onPress={handleBack}>
-              <Text style={styles.navButtonText}>Back</Text>
-            </TouchableOpacity>
-          )} */}
-        </View>
-      ) : null}
+      <View style={styles.navigationContainer}>
+        <FullWidthButton title="Next" type="primary" onPress={handleNext} />
+        <FullWidthButton title="Skip" type="tertiary" onPress={() => setOnboardingStep(3)} />
+      </View>
     </View>
   );
+
+  // return (
+  //   <View style={styles.container}>
+  //     {renderStep()}
+
+  //     <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
+
+  //     {/* Navigation buttons */}
+  //     {onboardingStep < 3 ? (
+  //       <View style={styles.navigationContainer}>
+  //         <FullWidthButton title="Next" type="primary" onPress={handleNext} />
+  //         <FullWidthButton title="Skip" type="tertiary" onPress={() => setOnboardingStep(3)} />
+  //       </View>
+  //     ) : null}
+  //   </View>
+  // );
 };
 
 const styles = StyleSheet.create({

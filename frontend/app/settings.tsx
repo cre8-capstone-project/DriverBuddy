@@ -10,6 +10,7 @@ import {Icon, Button} from '@rneui/themed';
 import theme from '@/components/Theme';
 import FullWidthButton from '@/components/FullWidthButton';
 import {useRouter} from 'expo-router';
+import {updateMapSettings} from '@/features/map/constants/settings';
 
 const restStopOptions = [
   {id: 1, label: 'Gas Stations'},
@@ -46,12 +47,13 @@ const SettingsScreen = () => {
   };
 
   const toggleRestStopType = (typeId: number) => {
-    setSettings(prev => {
-      const updatedTypes = prev.restStopTypes.includes(typeId)
-        ? prev.restStopTypes.filter(id => id !== typeId)
-        : [...prev.restStopTypes, typeId];
-      return {...prev, restStopTypes: updatedTypes};
-    });
+    // setSettings(prev => {
+    //   const updatedTypes = prev.restStopTypes.includes(typeId)
+    //     ? prev.restStopTypes.filter(id => id !== typeId)
+    //     : [...prev.restStopTypes, typeId];
+    //   return {...prev, restStopTypes: updatedTypes};
+    // });
+    setSettings(prev => ({...prev, restStopTypes: [typeId]})); // Allow only 1 type to be selected
   };
 
   const changeRestStopCount = (change: number) => {
@@ -81,7 +83,22 @@ const SettingsScreen = () => {
       const toDelete = currentTypes.filter(id => !settings.restStopTypes.includes(id));
 
       await Promise.all(toAdd.map(id => addRestStopType(currentRestStops?.id!, id)));
-      await Promise.all(toDelete.map(id => deleteRestStopType(id)));
+      // await Promise.all(toDelete.map(id => deleteRestStopType(id)));
+      await Promise.all(toDelete.map(id => deleteRestStopType(currentRestStops?.id!, id)));
+
+      // ADDED OR UPDATED 21 MAR: Update module settings so map.tsx gets the new values.
+      const newPersistedSettings = await getSettings();
+      if (
+        newPersistedSettings &&
+        newPersistedSettings.restStopTypes &&
+        newPersistedSettings.restStopTypes.length > 0
+      ) {
+        updateMapSettings(
+          newPersistedSettings.restStopTypes[0].toString(),
+          newPersistedSettings.restStopCount,
+          newPersistedSettings.alertMsgAndSound.toString()
+        );
+      }
 
       Alert.alert('Success', 'Settings updated successfully');
       setInitialSettings(settings);
@@ -104,9 +121,11 @@ const SettingsScreen = () => {
     <ScrollView contentContainerStyle={{flexGrow: 1}}>
       <View style={styles.customHeader}>
         <Pressable style={styles.backRow} onPress={handleBack}>
-          <Icon name="arrow-back" size={32} color="#000" style={styles.backIcon} />
-          <Text style={styles.backText}>Back</Text>
+          <Icon name="arrow-back" size={32} color="#000" />
         </Pressable>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Settings</Text>
+        </View>
       </View>
       <View style={styles.container}>
         {/* Section 1: Type of Rest Stops */}
@@ -125,7 +144,8 @@ const SettingsScreen = () => {
               key={option.id}
               title={option.label}
               onPress={() => toggleRestStopType(option.id)}
-              type={settings.restStopTypes.includes(option.id) ? 'solid' : 'outline'}
+              // type={settings.restStopTypes.includes(option.id) ? 'solid' : 'outline'}
+              type={settings.restStopTypes[0] === option.id ? 'solid' : 'outline'}
             />
           ))}
         </View>
@@ -147,7 +167,7 @@ const SettingsScreen = () => {
         </View>
 
         {/* Section 3: Radius of Rest Stops */}
-        <Text style={styles.sectionHeading}>Radius of Rest Stops</Text>
+        {/* <Text style={styles.sectionHeading}>Radius of Rest Stops</Text>
         <View style={styles.counterContainer}>
           <Button
             title="-"
@@ -167,10 +187,10 @@ const SettingsScreen = () => {
               }))
             }
           />
-        </View>
+        </View> */}
 
         {/* Section 4: Alert Sound Selection */}
-        <Text style={styles.sectionHeading}>Select Alert Sound</Text>
+        {/* <Text style={styles.sectionHeading}>Select Alert Sound</Text>
         {alertSoundOptions.map(option => (
           <Button
             key={option.id}
@@ -178,7 +198,7 @@ const SettingsScreen = () => {
             type={settings.alertMsgAndSound === option.id ? 'solid' : 'outline'}
             onPress={() => selectAlertSound(option.id)}
           />
-        ))}
+        ))} */}
 
         {/* Buttons */}
         <View style={styles.buttonRow}>
@@ -263,16 +283,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     gap: 20,
   },
-  backRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  saveButton: {
+    paddingHorizontal: 20,
   },
-  backIcon: {
-    marginRight: 8,
-  },
-  backText: {
-    fontSize: 20,
-    fontWeight: '600',
+  cancelButton: {
+    paddingHorizontal: 20,
   },
   customHeader: {
     height: 56,

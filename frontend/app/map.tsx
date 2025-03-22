@@ -8,7 +8,13 @@ import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {ShowRestStopsDialog} from '@/features/map/components/ShowRestStopsDialog';
 import theme from '@/components/Theme';
 import type {ViewModeType} from '@/types/ViewModeType'; // ADDED OR UPDATED 19 MAR: Import ViewModeType
-import {restStopType, restStopCount, alertMsgAndSound} from '@/features/map/constants/settings'; // ADDED OR UPDATED 19 MAR: Import settings
+import {
+  restStopType,
+  restStopCount,
+  alertMsgAndSound,
+  updateMapSettings,
+} from '@/features/map/constants/settings'; // ADDED OR UPDATED 19 MAR: Import settings
+import {getSettings} from '@/services/SettingsService';
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -97,6 +103,22 @@ export const Map = forwardRef((props: Props, ref) => {
   const {alertCount, resetAlertCount} = useFaceDetectionContext();
   // ADDED OR UPDATED 16 MAR: State to track the previous alertCount when the modal was closed
   const [prevAlertCount, setPrevAlertCount] = useState(alertCount);
+
+  // ADDED OR UPDATED 21 MAR: Load persisted settings on mount
+  useEffect(() => {
+    async function loadPersistedSettings() {
+      const persisted = await getSettings();
+      if (persisted && persisted.restStopTypes && persisted.restStopTypes.length > 0) {
+        updateMapSettings(
+          persisted.restStopTypes[0].toString(),
+          persisted.restStopCount,
+          persisted.alertMsgAndSound.toString()
+        );
+      }
+    }
+    loadPersistedSettings();
+  }, []);
+
   // ADDED OR UPDATED 16 MAR: Update the cycle count, only increment if disableDrivingWatchPosition is false
   useEffect(() => {
     if (!showRestStopsModal && drivingMode && !disableDrivingWatchPosition) {
@@ -274,16 +296,47 @@ export const Map = forwardRef((props: Props, ref) => {
       // const restStopType = 'gas_station';
       const restStopKeyword = '';
       // const restStopResults = 3;
-      console.log(`Types of Rest Stops: ${restStopType}`);
+
+      // ADDED OR UPDATED 19 MAR: Mapping IDs to API type strings
+      const restStopTypeMap: {[key: number]: string} = {
+        1: 'gas_station',
+        2: 'lodging',
+        3: 'convenience_store',
+      };
+      const alertSoundMap: {[key: number]: string} = {
+        1: 'Standard',
+        2: 'Comical',
+      };
+
+      const numericRestStopType = parseInt(restStopType, 10);
+      const numericAlertSound = parseInt(alertMsgAndSound, 10);
+
+      const mappedRestStopType = restStopTypeMap[numericRestStopType] || restStopType;
+      const mappedAlertSound = alertSoundMap[numericAlertSound] || alertMsgAndSound;
+
+      console.log(`Type of Rest Stop: ${mappedRestStopType}`);
       console.log(`Number of Rest Stops: ${restStopCount}`);
-      console.log(`Alert Message & Sound: ${alertMsgAndSound}`);
+      console.log(`Alert Message & Sound: ${mappedAlertSound}`);
+
+      // console.log(`Types of Rest Stops: ${restStopType}`);
+      // console.log(`Number of Rest Stops: ${restStopCount}`);
+      // console.log(`Alert Message & Sound: ${alertMsgAndSound}`);
 
       const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(
         `${currentLocation.latitude},${currentLocation.longitude}`,
-      )}&radius=${restStopRadius}&type=${restStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
+      )}&radius=${restStopRadius}&type=${mappedRestStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
       const response = await fetch(url);
       const data = await response.json();
       if (data.status === 'OK' && data.results && data.results.length > 0) {
+        // ADDED OR UPDATED 21 MAR: Filter results to only include open rest stops
+        const openResults = data.results.filter(
+          (result: any) => result.opening_hours && result.opening_hours.open_now,
+        );
+        if (openResults.length === 0) {
+          Alert.alert('No open rest stops found nearby');
+          return;
+        }
+
         // Map and calculate distance to each station
         const allStations = data.results.map((result: any) => {
           const stationLat = result.geometry.location.lat;

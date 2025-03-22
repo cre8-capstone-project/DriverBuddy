@@ -48,16 +48,25 @@ const invitationsRoutes = invitationsCollection => {
   });
   router.post('/', authenticateToken, async (req, res) => {
     try {
-      const {company_id, invitation_code, createdAt, recipient_email, recipient_name, status} =
-        req.body;
-      await invitationsCollection.add({
+      const {
         company_id,
         invitation_code,
         createdAt,
         recipient_email,
         recipient_name,
         status,
-      });
+        acceptedAt,
+      } = req.body;
+      const newInvitation = {};
+      if (company_id !== undefined) newInvitation.company_id = company_id;
+      if (invitation_code !== undefined) newInvitation.invitation_code = invitation_code;
+      if (createdAt !== undefined) newInvitation.createdAt = createdAt;
+      if (recipient_email !== undefined) newInvitation.recipient_email = recipient_email;
+      if (recipient_name !== undefined) newInvitation.recipient_name = recipient_name;
+      if (status !== undefined) newInvitation.status = status;
+      if (acceptedAt !== undefined) newInvitation.acceptedAt = acceptedAt;
+
+      await invitationsCollection.add(newInvitation);
       res.status(200).json({message: 'Invitation status added successfully'});
     } catch (error) {
       console.error('Error posting invitation:', error);
@@ -66,15 +75,29 @@ const invitationsRoutes = invitationsCollection => {
   });
   router.put('/:id', authenticateToken, async (req, res) => {
     try {
-      const {company_id, invitation_code, createdAt, recipient_email, recipient_name, status} =
-        req.body;
-      await invitationsCollection
-        .doc(req.params.id)
-        .update({company_id, invitation_code, createdAt, recipient_email, recipient_name, status});
+      if (!req.params.id) throw new Error(`Invitation id is invalid:${req.params.id}`);
+      const {
+        company_id,
+        invitation_code,
+        createdAt,
+        recipient_email,
+        recipient_name,
+        status,
+        acceptedAt,
+      } = req.body;
+      const updatedInvitation = {};
+      if (company_id !== undefined) updatedInvitation.company_id = company_id;
+      if (invitation_code !== undefined) updatedInvitation.invitation_code = invitation_code;
+      if (createdAt !== undefined) updatedInvitation.createdAt = createdAt;
+      if (recipient_email !== undefined) updatedInvitation.recipient_email = recipient_email;
+      if (recipient_name !== undefined) updatedInvitation.recipient_name = recipient_name;
+      if (status !== undefined) updatedInvitation.status = status;
+      if (acceptedAt !== undefined) updatedInvitation.acceptedAt = acceptedAt;
+      await invitationsCollection.doc(req.params.id).update(updatedInvitation);
       res.status(200).json({message: 'Invitation status updated successfully'});
     } catch (error) {
-      console.error('Error fetching daily data:', error);
-      res.status(500).json({error: `Failed to fetch daily history records: ${error}`});
+      console.error('Error updating invitation:', error);
+      res.status(500).json({error: `Failed to update invitation: ${error}`});
     }
   });
   router.delete('/:id', authenticateToken, async (req, res) => {

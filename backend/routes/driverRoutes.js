@@ -62,8 +62,13 @@ const driverRoutes = driverCollection => {
   });
   router.post('/', authenticateToken, async (req, res) => {
     try {
-      const {id, name, email, user_type, picture_url, company_id} = req.body;
-      const newDriver = {id, name, email, user_type, picture_url, company_id};
+      const {id, name, email, birthday, picture_url, company_id} = req.body;
+      const newDriver = {};
+      if (name !== undefined) newDriver.name = name;
+      if (email !== undefined) newDriver.email = email;
+      if (company_id !== undefined) newDriver.company_id = company_id;
+      if (birthday !== undefined) newDriver.birthday = birthday;
+      if (picture_url !== undefined) newDriver.picture_url = picture_url;
       await driverCollection.doc(id).set(newDriver);
       res.status(201).send({id, ...newDriver});
     } catch (error) {
@@ -85,7 +90,7 @@ const driverRoutes = driverCollection => {
   router.put('/:id', authenticateToken, async (req, res) => {
     try {
       const {id} = req.params;
-      const {name, email, birthday, user_type, company_id, picture_url} = req.body;
+      const {name, email, birthday, company_id, picture_url} = req.body;
 
       // Create a new driver object with the updated fields - only include defined values
       const updatedDriver = {};
@@ -93,7 +98,6 @@ const driverRoutes = driverCollection => {
       // Only add fields that are defined
       if (name !== undefined) updatedDriver.name = name;
       if (email !== undefined) updatedDriver.email = email;
-      if (user_type !== undefined) updatedDriver.user_type = user_type;
       if (company_id !== undefined) updatedDriver.company_id = company_id;
       if (birthday !== undefined) updatedDriver.birthday = birthday;
       if (picture_url !== undefined) updatedDriver.picture_url = picture_url;
@@ -115,7 +119,6 @@ const driverRoutes = driverCollection => {
     }
   });
 
-  // ✅ Delete a driver by ID
   router.delete('/:id', authenticateToken, async (req, res) => {
     try {
       await driverCollection.doc(req.params.id).delete();

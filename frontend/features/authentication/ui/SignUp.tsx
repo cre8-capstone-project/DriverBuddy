@@ -46,13 +46,11 @@ export default function SignUp() {
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       const newDriverObj: Driver = {
         id: userCredential.user.uid,
-        user_type: 'basic',
         name: name ? name : '',
         email: email,
-        phone: '',
-        vehicle_type: '',
         birthday: Timestamp.fromDate(new Date()),
         picture_url: photoUri,
+        company_id: invitation?.company_id,
       };
       await createDriver(newDriverObj);
       if (invitation) {

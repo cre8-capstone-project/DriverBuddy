@@ -6,9 +6,7 @@ import type {InvitationCodeType} from '../types/InvitationCodeType';
 import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
 
-//const API_URL = 'http://10.128.242.200:3000';
-const API_URL = 'http://10.0.0.23:3000'; // replace with your own IP
-//const API_URL = 'https://drivebuddy.wmdd4950.com/api';
+const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL_PRODUCTION;
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,
@@ -161,7 +159,32 @@ const createDriver = async (driverObject: Driver): Promise<Driver | undefined> =
     const response = await axiosClient.post<Driver>('/drivers', driverObject);
     return response.data;
   } catch (error) {
-    console.error(error);
+    if (axios.isAxiosError(error)) {
+      // Handle Axios-specific errors
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        console.error('Error response:', error.response.data);
+
+        // You can handle specific status codes if needed
+        if (error.response.status === 404) {
+          console.error('Driver not found');
+        }
+
+        throw new Error(error.response.data.error || 'Error retrieving driver');
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+        throw new Error('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request
+        console.error('Request setup error:', error.message);
+        throw new Error(`Request failed: ${error.message}`);
+      }
+    } else {
+      // Handle non-Axios errors
+      console.error('Unexpected error:', error);
+      throw new Error('An unexpected error occurred');
+    }
   }
 };
 

@@ -1,7 +1,7 @@
 import {drizzleDb} from '@/db/db';
 import {settings, restStopTypes} from '@/db/schema';
 import type {SettingsType, RestStopsType} from '@/types/SettingsType';
-import {eq} from 'drizzle-orm';
+import {eq, and} from 'drizzle-orm'; // Cocoy's Update: import 'and'
 
 // 🚀 Create or Update Settings
 export const upsertSettings = async (data: Omit<SettingsType, 'id'>) => {
@@ -77,9 +77,15 @@ export const getRestStopTypes = async (settingsId: number): Promise<RestStopsTyp
 };
 
 // 🚀 Delete Rest Stop Type
-export const deleteRestStopType = async (id: number) => {
+// export const deleteRestStopType = async (id: number) => {
+// Cocoy's Update: delete settingsId and stopType instead of id
+export const deleteRestStopType = async (settingsId: number, stopType: number) => {
   try {
-    await drizzleDb.delete(restStopTypes).where(eq(restStopTypes.id, id));
+    // await drizzleDb.delete(restStopTypes).where(eq(restStopTypes.id, id));
+    // Cocoy's Update: delete settingsId and stopType instead of id
+    await drizzleDb
+      .delete(restStopTypes)
+      .where(and(eq(restStopTypes.settingsId, settingsId), eq(restStopTypes.stopType, stopType)));
     return {success: true, message: 'Rest stop type deleted successfully'};
   } catch (error) {
     console.error('Error deleting rest stop type:', error);

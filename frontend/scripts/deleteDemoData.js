@@ -1,8 +1,18 @@
 const axios = require('axios');
 
-const userIdToDelete = 'ZBjov5PGgJNqZjWlqJqkAEaILpJ2'; // Replace with the userId you want to delete
-//tPWXJfeDXkYZkPipb7Rdu96JwN42
-//ZBjov5PGgJNqZjWlqJqkAEaILpJ2
+const userIdToDelete = 'bWXJHteDXkYZkPipb7Rdu34JwG56'; // Replace with the userId you want to delete
+// tPWXJfeDXkYZkPipb7Rdu96JwN42
+// ZBjov5PGgJNqZjWlqJqkAEaILpJ2
+// uKXJHgeDXkYZkPipb7Rdu12JwA24
+// yPWXJteDXkYZkPipb7Rdu34JwB56
+// wPXJHreDXkYZkPipb7Rdu56JwC78
+// zQXJXueDXkYZkPipb7Rdu78JwD90
+// tRWXJseDXkYZkPipb7Rdu90JwE12
+// aLWXJueDXkYZkPipb7Rdu12JwF34
+// bWXJHteDXkYZkPipb7Rdu34JwG56
+// cQXJXreDXkYZkPipb7Rdu56JwH78
+// dQWXJueDXkYZkPipb7Rdu78JwI90
+// eQWXJseDXkYZkPipb7Rdu90JwJ12
 
 const API_URL = `http://localhost:3000/face-detection-session/delete/${userIdToDelete}`;
 

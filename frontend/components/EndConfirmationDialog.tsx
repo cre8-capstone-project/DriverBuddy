@@ -38,7 +38,7 @@ export const EndConfirmationDialog = ({
             primaryColor={driveMode ? '#F44336' : undefined}
             onPrimaryPress={() => {
               setEndDrive(true);
-              navigation.navigate('(tabs)');
+              navigation.replace('(tabs)');
               toggleDialog();
               setIsFaceDetectionActive(false);
             }}

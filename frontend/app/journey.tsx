@@ -23,7 +23,8 @@ const eyeIcon = require('@/assets/images/icon_detecting.png');
 
 export default function HomeScreen() {
   const {alertCount} = useFaceDetectionContext();
-  const {setViewModeContext, alertStatus, setInstructionStatus} = useFaceDetectionContext();
+  const {setViewModeContext, alertStatus, setInstructionStatus, instructionStatus} =
+    useFaceDetectionContext();
   const [viewMode, setViewMode] = useState<ViewModeType>('cameraView');
   const [driveDestinationStatus, setDriveDestinationStatus] = useState(false);
   const [driveModeStatus, setDriveModeStatus] = useState(false);
@@ -35,34 +36,43 @@ export default function HomeScreen() {
   const [mapKey, setMapKey] = useState(0);
   const instructionSoundRef = useRef<Audio.Sound | null>(null);
 
-  const triggerMessage = async (message: any) => {
-    setInstructionStatus(true);
-    if (instructionSoundRef.current) {
-      await instructionSoundRef.current.unloadAsync();
-    }
-    const {sound: instructionMessageInstance} = await Audio.Sound.createAsync(message);
-    instructionSoundRef.current = instructionMessageInstance;
-    await instructionMessageInstance.playAsync();
-
-    await new Promise<void>(resolve => {
-      instructionMessageInstance.setOnPlaybackStatusUpdate(status => {
-        if (status.isLoaded && status.didJustFinish) {
-          resolve();
-        }
-      });
-    });
-    setInstructionStatus(false);
-  };
-
   useEffect(() => {
+    console.log('[DEBUG] Journey component is mounted');
     triggerMessage(INSTRUCTION_MESSAGE[0].voice);
     return () => {
+      console.log('[DEBUG] Journey component is unmounted');
       if (instructionSoundRef.current) {
         instructionSoundRef.current.unloadAsync();
       }
-      console.log('[DEBUG] Journey component is unmounted');
     };
   }, []);
+
+  useEffect(() => {
+    console.log('[DEBUG] Detection Pause:', instructionStatus);
+  }, [instructionStatus]);
+
+  const triggerMessage = async (message: any) => {
+    setInstructionStatus(true);
+    try {
+      if (instructionSoundRef.current) {
+        await instructionSoundRef.current.unloadAsync();
+      }
+      const {sound: instructionMessageInstance} = await Audio.Sound.createAsync(message);
+      instructionSoundRef.current = instructionMessageInstance;
+      await instructionMessageInstance.playAsync();
+      await new Promise<void>(resolve => {
+        instructionMessageInstance.setOnPlaybackStatusUpdate(status => {
+          if (status.isLoaded && status.didJustFinish) {
+            resolve();
+          }
+        });
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setInstructionStatus(false);
+    }
+  };
 
   // Cocoy's Update: Swap map and camera view when destination is selected
   // useEffect(() => {
@@ -145,17 +155,6 @@ export default function HomeScreen() {
         {/* Back Home Button */}
         {!driveModeStatus && !driveDestinationStatus && isFaceDetectionActive && (
           <BackButton onPress={toggleEndDialog} />
-
-          // <Button
-          //   type="clear"
-          //   containerStyle={styles.backButtonContainer}
-          //   buttonStyle={styles.button}
-          //   titleStyle={styles.buttonText}
-          //   iconPosition="top"
-          //   icon={{name: 'west', size: 16, color: 'black'}}
-          //   onPress={() => toggleEndDialog()}>
-          //   {/* <Text style={styles.buttonText}>Back</Text> */}
-          // </Button>
         )}
 
         {/* Destination Clear Button */}
@@ -165,46 +164,16 @@ export default function HomeScreen() {
               mapRef.current?.clearSearch();
             }}
           />
-          // <Button
-          //   type="clear"
-          //   containerStyle={styles.backButtonContainer}
-          //   buttonStyle={styles.button}
-          //   titleStyle={styles.buttonText}
-          //   iconPosition="top"
-          //   icon={{name: 'west', size: 16, color: 'black'}}
-          //   onPress={() => {
-          //     mapRef.current?.clearSearch();
-          //   }}>
-          // {/* <Text style={styles.buttonText}>Back</Text> */}
-          // </Button>
         )}
 
         {/* Turn Off Face Detection Button  */}
         {driveModeStatus && isFaceDetectionActive && (
           <TurnOffDetectionButton onPress={() => setIsFaceDetectionActive(false)} />
-          // <Button
-          //   type="clear"
-          //   containerStyle={styles.buttonContainer}
-          //   buttonStyle={styles.button}
-          //   titleStyle={styles.buttonText}
-          //   onPress={() => setIsFaceDetectionActive(false)}>
-          //   <Icon name="videocam-off" size={28} color="black" />
-          //   <Text style={styles.buttonText}>Turn off{'\n'}detection</Text>
-          // </Button>
         )}
 
         {/* Turn On Detection Button　*/}
         {driveModeStatus && !isFaceDetectionActive && (
           <TurnOnDetectionButton onPress={() => setIsFaceDetectionActive(true)} />
-          // <Button
-          //   type="clear"
-          //   containerStyle={styles.buttonContainer}
-          //   buttonStyle={styles.button}
-          //   titleStyle={styles.buttonText}
-          //   onPress={() => setIsFaceDetectionActive(true)}>
-          //   <Icon name="videocam" size={28} color="black" />
-          //   <Text style={styles.buttonText}>Start{'\n'}detection</Text>
-          // </Button>
         )}
 
         {/* Search Here to Drive Button */}
@@ -213,42 +182,15 @@ export default function HomeScreen() {
             onPress={() => mapRef.current?.openSearch('destination')}
             iconSource={GoogleMapIcon}
           />
-          // <Button
-          //   type="clear"
-          //   containerStyle={styles.buttonContainer}
-          //   buttonStyle={styles.button}
-          //   titleStyle={styles.buttonText}
-          //   onPress={() => mapRef.current?.openSearch('destination')}>
-          //   <Image source={GoogleMapIcon} style={{height: 36, width: 36}} />
-          //   <Text style={styles.buttonText}>Search here to drive</Text>
-          // </Button>
         )}
 
         {/* Start Driving Button */}
         {!driveModeStatus && driveDestinationStatus && isFaceDetectionActive && (
           <StartDrivingButton onPress={() => setStartDriveStatus(true)} />
-          // <Button
-          //   type="clear"
-          //   containerStyle={styles.buttonContainer}
-          //   buttonStyle={styles.button}
-          //   titleStyle={styles.buttonText}
-          //   onPress={() => setStartDriveStatus(true)}>
-          //   <Text style={styles.buttonText}>Start Driving</Text>
-          // </Button>
         )}
 
         {/* End Route Button */}
-        {driveModeStatus && (
-          <EndRouteButton onPress={() => toggleEndDialog()} disabled={false} />
-          // <Button
-          //   type="clear"
-          //   containerStyle={styles.buttonContainer}
-          //   buttonStyle={styles.button}
-          //   titleStyle={styles.buttonText}
-          //   onPress={() => toggleEndDialog()}>
-          //   <Text style={styles.buttonText}>End Route</Text>
-          // </Button>
-        )}
+        {driveModeStatus && <EndRouteButton onPress={() => toggleEndDialog()} disabled={false} />}
 
         {/* Start Face Detection Confirmation Dialog */}
         <StartConfirmationDialog

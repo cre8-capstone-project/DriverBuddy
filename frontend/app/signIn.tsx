@@ -19,6 +19,7 @@ import Onboarding from '@/components/Onboarding';
 import {Input} from 'react-native-elements';
 import {LinearGradient} from 'expo-linear-gradient';
 import {ensureDefaultSettings} from '@/utils/utils';
+import {Icon} from '@rneui/themed';
 
 export default function SignInScreen() {
   const {showOnboardingSlide} = useLocalSearchParams();
@@ -41,6 +42,11 @@ const SignInForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
 
   const handleAuth = async () => {
     try {
@@ -75,7 +81,7 @@ const SignInForm = () => {
           fontWeight: '400',
           color: '#1E3A8A',
         }}
-        placeholder="Email"
+        placeholder="Your email address"
         value={email}
         onChangeText={setEmail}
         onFocus={() => setFocusedInput('email')}
@@ -115,10 +121,10 @@ const SignInForm = () => {
           fontWeight: '400',
           color: '#1E3A8A',
         }}
-        placeholder="Password"
+        placeholder="Your password"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
+        secureTextEntry={!passwordVisible}
         onFocus={() => setFocusedInput('password')}
         onBlur={() => setFocusedInput(null)}
         containerStyle={{
@@ -137,6 +143,16 @@ const SignInForm = () => {
           fontSize: 18,
           color: '#333',
         }}
+        rightIcon={
+          <TouchableOpacity onPress={togglePasswordVisibility}>
+            <Icon
+              name={passwordVisible ? 'eye-off' : 'eye'}
+              type="material-community"
+              color="rgba(30, 58, 138, 0.6)"
+              size={20}
+            />
+          </TouchableOpacity>
+        }
       />
       {/* <TextInput
         placeholder="Password"

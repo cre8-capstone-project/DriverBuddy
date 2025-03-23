@@ -1,5 +1,5 @@
 import React, {useCallback, useRef, useState, useEffect} from 'react';
-import {View, StyleSheet, Text, Image, ImageSourcePropType} from 'react-native';
+import {View, StyleSheet, Text, Image, ImageSourcePropType, AppState} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
@@ -38,9 +38,21 @@ export default function HomeScreen() {
 
   useEffect(() => {
     console.log('[DEBUG] Journey component is mounted');
-    triggerMessage(INSTRUCTION_MESSAGE[0].voice);
+    const timeout = setTimeout(async () => {
+      if (AppState.currentState === 'active') {
+        try {
+          triggerMessage(INSTRUCTION_MESSAGE[0].voice);
+        } catch (e) {
+          console.error('[ERROR] Audio error:', e);
+        }
+      } else {
+        console.warn('[WARN] App is not active, skip sound');
+      }
+    }, 500);
+
     return () => {
       console.log('[DEBUG] Journey component is unmounted');
+      clearTimeout(timeout);
       if (instructionSoundRef.current) {
         instructionSoundRef.current.unloadAsync();
       }

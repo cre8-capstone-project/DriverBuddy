@@ -20,8 +20,6 @@ import {Audio} from 'expo-av';
 export const useFaceDetection = () => {
   const {user} = useAuth();
   const {width, height} = useWindowDimensions();
-  const alertSoundRef = useRef<Audio.Sound | null>(null);
-  const soundCacheRef = useRef<{[key: string]: Audio.Sound}>({});
   const {faceBorderStyle, updateFaceBounds, showFaceBorder, hideFaceBorder} = useFaceBounds();
   const {checkDrowsiness, leftEyeStatus, rightEyeStatus, eyeBlinkRate1, eyeBlinkRate2} =
     useDrowsinessDetection();
@@ -45,39 +43,8 @@ export const useFaceDetection = () => {
 
   useEffect(() => {
     console.log('[DEBUG] useFaceDetection component is mounted');
-    // Load all sounds and cache them
-    const loadSounds = async () => {
-      const sounds = [
-        ...DRAWSINESS_ALERT_MESSAGE.map(msg => msg.sound),
-        ...DRAWSINESS_ALERT_MESSAGE.map(msg => msg.voice),
-        ...DISTRACTED_WARNING_MESSAGE.map(msg => msg.sound),
-        ...DISTRACTED_WARNING_MESSAGE.map(msg => msg.voice),
-      ];
-
-      const soundCache: {[key: string]: Audio.Sound} = {};
-      for (const soundUri of sounds) {
-        const {sound} = await Audio.Sound.createAsync(soundUri);
-        soundCache[soundUri] = sound;
-      }
-      soundCacheRef.current = soundCache;
-      console.log('[DEBUG] All sounds loaded');
-    };
-    loadSounds();
 
     return () => {
-      (async () => {
-        try {
-          for (const sound of Object.values(soundCacheRef.current)) {
-            await sound.unloadAsync();
-          }
-          if (alertSoundRef.current) {
-            await alertSoundRef.current.unloadAsync();
-          }
-          console.log('[DEBUG] All sounds unloaded');
-        } catch (error) {
-          console.error('Error unloading sound:', error);
-        }
-      })();
       console.log('[DEBUG] useFaceDetection component is unmounted');
     };
   }, []);
@@ -171,14 +138,8 @@ export const useFaceDetection = () => {
   };
 
   const playSound = async (soundUri: any) => {
-    const sound = soundCacheRef.current[soundUri];
-    if (sound) {
-      if (alertSoundRef.current) {
-        await alertSoundRef.current.stopAsync();
-      }
-      alertSoundRef.current = sound;
-      await sound.replayAsync();
-
+    try {
+      const {sound} = await Audio.Sound.createAsync(soundUri, {shouldPlay: true});
       await new Promise<void>(resolve => {
         sound.setOnPlaybackStatusUpdate(status => {
           if (status.isLoaded && status.didJustFinish) {
@@ -186,8 +147,10 @@ export const useFaceDetection = () => {
           }
         });
       });
-    } else {
-      console.error('Sound not found in cache:', soundUri);
+      sound.setOnPlaybackStatusUpdate(null);
+      await sound.unloadAsync();
+    } catch (error) {
+      console.error('playSound error:', error);
     }
   };
 

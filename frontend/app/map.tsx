@@ -112,7 +112,7 @@ export const Map = forwardRef((props: Props, ref) => {
         updateMapSettings(
           persisted.restStopTypes[0].toString(),
           persisted.restStopCount,
-          persisted.alertMsgAndSound.toString()
+          persisted.alertMsgAndSound.toString(),
         );
       }
     }
@@ -242,7 +242,7 @@ export const Map = forwardRef((props: Props, ref) => {
     if (coordinate) {
       // UPDATED 04 MAR: If driving mode is active, update and log the location.
       if (drivingMode) {
-        console.log('User location changed'); // Log user location change
+        // console.log('User location changed'); // Log user location change
         setOrigin({
           latitude: coordinate.latitude,
           longitude: coordinate.longitude,
@@ -452,6 +452,10 @@ export const Map = forwardRef((props: Props, ref) => {
     setDisableDrivingWatchPosition(false);
     setCycle(0);
     setPrevAlertCount(alertCount);
+
+    // ADDED OR UPDATED 23 MAR: Re-enable user location updates so route updates
+    console.log('disableDrivingWatchPosition is FALSE');
+    setDisableUserLocationChange(false);
 
     const currentLocation = deviceLocation || origin;
     if (mapRef.current && currentLocation) {
@@ -732,7 +736,7 @@ export const Map = forwardRef((props: Props, ref) => {
         }
         showsUserLocation={true} // Show user location
         showsMyLocationButton={true} // Show user location button
-        showsCompass={true} // Show compass
+        // showsCompass={true} // Show compass
         pitchEnabled={true} // Enable pitch
         rotateEnabled={true} // Enable rotation
         onMapReady={handleMapReady} // Set onMapReady

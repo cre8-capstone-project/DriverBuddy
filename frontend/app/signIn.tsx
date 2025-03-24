@@ -43,6 +43,7 @@ const SignInForm = () => {
   const [password, setPassword] = useState('');
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const isFormValid = email.trim() !== '' && password.trim() !== '';
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -163,7 +164,12 @@ const SignInForm = () => {
       /> */}
 
       <View style={styles.buttonsContainer}>
-        <FullWidthButton title="Sign In" type="primary" onPress={handleAuth} />
+        <FullWidthButton
+          title="Sign In"
+          type="primary"
+          onPress={handleAuth}
+          disabled={!isFormValid}
+        />
         <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
           <Text>I do not have an account yet </Text>
           <TouchableOpacity onPress={() => router.replace('/signUp')}>

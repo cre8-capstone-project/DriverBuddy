@@ -99,6 +99,7 @@ export default function HomeScreen() {
       console.log(`[DEBUG] Journey Screen is focused`);
       setIsFaceDetectionActive(true);
       setMapKey(prev => prev + 1);
+      mapRef.current?.clearSearch(); // Cocoy's Update: Clear search when starting a new journey
     }, []),
   );
 

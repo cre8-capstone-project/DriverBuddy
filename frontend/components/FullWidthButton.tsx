@@ -6,9 +6,15 @@ interface FullWidthButtonProps {
   title: string;
   onPress: () => void;
   type?: 'primary' | 'secondary' | 'tertiary';
+  disabled?: boolean;
 }
 
-const FullWidthButton: React.FC<FullWidthButtonProps> = ({title, onPress, type = 'primary'}) => {
+const FullWidthButton: React.FC<FullWidthButtonProps> = ({
+  title,
+  onPress,
+  type = 'primary',
+  disabled = false,
+}) => {
   const {theme} = useTheme();
   const [isPressed, setIsPressed] = useState(false);
 
@@ -44,8 +50,9 @@ const FullWidthButton: React.FC<FullWidthButtonProps> = ({title, onPress, type =
   return (
     <TouchableOpacity
       onPress={onPress}
+      disabled={disabled}
       activeOpacity={0.8}
-      style={getButtonStyles()}
+      style={[getButtonStyles(), disabled && {backgroundColor: theme.colors.grey3}]}
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}>
       <Text

@@ -32,6 +32,7 @@ import {Input} from 'react-native-elements';
 import {LinearGradient} from 'expo-linear-gradient';
 import {ensureDefaultSettings} from '@/utils/utils';
 import {Icon} from '@rneui/themed';
+import TermAndConditionsDialog from '@/components/TermAndConditionsDialog';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -46,6 +47,10 @@ export default function SignUpScreen() {
   const {setShowOnboarding} = useOnboardingTourContext();
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [termsChecked, setTermsChecked] = useState(false);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
+  const isFormValid =
+    email.trim() !== '' && password.trim() !== '' && code.trim() !== '' && termsChecked;
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -278,6 +283,7 @@ export default function SignUpScreen() {
             containerStyle={{
               width: '100%',
               paddingHorizontal: 0,
+              marginBottom: -20,
             }}
             inputContainerStyle={{
               borderWidth: 1,
@@ -292,6 +298,9 @@ export default function SignUpScreen() {
               color: '#333',
             }}
           />
+          <Text style={{marginBottom: 30, marginLeft: 5, fontSize: 13}}>
+            Please contact your admin to provide this code
+          </Text>
           {/* <TextInput
             placeholder="Code"
             value={code}
@@ -300,8 +309,51 @@ export default function SignUpScreen() {
             keyboardType="email-address"
             style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
           /> */}
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              marginTop: 10,
+              marginBottom: 30,
+            }}>
+            <TouchableOpacity onPress={() => setTermsChecked(!termsChecked)}>
+              <View
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderWidth: 1,
+                  borderColor: '#1E3A8A',
+                  backgroundColor: termsChecked ? '#1E3A8A' : 'white',
+                  borderRadius: 4,
+                  marginRight: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                {termsChecked && <Text style={{color: 'white', fontSize: 14}}>✓</Text>}
+              </View>
+            </TouchableOpacity>
+            <Text style={{flex: 1, color: '#333', fontSize: 13}}>
+              I confirmed that I have thoroughly read and agreed to the terms and conditions
+              outlined in this{' '}
+              <Text style={{color: '#1E3A8A'}} onPress={() => setTermsModalVisible(true)}>
+                User Agreement and Privacy Policy.
+              </Text>
+            </Text>
+          </View>
+
+          <TermAndConditionsDialog
+            dialogVisible={termsModalVisible}
+            toggleDialog={() => setTermsModalVisible(false)}
+          />
+
           <View style={styles.buttonsContainer}>
-            <FullWidthButton title="Create an account" type="primary" onPress={validateCode} />
+            <FullWidthButton
+              title="Create an account"
+              type="primary"
+              onPress={validateCode}
+              disabled={!isFormValid}
+            />
             <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
               <Text>Have an account? </Text>
               <TouchableOpacity

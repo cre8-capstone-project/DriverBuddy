@@ -609,6 +609,9 @@ export const Map = forwardRef((props: Props, ref) => {
     clearSearch: () => {
       setCoordinateInput('');
       setDestination(null);
+
+      // ADDED OR UPDATED 24 MAR: Clear savedDestination when invoking clearSearch
+      savedDestination = null;
     },
   }));
 

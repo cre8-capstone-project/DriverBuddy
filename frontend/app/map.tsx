@@ -122,14 +122,20 @@ export const Map = forwardRef((props: Props, ref) => {
   // ADDED OR UPDATED 16 MAR: Update the cycle count, only increment if disableDrivingWatchPosition is false
   useEffect(() => {
     if (!showRestStopsModal && drivingMode && !disableDrivingWatchPosition) {
-      const delta = alertCount - prevAlertCount;
-      if (delta > 0) {
-        setCycle(prev => {
-          const cycleCount = prev + delta;
-          console.log(`Cycle Count: ${cycleCount}`);
-          return cycleCount;
-        });
+      // ADDED OR UPDATED 24 MAR: If alertCount was reset due to unmounting of alert detection, re-sync prevAlertCount
+      if (alertCount < prevAlertCount) {
+        setCycle(0);
         setPrevAlertCount(alertCount);
+      } else {
+        const delta = alertCount - prevAlertCount;
+        if (delta > 0) {
+          setCycle(prev => {
+            const cycleCount = prev + delta;
+            console.log(`Cycle Count: ${cycleCount}`);
+            return cycleCount;
+          });
+          setPrevAlertCount(alertCount);
+        }
       }
     }
   }, [alertCount, drivingMode, disableDrivingWatchPosition, showRestStopsModal, prevAlertCount]);
@@ -445,7 +451,7 @@ export const Map = forwardRef((props: Props, ref) => {
     console.log('Continue driving pressed');
     // Clear rest stop pins
     setRestStops([]);
-    // ADDED OR UPDATED 16 MAR: Re-enable driving mode, just in case it's disabled (turn this off if buggy)
+    // ADDED OR UPDATED 16 MAR: Re-enable driving mode, just in case it's disabled
     setDrivingMode(true);
     // ADDED OR UPDATED 16 MAR: Turn on driving watch position again so the camera zooms to user's location, and reset counters
     console.log('disableDrivingWatchPosition is FALSE');

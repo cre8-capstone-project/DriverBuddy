@@ -34,28 +34,6 @@ export const StartConfirmationDialog = ({dialogStatus, toggleDialog}: Props) => 
           }}
           onSecondaryPress={toggleDialog}
         />
-
-        {/* <View>
-          <Button
-            title="Start now"
-            type="solid"
-            buttonStyle={styles.buttonStyle}
-            containerStyle={styles.buttonContainer}
-            onPress={() => {
-              const FaceDetectionStatus = true;
-              navigation.navigate('journey', {FaceDetectionStatus});
-              toggleDialog();
-              showSnackBar('The detection has started');
-            }}
-          />
-          <Button
-            title="Cancel"
-            type="outline"
-            buttonStyle={styles.buttonStyle}
-            containerStyle={styles.buttonContainer}
-            onPress={toggleDialog}
-          />
-        </View> */}
       </View>
     </Dialog>
   );

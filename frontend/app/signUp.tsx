@@ -33,6 +33,7 @@ import {LinearGradient} from 'expo-linear-gradient';
 import {ensureDefaultSettings} from '@/utils/utils';
 import {Icon} from '@rneui/themed';
 import TermAndConditionsDialog from '@/components/TermAndConditionsDialog';
+import VerificationErrorDialog from '@/components/VerificationErrorDialog';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -49,6 +50,7 @@ export default function SignUpScreen() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
   const [termsModalVisible, setTermsModalVisible] = useState(false);
+  const [errorDialogVisible, setErrorDialogVisible] = useState(false);
   const isFormValid =
     email.trim() !== '' && password.trim() !== '' && code.trim() !== '' && termsChecked;
 
@@ -92,9 +94,12 @@ export default function SignUpScreen() {
         setName(response.recipient_name);
         setInvitation(response);
         setValidCode(true);
+      } else {
+        setErrorDialogVisible(true);
       }
     } catch (e) {
       console.error(e);
+      setErrorDialogVisible(true);
     }
   };
   const openCamera = async () => {
@@ -211,15 +216,6 @@ export default function SignUpScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
           />
-          {/* <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
-          /> */}
-
           <Input
             label="Password"
             labelStyle={{
@@ -260,14 +256,6 @@ export default function SignUpScreen() {
               </TouchableOpacity>
             }
           />
-          {/* <TextInput
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
-          /> */}
-
           <Input
             label="Verification code"
             labelStyle={{
@@ -275,7 +263,7 @@ export default function SignUpScreen() {
               fontWeight: '400',
               color: '#1E3A8A',
             }}
-            placeholder="Code"
+            placeholder="Verification code"
             value={code}
             onChangeText={setCode}
             onFocus={() => setFocusedInput('code')}
@@ -301,15 +289,6 @@ export default function SignUpScreen() {
           <Text style={{marginBottom: 30, marginLeft: 5, fontSize: 13}}>
             Please contact your admin to provide this code
           </Text>
-          {/* <TextInput
-            placeholder="Code"
-            value={code}
-            onChangeText={setCode}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={{borderBottomWidth: 1, marginBottom: 20, padding: 10}}
-          /> */}
-
           <View
             style={{
               flexDirection: 'row',
@@ -325,18 +304,20 @@ export default function SignUpScreen() {
                   borderWidth: 1,
                   borderColor: '#1E3A8A',
                   backgroundColor: termsChecked ? '#1E3A8A' : 'white',
-                  borderRadius: 4,
+                  borderRadius: 6,
                   marginRight: 8,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}>
-                {termsChecked && <Text style={{color: 'white', fontSize: 14}}>✓</Text>}
+                {termsChecked && <MaterialIcons name="check" size={18} color="white" />}
               </View>
             </TouchableOpacity>
-            <Text style={{flex: 1, color: '#333', fontSize: 13}}>
+            <Text style={{flex: 1, color: '#333', fontSize: 13, lineHeight: 18}}>
               I confirmed that I have thoroughly read and agreed to the terms and conditions
               outlined in this{' '}
-              <Text style={{color: '#1E3A8A'}} onPress={() => setTermsModalVisible(true)}>
+              <Text
+                style={{color: '#1E3A8A', fontWeight: 600}}
+                onPress={() => setTermsModalVisible(true)}>
                 User Agreement and Privacy Policy.
               </Text>
             </Text>
@@ -366,20 +347,11 @@ export default function SignUpScreen() {
                 <Text style={{color: 'blue', fontWeight: 'bold'}}>Sign In</Text>
               </TouchableOpacity>
             </View>
-            {/* <FullWidthButton
-              title="Have an account? Sign In"
-              type="tertiary"
-              onPress={() =>
-                router.replace({
-                  pathname: '/signIn',
-                  params: {showOnboardingSlide: 'false'},
-                })
-              }
-            /> */}
-
-            {/* <Button title="Create an account" onPress={validateCode} />
-            <Button title="Have an account? Sign In" onPress={() => router.replace('/signIn')} /> */}
           </View>
+          <VerificationErrorDialog
+            dialogVisible={errorDialogVisible}
+            toggleDialog={() => setErrorDialogVisible(false)}
+          />
         </View>
       )}
     </View>

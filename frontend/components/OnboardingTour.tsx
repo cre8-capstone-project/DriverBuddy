@@ -17,7 +17,6 @@ import StartDetectionButton from '@/assets/images/StartDetectionButton.png';
 import FullWidthButton from './FullWidthButton';
 import StepsIndicator from './StepsIndicator';
 import TabsIllustration from './TabsIllustration';
-// import DetectionIllustration from './DetectionIllustration';
 import {FaceDetectingLabel} from '../features/safety-alert/components/FaceDetectingLabel';
 
 const {width, height} = Dimensions.get('window');
@@ -91,7 +90,7 @@ const steps: OnboardingStep[] = [
     text: [
       'Check out the drowsiness detection analytics in your Driving History, which is in Settings.',
     ],
-    position: {top: height / 2.5},
+    position: {top: height / 3},
     caretBottom: {
       borderLeftWidth: 20,
       borderRightWidth: 20,

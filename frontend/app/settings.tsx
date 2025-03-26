@@ -129,7 +129,7 @@ const SettingsScreen = () => {
       </View>
       <View style={styles.container}>
         {/* Section 1: Type of Rest Stops */}
-        <Text style={styles.sectionHeading}>Type of Rest Stops</Text>
+        <Text style={styles.sectionHeading}>Which Rest Stops to Suggest?</Text>
         <View
           style={{
             flexDirection: 'row',
@@ -141,6 +141,7 @@ const SettingsScreen = () => {
           }}>
           {restStopOptions.map(option => (
             <Button
+              titleStyle={styles.restStopText}
               key={option.id}
               title={option.label}
               onPress={() => toggleRestStopType(option.id)}
@@ -151,15 +152,19 @@ const SettingsScreen = () => {
         </View>
 
         {/* Section 2: Number of Rest Stops */}
-        <Text style={styles.sectionHeading}>Number of Rest Stops</Text>
+        <Text style={styles.sectionHeading}>How Many Rest Stops to Show?</Text>
         <View style={styles.counterContainer}>
           <Button
+            buttonStyle={styles.countButton}
+            titleStyle={styles.buttonText}
             disabled={settings.restStopCount === 1}
             title="-"
             onPress={() => changeRestStopCount(-1)}
           />
           <Text style={styles.countText}>{settings.restStopCount}</Text>
           <Button
+            buttonStyle={styles.countButton}
+            titleStyle={styles.buttonText}
             disabled={settings.restStopCount === 10}
             title="+"
             onPress={() => changeRestStopCount(1)}
@@ -268,6 +273,9 @@ const styles = StyleSheet.create({
   toggleButtons: {
     width: 240,
   },
+  restStopText: {
+    fontSize: 18,
+  },
   counterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -275,8 +283,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   countText: {
-    fontSize: 18,
+    fontSize: 22,
+    fontWeight: '500',
     marginHorizontal: 20,
+  },
+  buttonText: {
+    fontSize: 20,
+  },
+  countButton: {
+    width: 50,
+    height: 50,
   },
   buttonRow: {
     flexDirection: 'column',

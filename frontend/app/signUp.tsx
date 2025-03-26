@@ -1,4 +1,4 @@
-import {useState, useRef} from 'react';
+import {useState, useRef, useCallback} from 'react';
 import {
   View,
   Text,
@@ -20,12 +20,14 @@ import {
   updateInvitationStatus,
   uploadImage,
 } from '@/api/api';
-import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
+
+import profilePicturePlaceholder from '@/assets/images/profile_placeholder.png';
 import * as ImagePicker from 'expo-image-picker';
 import {MaterialIcons} from '@expo/vector-icons';
-import {Camera} from 'react-native-vision-camera';
+import {Camera, useCameraDevice, useCameraPermission} from 'react-native-vision-camera';
 import {InvitationCodeType} from '@/types/InvitationCodeType';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
+import DriveBuddyLogoNoName from '@/assets/images/drivebuddy-logo-non-name.png';
 import FullWidthButton from '@/components/FullWidthButton';
 import {useOnboardingTourContext} from '@/contexts/OnboardingTourProvider';
 import {Input} from 'react-native-elements';
@@ -44,20 +46,46 @@ export default function SignUpScreen() {
   const [validCode, setValidCode] = useState(false);
   const [invitation, setInvitation] = useState<InvitationCodeType | null>(null);
   const [photoUri, setPhotoUri] = useState<string>('');
-  const cameraRef = useRef<Camera>(null);
+  const device = useCameraDevice('front');
+  const {hasPermission, requestPermission} = useCameraPermission();
+  const camera = useRef<Camera>(null);
   const {setShowOnboarding} = useOnboardingTourContext();
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
   const [termsModalVisible, setTermsModalVisible] = useState(false);
   const [errorDialogVisible, setErrorDialogVisible] = useState(false);
+  const [showCameraView, setShowCameraView] = useState(false);
   const isFormValid =
     email.trim() !== '' && password.trim() !== '' && code.trim() !== '' && termsChecked;
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
+  const requestCameraPermission = useCallback(async () => {
+    const newPermission = await requestPermission();
+    if (!newPermission) {
+      Alert.alert('Permissions Required', 'Camera permission is needed to use the camera.');
+    }
+  }, [requestPermission]);
+  const takePhoto = useCallback(async () => {
+    try {
+      if (camera.current == null) throw new Error('Camera ref is null');
 
+      const photo = await camera.current.takePhoto({
+        flash: 'off',
+        enableShutterSound: true,
+      });
+
+      setPhotoUri(`file://${photo.path}`);
+      console.log('Success: Selfie captured!');
+      setShowCameraView(false);
+      // Optional: You can add logic here to save the photo or upload it
+    } catch (error) {
+      console.error('Failed to take photo', error);
+      // Handle error (show alert, etc.)
+    }
+  }, []);
   const handleAuth = async () => {
     try {
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
@@ -67,6 +95,7 @@ export default function SignUpScreen() {
       if (downloadURL !== '') {
         downloadURL = await uploadImage(photoUri, userCredential.user.uid);
       }
+
       const newDriverObj: Driver = {
         id: userCredential.user.uid,
         name: name ? name : '',
@@ -102,28 +131,14 @@ export default function SignUpScreen() {
       setErrorDialogVisible(true);
     }
   };
-  const openCamera = async () => {
-    try {
-      const hasPermission = await Camera.requestCameraPermission();
-      if (!hasPermission) {
-        Alert.alert('Permission Denied', 'Camera access is required to take a selfie.');
-        return;
-      }
+  if (!hasPermission) {
+    requestCameraPermission();
+  }
 
-      if (!cameraRef.current) {
-        Alert.alert('Error', 'Camera not available.');
-        return;
-      }
+  if (device == null) {
+    console.log('No camera device found');
+  }
 
-      const photo = await cameraRef.current.takePhoto();
-
-      setPhotoUri(`file://${photo.path}`);
-      console.log('Success: Selfie captured!');
-    } catch (e) {
-      console.error('Error capturing selfie:', e);
-      Alert.alert('Error', 'Failed to take selfie.');
-    }
-  };
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -142,37 +157,80 @@ export default function SignUpScreen() {
 
       {validCode ? (
         <>
-          <View style={styles.profileImageContainer}>
-            <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 20}}>{name}</Text>
-            <Pressable
-              onPress={pickImage}
-              style={[styles.profileImageWrapper, styles.profileImageWrapperEdit]}>
+          {showCameraView && (
+            <View style={styles.cameraViewContainer}>
+              <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={StyleSheet.absoluteFill} />
+
+              <View style={styles.cameraViewWrapper}>
+                <Camera
+                  ref={camera}
+                  style={StyleSheet.absoluteFill}
+                  device={device}
+                  isActive={true}
+                  photo={true}
+                />
+              </View>
+              <FullWidthButton type="primary" title="Take Photo" onPress={takePhoto} />
+              <FullWidthButton
+                type="secondary"
+                title="Cancel"
+                onPress={() => setShowCameraView(prev => !prev)}
+              />
+            </View>
+          )}
+          <View style={{width: '100%', justifyContent: 'center'}}>
+            {/* Logo Container */}
+            <View style={styles.logoNoNameContainer}>
               <Image
-                style={styles.profileImage}
-                source={
-                  photoUri
-                    ? {uri: photoUri as string}
-                    : (profilePicturePlaceholder as ImageSourcePropType)
-                }
+                source={DriveBuddyLogoNoName as ImageSourcePropType}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 10}}>
+              {photoUri === '' ? "Let's upload your display image" : "You're Looking great!"}
+            </Text>
+            {photoUri === '' && (
+              <Text style={{fontSize: 16, textAlign: 'center', marginBottom: 0}}>
+                Let's upload your display image
+              </Text>
+            )}
+            <View style={styles.profileImageContainer}>
+              <Text style={{fontSize: 20, fontWeight: 700, textAlign: 'center', marginBottom: 20}}>
+                {name}
+              </Text>
+              <Pressable onPress={pickImage} style={styles.profileImageWrapper}>
+                <Image
+                  style={styles.profileImage}
+                  source={
+                    photoUri
+                      ? {uri: photoUri as string}
+                      : (profilePicturePlaceholder as ImageSourcePropType)
+                  }
+                />
+              </Pressable>
+            </View>
+            <View style={styles.buttonsContainer}>
+              <FullWidthButton type="tertiary" title="Skip this for now" onPress={handleAuth} />
+              <FullWidthButton
+                type="secondary"
+                title="Upload photo from phone"
+                icon={{name: 'upload'}}
+                onPress={pickImage}
+              />
+              <FullWidthButton
+                type="secondary"
+                title="Take a photo with the camera"
+                icon={{name: 'camera'}}
+                onPress={() => setShowCameraView(prev => !prev)}
               />
 
-              <View style={styles.cameraIconOverlay}>
-                <MaterialIcons name="photo-camera" size={24} color="white" />
-              </View>
-            </Pressable>
-          </View>
-          <View style={styles.buttonsContainer}>
-            <FullWidthButton type="secondary" title="Upload photo from phone" onPress={pickImage} />
-            {/* <Button title="Upload photo from phone" onPress={pickImage} /> */}
-            {photoUri !== '' ? (
-              <FullWidthButton type="primary" title="Complete" onPress={handleAuth} />
-            ) : (
-              ''
-            )}
-
-            <FullWidthButton type="tertiary" title="Skip this for now" onPress={handleAuth} />
-            {/* <Button title="Skip this for now" onPress={handleAuth} /> */}
-            {/*<Button title="Take a photo with the camera" onPress={openCamera} />*/}
+              {photoUri !== '' ? (
+                <FullWidthButton type="primary" title="Complete" onPress={handleAuth} />
+              ) : (
+                ''
+              )}
+            </View>
           </View>
         </>
       ) : (
@@ -360,6 +418,24 @@ export default function SignUpScreen() {
 const {width} = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  cameraViewContainer: {
+    zIndex: 99,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    height: '100%',
+    padding: 10,
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  cameraViewWrapper: {
+    width: '100%',
+    height: '90%',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   buttonsContainer: {
     gap: 10,
     width: '100%',
@@ -370,28 +446,13 @@ const styles = StyleSheet.create({
   },
   profileImageWrapper: {
     position: 'relative',
-    borderRadius: 90,
+    borderRadius: 100,
     overflow: 'hidden',
   },
-  profileImageWrapperEdit: {
-    borderWidth: 2,
-    borderColor: '#3498db',
-    borderStyle: 'dashed',
-  },
   profileImage: {
-    width: 160,
-    height: 160,
+    width: 200,
+    height: 200,
     backgroundColor: '#E0E0E0',
-  },
-  cameraIconOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   container: {
     flex: 1,
@@ -402,6 +463,14 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     width: width / 3, // 1/3 of the screen width
+    aspectRatio: 1, // Maintain aspect ratio
+    marginBottom: 20,
+    marginTop: 20,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
+  logoNoNameContainer: {
+    width: width / 5, // 1/3 of the screen width
     aspectRatio: 1, // Maintain aspect ratio
     marginBottom: 20,
     marginTop: 20,

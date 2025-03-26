@@ -1,12 +1,18 @@
 import React, {useState} from 'react';
-import {TouchableOpacity, Text, StyleSheet} from 'react-native';
+import {TouchableOpacity, Text, StyleSheet, View} from 'react-native';
 import {useTheme} from '@rneui/themed';
+import {Feather} from '@expo/vector-icons';
 
 interface FullWidthButtonProps {
   title: string;
   onPress: () => void;
   type?: 'primary' | 'secondary' | 'tertiary';
   disabled?: boolean;
+  icon?: {
+    name: string;
+    size?: number;
+    color?: string;
+  };
 }
 
 const FullWidthButton: React.FC<FullWidthButtonProps> = ({
@@ -14,6 +20,7 @@ const FullWidthButton: React.FC<FullWidthButtonProps> = ({
   onPress,
   type = 'primary',
   disabled = false,
+  icon,
 }) => {
   const {theme} = useTheme();
   const [isPressed, setIsPressed] = useState(false);
@@ -47,6 +54,33 @@ const FullWidthButton: React.FC<FullWidthButtonProps> = ({
     }
   };
 
+  const getTextStyles = () => {
+    const baseStyles = [styles.text];
+
+    if (type === 'secondary') {
+      baseStyles.push({color: theme.colors.primary});
+    }
+
+    if (type === 'tertiary') {
+      baseStyles.push({
+        color: theme.colors.primary,
+        textDecorationLine: isPressed ? 'underline' : 'none',
+      });
+    }
+
+    return baseStyles;
+  };
+
+  const getIconColor = () => {
+    if (disabled) return theme.colors.grey4;
+
+    if (type === 'primary') return 'white';
+    if (type === 'secondary') return theme.colors.primary;
+    if (type === 'tertiary') return theme.colors.primary;
+
+    return 'white';
+  };
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -55,17 +89,17 @@ const FullWidthButton: React.FC<FullWidthButtonProps> = ({
       style={[getButtonStyles(), disabled && {backgroundColor: theme.colors.grey3}]}
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}>
-      <Text
-        style={[
-          styles.text,
-          type === 'secondary' && {color: theme.colors.primary},
-          type === 'tertiary' && {
-            color: theme.colors.primary,
-            textDecorationLine: isPressed ? 'underline' : 'none',
-          },
-        ]}>
-        {title}
-      </Text>
+      <View style={styles.contentContainer}>
+        {icon && (
+          <Feather
+            name={icon.name}
+            size={icon.size || 20}
+            color={icon.color || getIconColor()}
+            style={[styles.icon]}
+          />
+        )}
+        <Text style={getTextStyles()}>{title}</Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -73,18 +107,24 @@ const FullWidthButton: React.FC<FullWidthButtonProps> = ({
 const styles = StyleSheet.create({
   button: {
     width: '100%',
-    // maxWidth: 398,
-    // width: 398,
     height: 46,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     alignContent: 'center',
   },
+  contentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   text: {
     fontSize: 15,
     fontWeight: 'bold',
     color: 'white',
+  },
+  icon: {
+    marginRight: 10,
   },
 });
 

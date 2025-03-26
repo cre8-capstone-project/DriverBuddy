@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
 import {getDriverByID, updateDriver, uploadImage, getCompanyByID} from '@/api/api';
-import profilePicturePlaceholder from '@/assets/images/profile_placeholder_with_copyright.jpg';
+import profilePicturePlaceholder from '@/assets/images/profile_placeholder.png';
 // import {Button} from '@rneui/base';
 import * as ImagePicker from 'expo-image-picker';
 import {useAuth} from '@/contexts/AuthProvider';

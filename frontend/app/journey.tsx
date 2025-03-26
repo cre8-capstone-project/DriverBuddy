@@ -15,7 +15,7 @@ import TurnOnDetectionButton from '@/components/TurnOnDetectionButton';
 import TurnOffDetectionButton from '@/components/TurnOffDetectionButton';
 import EndRouteButton from '@/components/EndRouteButton';
 import {INSTRUCTION_MESSAGE} from '@/features/safety-alert/constants/messages';
-import {Audio} from 'expo-av';
+import {usePlaySound} from '@/hooks/usePlaySound';
 
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
@@ -25,6 +25,7 @@ export default function HomeScreen() {
   const {alertCount} = useFaceDetectionContext();
   const {setViewModeContext, alertStatus, setInstructionStatus, instructionStatus} =
     useFaceDetectionContext();
+  const {playSound} = usePlaySound();
   const [viewMode, setViewMode] = useState<ViewModeType>('cameraView');
   const [driveDestinationStatus, setDriveDestinationStatus] = useState(false);
   const [driveModeStatus, setDriveModeStatus] = useState(false);
@@ -34,7 +35,6 @@ export default function HomeScreen() {
   const [startDialogStatus, setStartDialogStatus] = useState(false);
   const [endDialogStatus, setEndDialogStatus] = useState(false);
   const [mapKey, setMapKey] = useState(0);
-  const instructionSoundRef = useRef<Audio.Sound | null>(null);
 
   useEffect(() => {
     console.log('[DEBUG] Journey component is mounted');
@@ -53,9 +53,6 @@ export default function HomeScreen() {
     return () => {
       console.log('[DEBUG] Journey component is unmounted');
       clearTimeout(timeout);
-      if (instructionSoundRef.current) {
-        instructionSoundRef.current.unloadAsync();
-      }
     };
   }, []);
 
@@ -64,35 +61,15 @@ export default function HomeScreen() {
   }, [instructionStatus]);
 
   const triggerMessage = async (message: any) => {
-    setInstructionStatus(true);
     try {
-      if (instructionSoundRef.current) {
-        await instructionSoundRef.current.unloadAsync();
-      }
-      const {sound: instructionMessageInstance} = await Audio.Sound.createAsync(message);
-      instructionSoundRef.current = instructionMessageInstance;
-      await instructionMessageInstance.playAsync();
-      await new Promise<void>(resolve => {
-        instructionMessageInstance.setOnPlaybackStatusUpdate(status => {
-          if (status.isLoaded && status.didJustFinish) {
-            resolve();
-          }
-        });
-      });
+      setInstructionStatus(true);
+      await playSound(message);
     } catch (error) {
       console.error(error);
     } finally {
       setInstructionStatus(false);
     }
   };
-
-  // Cocoy's Update: Swap map and camera view when destination is selected
-  // useEffect(() => {
-  //   if (driveDestinationStatus && viewMode === 'cameraView') {
-  //     setViewMode('mapView');
-  //     setViewModeContext('mapView');
-  //   }
-  // }, [driveDestinationStatus, viewMode, setViewModeContext]);
 
   useFocusEffect(
     useCallback(() => {

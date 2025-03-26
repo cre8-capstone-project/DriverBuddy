@@ -25,8 +25,8 @@ export const useDrowsinessDetection = () => {
   const blinkRegisteredRef = useRef<boolean>(false);
   const blinkMidRegisteredRef = useRef<boolean>(false);
 
-  const eyeBlinkRateRef = useRef<number>(0);
-  const eyeBlinkRateRef2 = useRef<number>(0);
+  const eyeBlinkRateRef1 = useRef<number>(0); // For Criteria 1
+  const eyeBlinkRateRef2 = useRef<number>(0); // For Criteria 2
 
   const blinkCountsPer10SecRef = useRef<number[]>([]);
   const blinkCountsPer30SecRef = useRef<number[]>([]);
@@ -44,7 +44,8 @@ export const useDrowsinessDetection = () => {
       blinkTimestampsRef.current = [];
       blinkStatusRef.current = 'open';
       blinkRegisteredRef.current = false;
-      eyeBlinkRateRef.current = 0;
+      eyeBlinkRateRef1.current = 0;
+      eyeBlinkRateRef2.current = 0;
       blinkCountsPer10SecRef.current = [];
       blinkCountsPer30SecRef.current = [];
       lastIntervalRef.current = null;
@@ -80,10 +81,10 @@ export const useDrowsinessDetection = () => {
       lastIntervalRef.current = now;
 
       // Check unnatural blink 1
-      eyeBlinkRateRef.current = blinkTimestampsRef.current.filter(
+      eyeBlinkRateRef1.current = blinkTimestampsRef.current.filter(
         timestamp => now - timestamp <= BLINK_MONITORING_DURATION_WINDOW,
       ).length;
-      if (eyeBlinkRateRef.current >= BLINK_COUNT_THRESHOLD_HIGH) {
+      if (eyeBlinkRateRef1.current >= BLINK_COUNT_THRESHOLD_HIGH) {
         if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
           blinkTimestampsRef.current = [];
           blinkMidTimestampsRef.current = [];
@@ -182,7 +183,7 @@ export const useDrowsinessDetection = () => {
   return {
     leftEyeStatus,
     rightEyeStatus,
-    eyeBlinkRate1: eyeBlinkRateRef.current,
+    eyeBlinkRate1: eyeBlinkRateRef1.current,
     eyeBlinkRate2: eyeBlinkRateRef2.current,
     checkDrowsiness,
   };

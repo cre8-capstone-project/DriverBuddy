@@ -15,7 +15,7 @@ import {
   DRAWSINESS_ALERT_MESSAGE,
   DISTRACTED_WARNING_MESSAGE,
 } from '@/features/safety-alert/constants/messages';
-import {Audio} from 'expo-av';
+import {usePlaySound} from '@/hooks/usePlaySound';
 
 export const useFaceDetection = () => {
   const {user} = useAuth();
@@ -25,6 +25,7 @@ export const useFaceDetection = () => {
     useDrowsinessDetection();
   const {checkLookingAway, pitchAngleStatus} = useLookAwayDetection();
   const {alertCount, setAlertCount, setAlertStatus} = useFaceDetectionContext();
+  const {playSound} = usePlaySound();
 
   // Configuration options for face detection (Refer to Google ML Kit documentation)
   // https://developers.google.com/ml-kit/vision/face-detection/face-detection-concepts
@@ -119,12 +120,6 @@ export const useFaceDetection = () => {
 
   const triggerAlert = async (alertMessage: any, alertSound: any) => {
     try {
-      setAlertStatus(true);
-      setAlertCount((prev: number) => prev + 1);
-      await playSound(alertSound);
-      await playSound(alertMessage);
-      setAlertStatus(false);
-
       // Log the alert to SQLite
       await AlertService.logAlert({
         alertId: uuid.v4(),
@@ -132,25 +127,15 @@ export const useFaceDetection = () => {
         userId: user?.uid ?? '',
         timestamp: new Date().toISOString(),
       });
+
+      setAlertStatus(true);
+      setAlertCount((prev: number) => prev + 1);
+      await playSound(alertSound);
+      await playSound(alertMessage, true);
+      setAlertStatus(false);
     } catch (error) {
       console.error(error);
-    }
-  };
-
-  const playSound = async (soundUri: any) => {
-    try {
-      const {sound} = await Audio.Sound.createAsync(soundUri, {shouldPlay: true});
-      await new Promise<void>(resolve => {
-        sound.setOnPlaybackStatusUpdate(status => {
-          if (status.isLoaded && status.didJustFinish) {
-            resolve();
-          }
-        });
-      });
-      sound.setOnPlaybackStatusUpdate(null);
-      await sound.unloadAsync();
-    } catch (error) {
-      console.error('playSound error:', error);
+      setAlertStatus(false);
     }
   };
 

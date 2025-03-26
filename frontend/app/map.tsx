@@ -15,6 +15,8 @@ import {
   updateMapSettings,
 } from '@/features/map/constants/settings'; // ADDED OR UPDATED 19 MAR: Import settings
 import {getSettings} from '@/services/SettingsService';
+import {usePlaySound} from '@/hooks/usePlaySound';
+import {INSTRUCTION_MESSAGE} from '@/features/safety-alert/constants/messages';
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -100,9 +102,10 @@ export const Map = forwardRef((props: Props, ref) => {
   // ADDED OR UPDATED 16 MAR: State to track the cycle count to trigger modal (separate from alertCount)
   const [cycle, setCycle] = useState(0);
   // UPDATED 14 MAR: Access alertCount and resetAlertCount from FaceDetectionContext
-  const {alertCount, resetAlertCount} = useFaceDetectionContext();
+  const {alertCount, soundData, setAlertStatus} = useFaceDetectionContext();
   // ADDED OR UPDATED 16 MAR: State to track the previous alertCount when the modal was closed
   const [prevAlertCount, setPrevAlertCount] = useState(alertCount);
+  const {playSound} = usePlaySound();
 
   // ADDED OR UPDATED 21 MAR: Load persisted settings on mount
   useEffect(() => {
@@ -147,8 +150,27 @@ export const Map = forwardRef((props: Props, ref) => {
     if (!showRestStopsModal && drivingMode && !disableDrivingWatchPosition && cycle >= 3) {
       setShowRestStopsModal(true);
       setPrevAlertCount(alertCount); // ADDED OR UPDATED 16 MAR: Reset prevAlertCount to prevent unwanted cycleCount increments
+      playSound(INSTRUCTION_MESSAGE[1].voice);
     }
   }, [cycle, drivingMode, disableDrivingWatchPosition, showRestStopsModal, alertCount]);
+
+  useEffect(() => {
+    if (showRestStopsModal && soundData) {
+      console.log('[DEBUG] Rest stop modal is open. Cancel playing sound');
+      soundData?.stopAsync();
+      soundData?.unloadAsync();
+    }
+  }, [showRestStopsModal, soundData]);
+
+  useEffect(() => {
+    if (showRestStopsModal) {
+      console.log('[DEBUG] Pause detection start.');
+      setAlertStatus(true);
+    } else {
+      console.log('[DEBUG] Pause detection end.');
+      setAlertStatus(false);
+    }
+  }, [showRestStopsModal]);
 
   // Updates drive status when destination or driving mode changes
   useEffect(() => {

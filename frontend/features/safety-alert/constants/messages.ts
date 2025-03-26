@@ -12,6 +12,7 @@ const soundMap: {[key: string]: any} = {
   'message2-1.mp3': require('@/assets/sounds/message2-1.mp3'),
   'message2-2.mp3': require('@/assets/sounds/message2-2.mp3'),
   'message3-1.mp3': require('@/assets/sounds/message3-1.mp3'),
+  'message3-2.mp3': require('@/assets/sounds/message3-2.mp3'),
 };
 
 export const DRAWSINESS_ALERT_MESSAGE: Message[] = [
@@ -44,5 +45,9 @@ export const INSTRUCTION_MESSAGE: Message[] = [
   {
     message: 'Face recognition has started. Please align your face to the center of the screen.',
     voice: soundMap['message3-1.mp3'],
+  },
+  {
+    message: 'There are rest stops nearby. Please consider taking a break.',
+    voice: soundMap['message3-2.mp3'],
   },
 ];

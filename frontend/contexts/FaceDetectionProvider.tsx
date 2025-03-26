@@ -1,5 +1,6 @@
 import {createContext, useContext, ReactNode, useState} from 'react';
 import type {ViewModeType} from '@/types/ViewModeType';
+import {Audio} from 'expo-av';
 
 type FaceDetectionContextType = {
   alertCount: number;
@@ -12,6 +13,8 @@ type FaceDetectionContextType = {
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   instructionStatus: boolean;
   setInstructionStatus: React.Dispatch<React.SetStateAction<boolean>>;
+  soundData: Audio.Sound | null;
+  setSoundData: React.Dispatch<React.SetStateAction<Audio.Sound | null>>;
 };
 
 const FaceDetectionContext = createContext<FaceDetectionContextType | undefined>(undefined);
@@ -22,6 +25,7 @@ export const FaceDetectionProvider = ({children}: {children: ReactNode}) => {
   const [message, setMessage] = useState('');
   const [instructionStatus, setInstructionStatus] = useState(false);
   const [viewModeContext, setViewModeContext] = useState<ViewModeType>('mapView');
+  const [soundData, setSoundData] = useState<Audio.Sound | null>(null);
 
   return (
     <FaceDetectionContext.Provider
@@ -36,6 +40,8 @@ export const FaceDetectionProvider = ({children}: {children: ReactNode}) => {
         setMessage,
         instructionStatus,
         setInstructionStatus,
+        soundData,
+        setSoundData,
       }}>
       {children}
     </FaceDetectionContext.Provider>

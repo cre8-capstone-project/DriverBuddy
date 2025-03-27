@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(14, 34, 90, 0.542)',
+    backgroundColor: 'rgba(5, 5, 45, 0.574)',
   },
   roundButton: {
     width: 140,

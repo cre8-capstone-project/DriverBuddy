@@ -106,6 +106,25 @@ export const Map = forwardRef((props: Props, ref) => {
   // ADDED OR UPDATED 16 MAR: State to track the previous alertCount when the modal was closed
   const [prevAlertCount, setPrevAlertCount] = useState(alertCount);
   const {playSound} = usePlaySound();
+  // ADDED OR UPDATED 26 MAR: Show or hide rest stops button
+  const [showRestStopsButton, setShowRestStopsButton] = useState(false);
+
+  // ADDED OR UPDATED 26 MAR: Extract string until comma delimeter
+  const getCommaTruncated = (fullString: string): string => {
+    if (!fullString) return '';
+    return fullString.split(',')[0];
+  };
+
+  // ADDED OR UPDATED 26 MAR: Helper to convert color to rgba and 50% opacity
+  const hexToRGBA = (hex: string, opacity: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  // ADDED OR UPDATED 26 MAR: Rest stop polyline color
+  const restStopRouteColor = hexToRGBA(theme.lightColors!.primary!, 0.5);
 
   // ADDED OR UPDATED 21 MAR: Load persisted settings on mount
   useEffect(() => {
@@ -210,7 +229,7 @@ export const Map = forwardRef((props: Props, ref) => {
       const currentLocation = deviceLocation || origin; // UPDATED 04 MAR: If deviceLocation is not ready, fallback to origin
       if (currentLocation) {
         mapRef.current.animateCamera(
-          {center: currentLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
+          {center: currentLocation, pitch: 55, heading: 0, zoom: 19, altitude: 150},
           {duration: 1000},
         );
       }
@@ -222,6 +241,9 @@ export const Map = forwardRef((props: Props, ref) => {
 
     // UPDATED 14 MAR: Dismiss the destination card when user clicks Start Driving
     setShowDestinationCard(false);
+
+    // ADDED OR UPDATED 26 MAR: Show rest stops button
+    setShowRestStopsButton(true);
   };
 
   // Ends driving mode
@@ -424,6 +446,9 @@ export const Map = forwardRef((props: Props, ref) => {
         setPrevAlertCount(alertCount);
         setDisableDrivingWatchPosition(true);
 
+        // ADDED OR UPDATED 26 MAR: Hide rest stops button
+        setShowRestStopsButton(false);
+
         // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
         setShowContinueDriving(true);
       } else {
@@ -488,12 +513,15 @@ export const Map = forwardRef((props: Props, ref) => {
     const currentLocation = deviceLocation || origin;
     if (mapRef.current && currentLocation) {
       mapRef.current.animateCamera(
-        {center: currentLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
+        {center: currentLocation, pitch: 55, heading: 0, zoom: 19, altitude: 150},
         {duration: 1000},
       );
     }
     // Hide continue driving button
     setShowContinueDriving(false);
+
+    // ADDED OR UPDATED 26 MAR: Show rest stops button
+    setShowRestStopsButton(true);
   };
 
   // Function to geocode a place name using Google Geocoding API
@@ -584,9 +612,9 @@ export const Map = forwardRef((props: Props, ref) => {
               mapRef.current.animateCamera(
                 {
                   center: {latitude, longitude},
-                  pitch: 45, // Slightly angled view
+                  pitch: 55, // Slightly angled view
                   heading: heading || 0,
-                  zoom: 18, // Adjust zoom level as needed
+                  zoom: 19, // Adjust zoom level as needed
                   altitude: 150, // Added altitude to support pitch animation
                 },
                 {duration: 1000},
@@ -790,33 +818,54 @@ export const Map = forwardRef((props: Props, ref) => {
         )}
         {destination && (
           // Display pin marker for destination
-          <Marker coordinate={destination} title="Destination" description={destinationLabel} />
+          <Marker
+            coordinate={destination}
+            title={getCommaTruncated(destinationLabel)}
+            image={require('@/assets/images/destination-pin.png')}
+          />
         )}
         {/* UPDATED 11 MAR: Render markers for ALL gas stations */}
         {restStops.map((station, index) => (
           <Marker
-            key={`gas-${index}`}
+            key={`restStop-${index}`}
             coordinate={{latitude: station.latitude, longitude: station.longitude}}
             title={station.name}
+            image={require('@/assets/images/rest-stop-pin.png')}
           />
         ))}
+        {/* ADDED OR UPDATED 26 MAR: Show a polyline to each rest stop */}
+        {restStops.length > 0 &&
+          origin &&
+          restStops.map((station, i) => (
+            <MapViewDirections
+              key={`stop-route-${i}`}
+              origin={origin}
+              destination={{latitude: station.latitude, longitude: station.longitude}}
+              apikey={GOOGLE_MAPS_APIKEY}
+              strokeWidth={6}
+              strokeColor={restStopRouteColor}
+              mode="DRIVING"
+              resetOnChange={false}
+            />
+          ))}
       </MapView>
-      {/* UPDATED 14 MAR: Nearby Stops (Test) button
-      {drivingMode && (
+
+      {/* ADDED OR UPDATED 26 MAR: Enable rest stops button */}
+      {showRestStopsButton && (
         <View style={styles.nearbyStopsButtonContainer}>
           <TouchableOpacity style={styles.nearbyStopsButton} onPress={handleNearbyStops}>
-            <Text>Nearby Stops (Test)</Text>
+            <Icon name="location" type="ionicon" size={20} />
+            <Text style={styles.nearbyStopsButtonText}>Show Rest Stops</Text>
           </TouchableOpacity>
         </View>
       )}
-      */}
 
       {/* ADDED OR UPDATED 16 MAR: Continue driving button */}
       {showContinueDriving && (
         <View style={styles.continueDrivingButtonContainer}>
           <TouchableOpacity style={styles.continueDrivingButton} onPress={handleContinueDriving}>
             <Icon name="navigate" type="ionicon" size={20} />
-            <Text style={styles.continueDrivingButtonText}>Re-Center</Text>
+            <Text style={styles.continueDrivingButtonText}>Resume Driving</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -1041,20 +1090,32 @@ const styles = StyleSheet.create({
   // UPDATED 11 MAR: Nearby Stops button container style
   nearbyStopsButtonContainer: {
     position: 'absolute',
-    top: 40,
+    bottom: 108,
     left: 0,
     right: 0,
     alignItems: 'center',
-    zIndex: 2,
   },
   // UPDATED 11 MAR: Nearby Stops button style
   nearbyStopsButton: {
-    backgroundColor: 'white',
+    backgroundColor: theme.lightColors!.white,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingLeft: 16,
+    paddingRight: 16,
     borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-
+  nearbyStopsButtonText: {
+    fontSize: 17,
+    fontWeight: '400',
+    paddingLeft: 6,
+  },
   // UPDATED 14 MAR: Destination card
   destinationCard: {
     position: 'absolute',
@@ -1082,16 +1143,17 @@ const styles = StyleSheet.create({
   // ADDED OR UPDATED 16 MAR: Continue driving button
   continueDrivingButtonContainer: {
     position: 'absolute',
-    bottom: 110,
+    bottom: 108,
     left: 0,
     right: 0,
     alignItems: 'center',
+    zIndex: 10,
   },
   continueDrivingButton: {
     backgroundColor: theme.lightColors!.white,
-    paddingVertical: 16,
-    paddingLeft: 20,
-    paddingRight: 20,
+    paddingVertical: 10,
+    paddingLeft: 16,
+    paddingRight: 16,
     borderRadius: 50,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
@@ -1103,7 +1165,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   continueDrivingButtonText: {
-    fontSize: 19,
+    fontSize: 17,
     fontWeight: '400',
     paddingLeft: 6,
   },

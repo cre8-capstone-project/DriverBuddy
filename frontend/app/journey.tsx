@@ -117,6 +117,7 @@ export default function HomeScreen() {
           endDriveStatus={endDriveStatus}
           setViewMode={setViewMode} // Cocoy's Update: Pass setViewMode
           setViewModeContext={setViewModeContext} // Cocoy's Update: Pass setViewModeContext
+          viewMode={viewMode} // Cocoy's Update: Pass viewMode
         />
       </View>
       <View

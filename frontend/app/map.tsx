@@ -41,6 +41,7 @@ type Props = {
   endDriveStatus: boolean;
   setViewMode: (mode: ViewModeType) => void; // ADDED OR UPDATED 19 MAR: Accept setViewMode
   setViewModeContext: (mode: ViewModeType) => void; // ADDED OR UPDATED 19 MAR: Accept setViewModeContext
+  viewMode: ViewModeType; // ADDED OR UPDATED 27 MAR: Identify the thumbnail view (cameraView or mapView)
 };
 
 // Save values temporarily so they can be used later even if the app is closed or reloaded
@@ -783,7 +784,8 @@ export const Map = forwardRef((props: Props, ref) => {
     <View style={styles.container}>
       <MapView
         ref={mapRef}
-        style={styles.map}
+        // ADDED OR UPDATED 27 MAR: Conditionally add the thumbnail cropping style when in cameraView
+        style={[styles.map, props.viewMode === 'cameraView' && styles.mapThumbnailCrop]}
         provider={PROVIDER_GOOGLE}
         initialRegion={
           origin || {
@@ -1168,5 +1170,9 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '400',
     paddingLeft: 6,
+  },
+  // ADDED OR UPDATED 27 MAR: Override parent thumbnail scaling (miniWindowView scale of 0.25)
+  mapThumbnailCrop: {
+    transform: [{scale: 4}],
   },
 });

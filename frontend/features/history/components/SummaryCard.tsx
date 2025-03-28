@@ -1,5 +1,13 @@
-import {useState, useRef} from 'react';
-import {View, Text, StyleSheet, ActivityIndicator, TouchableOpacity} from 'react-native';
+import React, {useState, useRef} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import {Card, Icon} from '@rneui/themed';
 
 type Props = {
@@ -14,12 +22,20 @@ export const SummaryCard = ({data, loading}: Props) => {
   const totalSessionHours = data?.totalSessionHours ?? 'N/A';
   const totalNumberOfAlert = data?.totalNumberOfAlert ?? 'N/A';
 
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        setTooltipVisible(false);
+      };
+    }, []),
+  );
+
   const toggleTooltip = () => {
     if (tooltipVisible) {
       setTooltipVisible(false);
     } else {
       iconRef.current?.measure((fx, fy, width, height, px, py) => {
-        setTooltipPosition({top: py - 85, left: px - 77});
+        setTooltipPosition({top: py - 95, left: px - 77});
         setTooltipVisible(true);
       });
     }
@@ -65,12 +81,17 @@ export const SummaryCard = ({data, loading}: Props) => {
         </View>
       </Card>
       {tooltipVisible && (
-        <View style={[styles.tooltipOverlay, tooltipPosition]}>
-          <Text style={styles.tooltipText}>
-            The time spent driving while Drive Buddy’s drowsiness detection was active.
-          </Text>
-          <View style={styles.tooltipArrow} />
-        </View>
+        <>
+          <TouchableWithoutFeedback onPress={() => setTooltipVisible(false)}>
+            <View style={StyleSheet.absoluteFillObject} pointerEvents="auto" />
+          </TouchableWithoutFeedback>
+          <View style={[styles.tooltipOverlay, tooltipPosition]}>
+            <Text style={styles.tooltipText}>
+              The time spent driving while Drive Buddy’s drowsiness detection was active.
+            </Text>
+            <View style={styles.tooltipArrow} />
+          </View>
+        </>
       )}
     </>
   );

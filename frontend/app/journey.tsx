@@ -16,6 +16,7 @@ import TurnOffDetectionButton from '@/components/TurnOffDetectionButton';
 import EndRouteButton from '@/components/EndRouteButton';
 import {INSTRUCTION_MESSAGE} from '@/features/safety-alert/constants/messages';
 import {usePlaySound} from '@/hooks/usePlaySound';
+import AddRestStopPanel from '@/features/map/components/AddRestStopPanel';
 
 const GoogleMapIcon = GoogleMapImage as ImageSourcePropType;
 
@@ -35,6 +36,14 @@ export default function HomeScreen() {
   const [startDialogStatus, setStartDialogStatus] = useState(false);
   const [endDialogStatus, setEndDialogStatus] = useState(false);
   const [mapKey, setMapKey] = useState(0);
+
+  // Cocoy's Update: State for managing add rest stop panel and details
+  const [showRestStopPanel, setShowRestStopPanel] = useState(false);
+  const [selectedRestStop, setSelectedRestStop] = useState<{
+    latitude: number;
+    longitude: number;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     console.log('[DEBUG] Journey component is mounted');
@@ -118,6 +127,11 @@ export default function HomeScreen() {
           setViewMode={setViewMode} // Cocoy's Update: Pass setViewMode
           setViewModeContext={setViewModeContext} // Cocoy's Update: Pass setViewModeContext
           viewMode={viewMode} // Cocoy's Update: Pass viewMode
+          // Cocoy's Update: Select rest stop and open add rest stop panel
+          onShowRestStopPanel={station => {
+            setSelectedRestStop(station);
+            setShowRestStopPanel(true);
+          }}
         />
       </View>
       <View
@@ -208,6 +222,25 @@ export default function HomeScreen() {
           </View>
         )}
       </View>
+
+      {showRestStopPanel && (
+        <View style={styles.addRestStopPanelOverlay} pointerEvents="auto">
+          {/* Add invisible layer to block touches on map behind the panel */}
+          <View style={styles.invisibleBlocker} pointerEvents="auto" />
+          <AddRestStopPanel
+            visible={showRestStopPanel}
+            station={selectedRestStop}
+            onConfirmYes={() => {
+              setShowRestStopPanel(false);
+              setSelectedRestStop(null);
+            }}
+            onConfirmNo={() => {
+              setShowRestStopPanel(false);
+              setSelectedRestStop(null);
+            }}
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -280,5 +313,24 @@ const styles = StyleSheet.create({
     transform: [{scale: 0.25}],
     zIndex: 1,
     boxShadow: '5px 5px 10px 5px rgba(0, 0, 0, 0.2)',
+  },
+  // Cocoy's Update: AddRestStopPanel styles
+  addRestStopPanelContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  addRestStopPanelOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  invisibleBlocker: {
+    height: 200, // To match panelHeight in AddRestStopPanel 
+    backgroundColor: 'transparent',
   },
 });

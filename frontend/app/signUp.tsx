@@ -188,7 +188,7 @@ export default function SignUpScreen() {
               />
             </View>
             <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 10}}>
-              {photoUri === '' ? "Let's upload your display image" : "You're Looking great!"}
+              {photoUri === '' ? 'Welcome to DriveBuddy!' : "You're Looking great!"}
             </Text>
             {photoUri === '' && (
               <Text style={{fontSize: 16, textAlign: 'center', marginBottom: 0}}>
@@ -447,6 +447,8 @@ const styles = StyleSheet.create({
   profileImageWrapper: {
     position: 'relative',
     borderRadius: 100,
+    borderColor: 'rgba(0,255,255,0.5)',
+    borderWidth: 1,
     overflow: 'hidden',
   },
   profileImage: {

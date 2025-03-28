@@ -64,6 +64,23 @@ const uploadImage = async (fileUri: string, id: string) => {
     console.error('Error uploading image:', error);
   }
 };
+const getProfilePicture = async (id: string) => {
+  try {
+    // Create a reference in Firebase Storage
+    const fileName = `profile_pictures/${id}.jpg`;
+    const imageRef = storage().ref(fileName);
+
+    // Upload file
+    const downloadURL = await imageRef.getDownloadURL();
+
+    console.log('File retrieved successfully! URL:', downloadURL);
+
+    // Now send the download URL to your backend instead of the file URI
+    return downloadURL;
+  } catch (error) {
+    console.error('Error retrieving image:', error);
+  }
+};
 
 /**
  * Retrieves a driver by their ID.
@@ -75,6 +92,7 @@ const getDriverByID = async (id: string) => {
     const response: AxiosResponse<Driver> = await axiosClient.get(`/drivers/${id}`, {
       timeout: 5000,
     });
+    const pictureUrl = await getProfilePicture(id);
     return {
       id: response.data.id,
       name: response.data.name,
@@ -394,6 +412,7 @@ const getCompanyByID = async (company_id: string | undefined) => {
 export {
   Driver,
   uploadImage,
+  getProfilePicture,
   getDriverByEmail,
   getDriverByID,
   getAllDrivers,

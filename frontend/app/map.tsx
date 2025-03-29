@@ -522,8 +522,8 @@ export const Map = forwardRef((props: Props, ref) => {
         const midLng = (minLng + maxLng) / 2;
 
         // Add padding to the region delta for better visibility
-        const latitudeDelta = (maxLat - minLat) * 1.5 || 0.05;
-        const longitudeDelta = (maxLng - minLng) * 1.5 || 0.05;
+        const latitudeDelta = (maxLat - minLat) * 1.8 || 0.05;
+        const longitudeDelta = (maxLng - minLng) * 1.8 || 0.05;
 
         const region = {
           latitude: midLat,
@@ -762,19 +762,6 @@ export const Map = forwardRef((props: Props, ref) => {
       savedDestination = null;
     },
 
-    // ADDED OR UPDATED 28 MAR: Expose addWaypoint to update the route with selected rest stop
-    // addWaypoint: (station: {latitude: number; longitude: number; name: string} | null) => {
-    //   // Remove all displayed rest stops
-    //   setRestStops([]);
-    //   // Then add station as a waypoint
-    //   if (station) {
-    //     setRouteWaypoints(prev => [
-    //       ...prev,
-    //       {latitude: station.latitude, longitude: station.longitude},
-    //     ]);
-    //     setPinnedRestStop(station);
-    //   }
-    // },
     // ADDED OR UPDATED 28 MAR: Expose addWaypoint to update the route with ONE selected rest stop
     addWaypoint: (station: {latitude: number; longitude: number; name: string} | null) => {
       // Remove all displayed rest stops pins
@@ -783,6 +770,27 @@ export const Map = forwardRef((props: Props, ref) => {
       if (station) {
         setRouteWaypoints([{latitude: station.latitude, longitude: station.longitude}]);
         setPinnedRestStop(station);
+
+        // Zoom out to show the updated route with the added rest stop
+        if (origin && destination) {
+          const allLats = [origin.latitude, station.latitude, destination.latitude];
+          const allLngs = [origin.longitude, station.longitude, destination.longitude];
+          const minLat = Math.min(...allLats);
+          const maxLat = Math.max(...allLats);
+          const minLng = Math.min(...allLngs);
+          const maxLng = Math.max(...allLngs);
+          const midLat = (minLat + maxLat) / 2;
+          const midLng = (minLng + maxLng) / 2;
+          const latitudeDelta = (maxLat - minLat) * 1.8 || 0.05;
+          const longitudeDelta = (maxLng - minLng) * 1.8 || 0.05;
+          const region = {
+            latitude: midLat,
+            longitude: midLng,
+            latitudeDelta,
+            longitudeDelta,
+          };
+          mapRef.current?.animateToRegion(region, 1000);
+        }
       }
     },
   }));
@@ -887,8 +895,8 @@ export const Map = forwardRef((props: Props, ref) => {
       const region = {
         latitude: midLat,
         longitude: midLng,
-        latitudeDelta: latDiff * 1.5 || 0.05,
-        longitudeDelta: lngDiff * 1.5 || 0.05,
+        latitudeDelta: latDiff * 1.8 || 0.05,
+        longitudeDelta: lngDiff * 1.8 || 0.05,
       };
       console.log('Show recommended route using latitude and destination');
       mapRef.current?.animateToRegion(region, 1000);
@@ -901,8 +909,8 @@ export const Map = forwardRef((props: Props, ref) => {
       const region = {
         latitude: midLat,
         longitude: midLng,
-        latitudeDelta: latDiff * 1.5 || 0.05,
-        longitudeDelta: lngDiff * 1.5 || 0.05,
+        latitudeDelta: latDiff * 1.8 || 0.05,
+        longitudeDelta: lngDiff * 1.8 || 0.05,
       };
       console.log('Show recommended route using origin and latitude');
       mapRef.current?.animateToRegion(region, 1000);

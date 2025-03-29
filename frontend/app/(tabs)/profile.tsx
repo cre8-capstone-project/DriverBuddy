@@ -36,6 +36,7 @@ export default function ProfileScreen() {
   const [driverEmail, setDriverEmail] = useState<string>('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const [originalProfileUrl, setOriginalProfileUrl] = useState<string>('');
 
   // Added loading state for image operations
   const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
@@ -67,6 +68,7 @@ export default function ProfileScreen() {
 
         if (driverInfo?.picture_url) {
           setProfileImage(driverInfo.picture_url);
+          setOriginalProfileUrl(driverInfo.picture_url);
         } else {
           setProfileImage(null);
         }
@@ -115,6 +117,7 @@ export default function ProfileScreen() {
 
   const toggleEdit = () => {
     setEditMode(prevMode => !prevMode);
+    setProfileImage(originalProfileUrl);
     setShowDatePicker(false);
     if (!editMode) {
       resetEditFields();
@@ -165,7 +168,7 @@ export default function ProfileScreen() {
       } else if (profileImage && !isLocalImage) {
         finalImageUrl = profileImage.split('?')[0]; // Remove any cache buster
       }
-
+      console.log(finalImageUrl);
       const driverObj = {
         id: driver.id,
         name: driverName,
@@ -186,8 +189,10 @@ export default function ProfileScreen() {
           ? `${finalImageUrl}&t=${new Date().getTime()}` // URL already has query params, use &
           : `${finalImageUrl}?t=${new Date().getTime()}`; // URL has no query params, use ?
         setProfileImage(cachedUrl);
+        setOriginalProfileUrl(cachedUrl);
       } else {
         setProfileImage(finalImageUrl);
+        setOriginalProfileUrl(finalImageUrl);
       }
 
       // Exit edit mode
@@ -275,11 +280,6 @@ export default function ProfileScreen() {
                 onPress={editMode ? pickImage : undefined}
                 style={[styles.profileImageWrapper, editMode && styles.profileImageWrapperEdit]}>
                 {isImageLoading ? <ActivityIndicator size={'large'} /> : renderProfileImage()}
-                {editMode && (
-                  <View style={styles.cameraIconOverlay}>
-                    <MaterialIcons name="photo-camera" size={24} color="white" />
-                  </View>
-                )}
               </Pressable>
               {editMode && <Text style={styles.tapToEditText}>Tap to change photo</Text>}
             </View>
@@ -473,15 +473,10 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   loaderOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 10,
+    width: 200,
+    height: 200,
   },
   errorText: {
     color: 'red',
@@ -533,6 +528,8 @@ const styles = StyleSheet.create({
   profileImageWrapper: {
     position: 'relative',
     borderRadius: 100,
+    width: 200,
+    height: 200,
     overflow: 'hidden',
   },
   profileImageWrapperEdit: {

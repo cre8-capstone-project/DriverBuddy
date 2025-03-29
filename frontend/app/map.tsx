@@ -17,6 +17,7 @@ import {
 import {getSettings} from '@/services/SettingsService';
 import {usePlaySound} from '@/hooks/usePlaySound';
 import {INSTRUCTION_MESSAGE} from '@/features/safety-alert/constants/messages';
+import AddRestStopPanel from '@/features/map/components/AddRestStopPanel'; // ADDED OR UPDATED 27 MAR: Import AddRestStopPanel
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -24,6 +25,20 @@ console.log('GOOGLE_MAPS_APIKEY:', GOOGLE_MAPS_APIKEY);
 
 // Store base url
 const GOOGLE_MAPS_BASE_URL = 'https://maps.googleapis.com/maps/api';
+
+// ADDED OR UPDATED 28 MAR: Helper function to check if the rest stop waypoint has been passed
+function distanceBetween(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  // Simple Haversine or approximate distance. Example:
+  const R = 6371e3; // Earth radius in meters
+  const toRad = (v: number) => (v * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 // Define the region type to represent a location on the map, including the latitude, longitude, and zoom levels
 type Region = {
@@ -42,6 +57,9 @@ type Props = {
   setViewMode: (mode: ViewModeType) => void; // ADDED OR UPDATED 19 MAR: Accept setViewMode
   setViewModeContext: (mode: ViewModeType) => void; // ADDED OR UPDATED 19 MAR: Accept setViewModeContext
   viewMode: ViewModeType; // ADDED OR UPDATED 27 MAR: Identify the thumbnail view (cameraView or mapView)
+  onShowRestStopPanel?: (
+    station: {latitude: number; longitude: number; name: string} | null,
+  ) => void; // ADDED OR UPDATED 27 MAR: Callback to tell journey.tsx when to show AddRestStopPanel
 };
 
 // Save values temporarily so they can be used later even if the app is closed or reloaded
@@ -50,7 +68,17 @@ let savedDestination: {latitude: number; longitude: number} | null = null;
 let savedOriginLabel: string | null = null;
 let savedDestinationLabel: string | null = null;
 
+// ADDED OR UPDATED 28 MAR: Customize pins for rest stop types
+const restStopIcons: {[key: string]: any} = {
+  gas_station: require('@/assets/images/gas-station-pin.png'),
+  lodging: require('@/assets/images/lodging-pin.png'),
+  convenience_store: require('@/assets/images/convenience-store-pin.png'),
+  default: require('@/assets/images/rest-stop-pin.png'),
+};
+
 export const Map = forwardRef((props: Props, ref) => {
+  // ADDED OR UPDATED 28 MAR: State to store the current rest stop pin icon
+  const [restStopIcon, setRestStopIcon] = useState(require('@/assets/images/rest-stop-pin.png'));
   // Using saved values to persist data even when moving away from mapview
   const [origin, setOrigin] = useState<Region | null>(savedOrigin);
   const [destination, setDestination] = useState<{latitude: number; longitude: number} | null>(
@@ -125,7 +153,49 @@ export const Map = forwardRef((props: Props, ref) => {
   };
 
   // ADDED OR UPDATED 26 MAR: Rest stop polyline color
-  const restStopRouteColor = hexToRGBA(theme.lightColors!.primary!, 0.5);
+  const restStopRouteColor = hexToRGBA('#7889b9', 1); // 60% of primary color
+  // const restStopRouteColor = hexToRGBA('#00FFFF', 1); // Sky cyan from brand color palette
+  // const restStopRouteColor = hexToRGBA('#88FF68', 1); // Accent color from brand color palette
+
+  // ADDED OR UPDATED 27 MAR: State for managing rest stop interaction
+  type RestStop = {latitude: number; longitude: number; name: string};
+  const [selectedRestStop, setSelectedRestStop] = useState<RestStop | null>(null);
+  const [showAddRestStopPanel, setShowAddRestStopPanel] = useState(false);
+  const [routeWaypoints, setRouteWaypoints] = useState<{latitude: number; longitude: number}[]>([]);
+  const [pinnedRestStop, setPinnedRestStop] = useState<RestStop | null>(null);
+
+  // ADDED OR UPDATED 27 MAR: Function to handle rest stop pin press
+  const handleRestStopPress = (station: {latitude: number; longitude: number; name: string}) => {
+    console.log('User tapped rest stop:', station.name);
+    setSelectedRestStop(station);
+    // ADDED OR UPDATED 27 MAR: Trigger callback instead of invoking add rest stop panel
+    // setShowAddRestStopPanel(true);
+    if (props.onShowRestStopPanel) {
+      props.onShowRestStopPanel(station);
+    }
+  };
+
+  // ADDED OR UPDATED 27 MAR: Handlers for adding or canceling a rest stop
+  const handleAddRestStopYes = () => {
+    setRestStops([]);
+    if (selectedRestStop) {
+      setRouteWaypoints(prev => [
+        ...prev,
+        {
+          latitude: selectedRestStop.latitude,
+          longitude: selectedRestStop.longitude,
+        },
+      ]);
+      setPinnedRestStop(selectedRestStop);
+    }
+    setShowAddRestStopPanel(false);
+    setSelectedRestStop(null);
+  };
+
+  const handleAddRestStopNo = () => {
+    setShowAddRestStopPanel(false);
+    setSelectedRestStop(null);
+  };
 
   // ADDED OR UPDATED 21 MAR: Load persisted settings on mount
   useEffect(() => {
@@ -333,6 +403,24 @@ export const Map = forwardRef((props: Props, ref) => {
     }
   };
 
+  // ADDED OR UPDATED 28 MAR: Remove rest stop waypoint when it has been passed
+  useEffect(() => {
+    if (!drivingMode || routeWaypoints.length === 0 || !origin) return;
+    const threshold = 30; // 30 meters from the waypoint will remove it from the route
+    const [firstWaypoint, ...others] = routeWaypoints;
+    const dist = distanceBetween(
+      origin.latitude,
+      origin.longitude,
+      firstWaypoint.latitude,
+      firstWaypoint.longitude,
+    );
+    if (dist < threshold) {
+      setRouteWaypoints(others);
+      setPinnedRestStop(null);
+      console.log('Passed the waypoint, removing it from routeWaypoints');
+    }
+  }, [origin, drivingMode, routeWaypoints]);
+
   // UPDATED 11 MAR: Function to handle Nearby Stops button press using nearbysearch endpoint with radius parameter, displaying ALL gas stations within the perimeter
   const handleNearbyStops = async () => {
     console.log('handleNearbyStops is invoked');
@@ -373,6 +461,10 @@ export const Map = forwardRef((props: Props, ref) => {
       // console.log(`Number of Rest Stops: ${restStopCount}`);
       // console.log(`Alert Message & Sound: ${alertMsgAndSound}`);
 
+      // ADDED OR UPDATED 28 MAR: Mapping of icons to rest stop types
+      const pinImage = restStopIcons[mappedRestStopType] || restStopIcons.default;
+      setRestStopIcon(pinImage);
+
       const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(
         `${currentLocation.latitude},${currentLocation.longitude}`,
       )}&radius=${restStopRadius}&type=${mappedRestStopType}&keyword=${restStopKeyword}&key=${GOOGLE_MAPS_APIKEY}`;
@@ -403,6 +495,8 @@ export const Map = forwardRef((props: Props, ref) => {
             latitude: stationLat,
             longitude: stationLng,
             name: result.name,
+            photos: result.photos,
+            vicinity: result.vicinity,
             distance: distance, // Store the distance for sorting
           };
         });
@@ -477,6 +571,9 @@ export const Map = forwardRef((props: Props, ref) => {
       );
     }
     handleNearbyStops();
+    // ADDED OR UPDATED 27 MAR: Switch to map view when displaying rest stops
+    setViewMode('mapView');
+    setViewModeContext('mapView');
   };
 
   // ADDED OR UPDATED 16 MAR: Actions when user clicks NO on modal
@@ -664,7 +761,39 @@ export const Map = forwardRef((props: Props, ref) => {
       // ADDED OR UPDATED 24 MAR: Clear savedDestination when invoking clearSearch
       savedDestination = null;
     },
+
+    // ADDED OR UPDATED 28 MAR: Expose addWaypoint to update the route with selected rest stop
+    // addWaypoint: (station: {latitude: number; longitude: number; name: string} | null) => {
+    //   // Remove all displayed rest stops
+    //   setRestStops([]);
+    //   // Then add station as a waypoint
+    //   if (station) {
+    //     setRouteWaypoints(prev => [
+    //       ...prev,
+    //       {latitude: station.latitude, longitude: station.longitude},
+    //     ]);
+    //     setPinnedRestStop(station);
+    //   }
+    // },
+    // ADDED OR UPDATED 28 MAR: Expose addWaypoint to update the route with ONE selected rest stop
+    addWaypoint: (station: {latitude: number; longitude: number; name: string} | null) => {
+      // Remove all displayed rest stops pins
+      setRestStops([]);
+      // Then add station as a waypoint while replacing any existing waypoint
+      if (station) {
+        setRouteWaypoints([{latitude: station.latitude, longitude: station.longitude}]);
+        setPinnedRestStop(station);
+      }
+    },
   }));
+
+  // ADDED OR UPDATED 27 MAR: Clear savedDestination when map unmounts
+  useEffect(() => {
+    return () => {
+      console.log('Map unmounted, reset savedDestination');
+      savedDestination = null;
+    };
+  }, []);
 
   // Open search modal
   const openSearch = (field: 'origin' | 'destination') => {
@@ -816,6 +945,17 @@ export const Map = forwardRef((props: Props, ref) => {
             mode="DRIVING" // Allowed values are DRIVING, BICYCLING, WALKING, and TRANSIT
             resetOnChange={false} // Prevents polyline from blinking when updating
             splitWaypoints={true} // Split waypoints to multiple routes to prevent higher Google costs
+            waypoints={routeWaypoints} // Add waypoints to the route
+          />
+        )}
+        {/* ADDED OR UPDATED 28 MAR: Keep the chosen rest stop pinned separately */}
+        {pinnedRestStop && (
+          <Marker
+            coordinate={{latitude: pinnedRestStop.latitude, longitude: pinnedRestStop.longitude}}
+            title={pinnedRestStop.name}
+            // image={require('@/assets/images/rest-stop-pin.png')}
+            image={restStopIcon}
+
           />
         )}
         {destination && (
@@ -832,7 +972,11 @@ export const Map = forwardRef((props: Props, ref) => {
             key={`restStop-${index}`}
             coordinate={{latitude: station.latitude, longitude: station.longitude}}
             title={station.name}
-            image={require('@/assets/images/rest-stop-pin.png')}
+            // image={require('@/assets/images/rest-stop-pin.png')}
+            image={restStopIcon}
+
+            // ADDED OR UPDATED 27 MAR: Show AddRestStoppanel on pin press
+            onPress={() => handleRestStopPress(station)}
           />
         ))}
         {/* ADDED OR UPDATED 26 MAR: Show a polyline to each rest stop */}
@@ -852,11 +996,21 @@ export const Map = forwardRef((props: Props, ref) => {
           ))}
       </MapView>
 
+      {/* ADDED OR UPDATED 27 MAR: Show AddRestStopPanel as portal */}
+      {showAddRestStopPanel && (
+        <AddRestStopPanel
+          visible={showAddRestStopPanel}
+          station={selectedRestStop}
+          onConfirmYes={handleAddRestStopYes}
+          onConfirmNo={handleAddRestStopNo}
+        />
+      )}
+
       {/* ADDED OR UPDATED 26 MAR: Enable rest stops button */}
       {showRestStopsButton && (
         <View style={styles.nearbyStopsButtonContainer}>
           <TouchableOpacity style={styles.nearbyStopsButton} onPress={handleNearbyStops}>
-            <Icon name="location" type="ionicon" size={20} />
+            <Icon name="location-pin" type="material" size={20} />
             <Text style={styles.nearbyStopsButtonText}>Show Rest Stops</Text>
           </TouchableOpacity>
         </View>
@@ -866,7 +1020,7 @@ export const Map = forwardRef((props: Props, ref) => {
       {showContinueDriving && (
         <View style={styles.continueDrivingButtonContainer}>
           <TouchableOpacity style={styles.continueDrivingButton} onPress={handleContinueDriving}>
-            <Icon name="navigate" type="ionicon" size={20} />
+            <Icon name="directions-car" type="material" size={20} />
             <Text style={styles.continueDrivingButtonText}>Resume Driving</Text>
           </TouchableOpacity>
         </View>

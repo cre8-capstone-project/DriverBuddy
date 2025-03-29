@@ -12,7 +12,7 @@ type ShowRestStopsDialogProps = {
 };
 
 // Default auto-close time for modal in milliseconds
-const AUTO_CLOSE_DELAY = 8000;
+const AUTO_CLOSE_DELAY = 12000;
 
 export const ShowRestStopsDialog = ({
   isVisible,

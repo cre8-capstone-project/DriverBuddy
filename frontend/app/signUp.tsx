@@ -161,9 +161,11 @@ export default function SignUpScreen() {
         edges={['top', 'bottom', 'left', 'right']}>
         <View style={styles.container}>
           {validCode ? (
-            <View>
+            <>
               {showCameraView && (
                 <View style={styles.cameraViewContainer}>
+                  <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={StyleSheet.absoluteFill} />
+
                   <View style={styles.cameraViewWrapper}>
                     <Camera
                       ref={camera}
@@ -191,7 +193,7 @@ export default function SignUpScreen() {
                   />
                 </View>
                 <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 10}}>
-                  {photoUri === '' ? "Let's upload your display image" : "You're Looking great!"}
+                  {photoUri === '' ? 'Welcome to DriveBuddy!' : "You're Looking great!"}
                 </Text>
                 {photoUri === '' && (
                   <Text style={{fontSize: 16, textAlign: 'center', marginBottom: 0}}>
@@ -236,7 +238,7 @@ export default function SignUpScreen() {
                   )}
                 </View>
               </View>
-            </View>
+            </>
           ) : (
             <View style={{width: '100%', justifyContent: 'center'}}>
               {/* Logo Container */}
@@ -453,6 +455,8 @@ const styles = StyleSheet.create({
   profileImageWrapper: {
     position: 'relative',
     borderRadius: 100,
+    borderColor: 'rgba(0,255,255,0.5)',
+    borderWidth: 1,
     overflow: 'hidden',
   },
   profileImage: {

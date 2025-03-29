@@ -18,6 +18,9 @@ import Welcome2 from '@/assets/images/Welcome2.png';
 import LogoHorizontal from '@/assets/images/drivebuddy-logo-name-horizontal.png';
 import LogoVertical from '@/assets/images/drivebuddy-logo-name.png';
 import {LinearGradient} from 'expo-linear-gradient';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {StatusBar} from 'expo-status-bar';
+
 interface OnboardingProps {
   callback?: (state: boolean) => void;
 }
@@ -105,28 +108,37 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             exiting={FadeOut.duration(300)}
             style={styles.finalSlide}
             key="slide3">
-            <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={StyleSheet.absoluteFill} />
+            <LinearGradient
+              colors={['#f1f6fa', '#ffffff', '#ffffff']}
+              style={StyleSheet.absoluteFill}>
+              <StatusBar translucent backgroundColor="#f1f6fa" style="dark" />
+              <SafeAreaView
+                style={{flex: 1, backgroundColor: 'transparent'}}
+                edges={['top', 'bottom', 'left', 'right']}>
+                <View style={styles.finalSlideContainer}>
+                  <Image
+                    source={LogoVertical as ImageSourcePropType}
+                    style={styles.finalLogo}
+                    resizeMode="contain"
+                  />
 
-            <Image
-              source={LogoVertical as ImageSourcePropType}
-              style={styles.finalLogo}
-              resizeMode="contain"
-            />
-
-            <Text style={styles.finalText}>Drive aware, get there!</Text>
-            <View style={styles.buttonContainer}>
-              <FullWidthButton
-                title="Create Account"
-                type="primary"
-                onPress={handleCreateAccount}
-              />
-              <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
-                <Text>Already have an account? </Text>
-                <TouchableOpacity onPress={handleSignIn}>
-                  <Text style={{color: 'blue', fontWeight: 'bold'}}>Log In</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                  <Text style={styles.finalText}>Drive aware, get there!</Text>
+                  <View style={styles.buttonContainer}>
+                    <FullWidthButton
+                      title="Create Account"
+                      type="primary"
+                      onPress={handleCreateAccount}
+                    />
+                    <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
+                      <Text>Already have an account? </Text>
+                      <TouchableOpacity onPress={handleSignIn}>
+                        <Text style={{color: 'blue', fontWeight: 'bold'}}>Log In</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </SafeAreaView>
+            </LinearGradient>
           </Animated.View>
         );
       default:
@@ -135,7 +147,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
   };
 
   return onboardingStep === 3 ? (
-    <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={styles.container}>
+    <LinearGradient colors={['#f1f6fa', '#ffffff']} style={styles.container}>
       {renderStep()}
       <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
     </LinearGradient>
@@ -180,10 +192,14 @@ const styles = StyleSheet.create({
   },
   finalSlide: {
     flex: 1,
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  finalSlideContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 30,
-    backgroundColor: '#fff',
   },
   image: {
     width: width * 0.8,

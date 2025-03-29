@@ -100,6 +100,7 @@ export default function HomeScreen() {
   const mapRef = useRef<{
     openSearch: (field: 'origin' | 'destination') => void;
     clearSearch: () => void;
+    addWaypoint: (station: {latitude: number; longitude: number; name: string} | null) => void;
   } | null>(null);
 
   return (
@@ -225,12 +226,14 @@ export default function HomeScreen() {
 
       {showRestStopPanel && (
         <View style={styles.addRestStopPanelOverlay} pointerEvents="auto">
-          {/* Add invisible layer to block touches on map behind the panel */}
+          {/* Cocoy's Update: Add invisible layer to block touches on map behind the panel */}
           <View style={styles.invisibleBlocker} pointerEvents="auto" />
           <AddRestStopPanel
             visible={showRestStopPanel}
             station={selectedRestStop}
             onConfirmYes={() => {
+              // Cocoy's Update: Call addWaypoint in map.tsx to update the route
+              mapRef.current?.addWaypoint(selectedRestStop);
               setShowRestStopPanel(false);
               setSelectedRestStop(null);
             }}
@@ -330,7 +333,7 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   invisibleBlocker: {
-    height: 200, // To match panelHeight in AddRestStopPanel 
+    height: 250,
     backgroundColor: 'transparent',
   },
 });

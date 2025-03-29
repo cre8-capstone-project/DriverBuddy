@@ -164,7 +164,10 @@ export default function SignUpScreen() {
             <>
               {showCameraView && (
                 <View style={styles.cameraViewContainer}>
-                  <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={StyleSheet.absoluteFill} />
+                  <LinearGradient
+                    colors={['#f1f6fa', '#ffffff', '#ffffff']}
+                    style={StyleSheet.absoluteFill}
+                  />
 
                   <View style={styles.cameraViewWrapper}>
                     <Camera

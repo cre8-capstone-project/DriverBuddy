@@ -68,7 +68,17 @@ let savedDestination: {latitude: number; longitude: number} | null = null;
 let savedOriginLabel: string | null = null;
 let savedDestinationLabel: string | null = null;
 
+// ADDED OR UPDATED 28 MAR: Customize pins for rest stop types
+const restStopIcons: {[key: string]: any} = {
+  gas_station: require('@/assets/images/gas-station-pin.png'),
+  lodging: require('@/assets/images/lodging-pin.png'),
+  convenience_store: require('@/assets/images/convenience-store-pin.png'),
+  default: require('@/assets/images/rest-stop-pin.png'),
+};
+
 export const Map = forwardRef((props: Props, ref) => {
+  // ADDED OR UPDATED 28 MAR: State to store the current rest stop pin icon
+  const [restStopIcon, setRestStopIcon] = useState(require('@/assets/images/rest-stop-pin.png'));
   // Using saved values to persist data even when moving away from mapview
   const [origin, setOrigin] = useState<Region | null>(savedOrigin);
   const [destination, setDestination] = useState<{latitude: number; longitude: number} | null>(
@@ -450,6 +460,10 @@ export const Map = forwardRef((props: Props, ref) => {
       // console.log(`Types of Rest Stops: ${restStopType}`);
       // console.log(`Number of Rest Stops: ${restStopCount}`);
       // console.log(`Alert Message & Sound: ${alertMsgAndSound}`);
+
+      // ADDED OR UPDATED 28 MAR: Mapping of icons to rest stop types
+      const pinImage = restStopIcons[mappedRestStopType] || restStopIcons.default;
+      setRestStopIcon(pinImage);
 
       const url = `${GOOGLE_MAPS_BASE_URL}/place/nearbysearch/json?location=${encodeURIComponent(
         `${currentLocation.latitude},${currentLocation.longitude}`,
@@ -939,7 +953,9 @@ export const Map = forwardRef((props: Props, ref) => {
           <Marker
             coordinate={{latitude: pinnedRestStop.latitude, longitude: pinnedRestStop.longitude}}
             title={pinnedRestStop.name}
-            image={require('@/assets/images/rest-stop-pin.png')}
+            // image={require('@/assets/images/rest-stop-pin.png')}
+            image={restStopIcon}
+
           />
         )}
         {destination && (
@@ -956,7 +972,9 @@ export const Map = forwardRef((props: Props, ref) => {
             key={`restStop-${index}`}
             coordinate={{latitude: station.latitude, longitude: station.longitude}}
             title={station.name}
-            image={require('@/assets/images/rest-stop-pin.png')}
+            // image={require('@/assets/images/rest-stop-pin.png')}
+            image={restStopIcon}
+
             // ADDED OR UPDATED 27 MAR: Show AddRestStoppanel on pin press
             onPress={() => handleRestStopPress(station)}
           />

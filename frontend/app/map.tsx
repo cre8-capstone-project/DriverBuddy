@@ -26,6 +26,20 @@ console.log('GOOGLE_MAPS_APIKEY:', GOOGLE_MAPS_APIKEY);
 // Store base url
 const GOOGLE_MAPS_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
+// ADDED OR UPDATED 28 MAR: Helper function to check if the rest stop waypoint has been passed
+function distanceBetween(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  // Simple Haversine or approximate distance. Example:
+  const R = 6371e3; // Earth radius in meters
+  const toRad = (v: number) => (v * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 // Define the region type to represent a location on the map, including the latitude, longitude, and zoom levels
 type Region = {
   latitude: number;
@@ -379,6 +393,24 @@ export const Map = forwardRef((props: Props, ref) => {
     }
   };
 
+  // ADDED OR UPDATED 28 MAR: Remove rest stop waypoint when it has been passed
+  useEffect(() => {
+    if (!drivingMode || routeWaypoints.length === 0 || !origin) return;
+    const threshold = 30; // 30 meters from the waypoint will remove it from the route
+    const [firstWaypoint, ...others] = routeWaypoints;
+    const dist = distanceBetween(
+      origin.latitude,
+      origin.longitude,
+      firstWaypoint.latitude,
+      firstWaypoint.longitude,
+    );
+    if (dist < threshold) {
+      setRouteWaypoints(others);
+      setPinnedRestStop(null);
+      console.log('Passed the waypoint, removing it from routeWaypoints');
+    }
+  }, [origin, drivingMode, routeWaypoints]);
+
   // UPDATED 11 MAR: Function to handle Nearby Stops button press using nearbysearch endpoint with radius parameter, displaying ALL gas stations within the perimeter
   const handleNearbyStops = async () => {
     console.log('handleNearbyStops is invoked');
@@ -715,6 +747,30 @@ export const Map = forwardRef((props: Props, ref) => {
       // ADDED OR UPDATED 24 MAR: Clear savedDestination when invoking clearSearch
       savedDestination = null;
     },
+
+    // ADDED OR UPDATED 28 MAR: Expose addWaypoint to update the route with selected rest stop
+    // addWaypoint: (station: {latitude: number; longitude: number; name: string} | null) => {
+    //   // Remove all displayed rest stops
+    //   setRestStops([]);
+    //   // Then add station as a waypoint
+    //   if (station) {
+    //     setRouteWaypoints(prev => [
+    //       ...prev,
+    //       {latitude: station.latitude, longitude: station.longitude},
+    //     ]);
+    //     setPinnedRestStop(station);
+    //   }
+    // },
+    // ADDED OR UPDATED 28 MAR: Expose addWaypoint to update the route with ONE selected rest stop
+    addWaypoint: (station: {latitude: number; longitude: number; name: string} | null) => {
+      // Remove all displayed rest stops pins
+      setRestStops([]);
+      // Then add station as a waypoint while replacing any existing waypoint
+      if (station) {
+        setRouteWaypoints([{latitude: station.latitude, longitude: station.longitude}]);
+        setPinnedRestStop(station);
+      }
+    },
   }));
 
   // ADDED OR UPDATED 27 MAR: Clear savedDestination when map unmounts
@@ -875,6 +931,15 @@ export const Map = forwardRef((props: Props, ref) => {
             mode="DRIVING" // Allowed values are DRIVING, BICYCLING, WALKING, and TRANSIT
             resetOnChange={false} // Prevents polyline from blinking when updating
             splitWaypoints={true} // Split waypoints to multiple routes to prevent higher Google costs
+            waypoints={routeWaypoints} // Add waypoints to the route
+          />
+        )}
+        {/* ADDED OR UPDATED 28 MAR: Keep the chosen rest stop pinned separately */}
+        {pinnedRestStop && (
+          <Marker
+            coordinate={{latitude: pinnedRestStop.latitude, longitude: pinnedRestStop.longitude}}
+            title={pinnedRestStop.name}
+            image={require('@/assets/images/rest-stop-pin.png')}
           />
         )}
         {destination && (

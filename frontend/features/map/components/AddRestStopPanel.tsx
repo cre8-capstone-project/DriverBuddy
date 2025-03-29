@@ -18,7 +18,7 @@ interface AddRestStopPanelProps {
 const AddRestStopPanel: React.FC<AddRestStopPanelProps> = props => {
   const {visible, station, onConfirmYes, onConfirmNo} = props;
   const screenWidth = Dimensions.get('window').width;
-  const minPanelHeight = 160;
+  const minPanelHeight = 200;
 
   // State to hold the actual panel height when it is rendered
   const [panelHeight, setPanelHeight] = useState(minPanelHeight);
@@ -125,18 +125,18 @@ const AddRestStopPanel: React.FC<AddRestStopPanelProps> = props => {
             {station ? station.vicinity : 'Rest Stop Address'}
           </Text>
           <View style={styles.buttonRow}>
-            {/* <Button
+            <Button
               title="Add Rest Stop"
               containerStyle={styles.addRestStopButtonContainer}
               buttonStyle={styles.addRestStopButton}
               titleStyle={styles.addRestStopButtonTitle}
               onPress={() => {
                 // Call parent callback for adding rest stop
-                if (onConfirmYes) {
-                  onConfirmYes();
+                if (props.onConfirmYes) {
+                  props.onConfirmYes();
                 }
               }}
-            /> */}
+            />
             {/* <Button
               title="Cancel"
               type="outline"

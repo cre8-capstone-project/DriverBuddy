@@ -20,6 +20,8 @@ import {Input} from 'react-native-elements';
 import {LinearGradient} from 'expo-linear-gradient';
 import {ensureDefaultSettings} from '@/utils/utils';
 import {Icon} from '@rneui/themed';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {StatusBar} from 'expo-status-bar';
 
 export default function SignInScreen() {
   const {showOnboardingSlide} = useLocalSearchParams();
@@ -64,128 +66,109 @@ const SignInForm = () => {
     }
   };
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#FFFFFF', '#eef4fa']} style={StyleSheet.absoluteFill} />
-
-      {/* Logo Container */}
-      <View style={styles.logoContainer}>
-        <Image
-          source={DriveBuddyLogo as ImageSourcePropType}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-      <Input
-        label="Email"
-        labelStyle={{
-          fontSize: 15,
-          fontWeight: '400',
-          color: '#1E3A8A',
-        }}
-        placeholder="Your email address"
-        value={email}
-        onChangeText={setEmail}
-        onFocus={() => setFocusedInput('email')}
-        onBlur={() => setFocusedInput(null)}
-        containerStyle={{
-          width: '100%',
-          paddingHorizontal: 0,
-        }}
-        inputContainerStyle={{
-          borderWidth: 1,
-          borderColor: '#1E3A8A',
-          borderRadius: 14,
-          paddingHorizontal: 10,
-          paddingVertical: 6,
-          backgroundColor: focusedInput === 'email' ? '#E6FCFF' : 'white',
-        }}
-        inputStyle={{
-          fontSize: 18,
-          color: '#333',
-        }}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      {/* <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        style={styles.input}
-      /> */}
-
-      <Input
-        label="Password"
-        labelStyle={{
-          fontSize: 15,
-          fontWeight: '400',
-          color: '#1E3A8A',
-        }}
-        placeholder="Your password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={!passwordVisible}
-        onFocus={() => setFocusedInput('password')}
-        onBlur={() => setFocusedInput(null)}
-        containerStyle={{
-          width: '100%',
-          paddingHorizontal: 0,
-        }}
-        inputContainerStyle={{
-          borderWidth: 1,
-          borderColor: '#1E3A8A',
-          borderRadius: 14,
-          paddingHorizontal: 10,
-          paddingVertical: 6,
-          backgroundColor: focusedInput === 'password' ? '#E6FCFF' : 'white',
-        }}
-        inputStyle={{
-          fontSize: 18,
-          color: '#333',
-        }}
-        rightIcon={
-          <TouchableOpacity onPress={togglePasswordVisibility}>
-            <Icon
-              name={passwordVisible ? 'eye-off' : 'eye'}
-              type="material-community"
-              color="rgba(30, 58, 138, 0.6)"
-              size={20}
+    <LinearGradient colors={['#f1f6fa', '#ffffff', '#ffffff']} style={StyleSheet.absoluteFill}>
+      <StatusBar translucent backgroundColor="#f1f6fa" style="dark" />
+      <SafeAreaView
+        style={{flex: 1, backgroundColor: 'transparent'}}
+        edges={['top', 'bottom', 'left', 'right']}>
+        <View style={styles.container}>
+          {/* Logo Container */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={DriveBuddyLogo as ImageSourcePropType}
+              style={styles.logo}
+              resizeMode="contain"
             />
-          </TouchableOpacity>
-        }
-      />
-      {/* <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      /> */}
+          </View>
+          <Input
+            label="Email"
+            labelStyle={{
+              fontSize: 15,
+              fontWeight: '400',
+              color: '#1E3A8A',
+            }}
+            placeholder="Your email address"
+            value={email}
+            onChangeText={setEmail}
+            onFocus={() => setFocusedInput('email')}
+            onBlur={() => setFocusedInput(null)}
+            containerStyle={{
+              width: '100%',
+              paddingHorizontal: 0,
+            }}
+            inputContainerStyle={{
+              borderWidth: 1,
+              borderColor: '#1E3A8A',
+              borderRadius: 14,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              backgroundColor: focusedInput === 'email' ? '#E6FCFF' : 'white',
+            }}
+            inputStyle={{
+              fontSize: 18,
+              color: '#333',
+            }}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+          <Input
+            label="Password"
+            labelStyle={{
+              fontSize: 15,
+              fontWeight: '400',
+              color: '#1E3A8A',
+            }}
+            placeholder="Your password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!passwordVisible}
+            onFocus={() => setFocusedInput('password')}
+            onBlur={() => setFocusedInput(null)}
+            containerStyle={{
+              width: '100%',
+              paddingHorizontal: 0,
+            }}
+            inputContainerStyle={{
+              borderWidth: 1,
+              borderColor: '#1E3A8A',
+              borderRadius: 14,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              backgroundColor: focusedInput === 'password' ? '#E6FCFF' : 'white',
+            }}
+            inputStyle={{
+              fontSize: 18,
+              color: '#333',
+            }}
+            rightIcon={
+              <TouchableOpacity onPress={togglePasswordVisibility}>
+                <Icon
+                  name={passwordVisible ? 'eye-off' : 'eye'}
+                  type="material-community"
+                  color="rgba(30, 58, 138, 0.6)"
+                  size={20}
+                />
+              </TouchableOpacity>
+            }
+          />
 
-      <View style={styles.buttonsContainer}>
-        <FullWidthButton
-          title="Sign In"
-          type="primary"
-          onPress={handleAuth}
-          disabled={!isFormValid}
-        />
-        <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
-          <Text>I do not have an account yet </Text>
-          <TouchableOpacity onPress={() => router.replace('/signUp')}>
-            <Text style={{color: 'blue', fontWeight: 'bold'}}>Sign Up</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonsContainer}>
+            <FullWidthButton
+              title="Sign In"
+              type="primary"
+              onPress={handleAuth}
+              disabled={!isFormValid}
+            />
+            <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
+              <Text>I do not have an account yet </Text>
+              <TouchableOpacity onPress={() => router.replace('/signUp')}>
+                <Text style={{color: 'blue', fontWeight: 'bold'}}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-        {/* <FullWidthButton
-          title="No account? Sign up"
-          type="secondary"
-          onPress={() => router.replace('/signUp')}
-        /> */}
-
-        {/* <Button title="Sign In" onPress={handleAuth} />
-        <Button title="No account? Sign Up" onPress={() => router.replace('/signUp')} /> */}
-      </View>
-    </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 

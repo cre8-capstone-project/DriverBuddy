@@ -25,46 +25,60 @@ export default function HomeScreen() {
   return (
     <>
       {showOnboarding && <OnboardingTour onComplete={() => setShowOnboarding(false)} />}
-      {/* <View style={styles.container} > */}
-      <ImageBackground
-        source={HomeBackground as ImageSourcePropType}
-        resizeMode="cover"
-        style={styles.container}>
-        <View style={styles.overlay} />
-        <View>
-          <TouchableOpacity onPress={toggleStartDialog}>
-            <View style={styles.ringL}>
-              <View style={styles.ringS}>
-                <LinearGradient
-                  colors={['rgba(0, 255, 255, 1)', 'rgba(20, 121, 175, 1)', 'rgba(30, 58, 138, 1)']}
-                  style={styles.roundButton}
-                  start={{x: 0, y: 1}}
-                  end={{x: 1.2, y: 0}}>
-                  <Icon name={'videocam'} color={'white'} size={40} />
-                  <Text style={styles.buttonText}>Start your{'\n'}journey</Text>
-                </LinearGradient>
-              </View>
+      <View style={styles.imageContainer}>
+        <ImageBackground
+          source={HomeBackground as ImageSourcePropType}
+          resizeMode="cover"
+          style={styles.backgroundImage}>
+          <View style={styles.overlay} />
+        </ImageBackground>
+      </View>
+      <View style={styles.contentContainer}>
+        <TouchableOpacity onPress={toggleStartDialog}>
+          <View style={styles.ringL}>
+            <View style={styles.ringS}>
+              <LinearGradient
+                colors={['rgba(0, 255, 255, 1)', 'rgba(20, 121, 175, 1)', 'rgba(30, 58, 138, 1)']}
+                style={styles.roundButton}
+                start={{x: 0, y: 1}}
+                end={{x: 1.2, y: 0}}>
+                <Icon name={'videocam'} color={'white'} size={40} />
+                <Text style={styles.buttonText}>Start{'\n'}Driving</Text>
+              </LinearGradient>
             </View>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+          </View>
+        </TouchableOpacity>
+      </View>
 
       <StartConfirmationDialog dialogStatus={dialogStatus} toggleDialog={toggleStartDialog} />
-      {/* </View> */}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  imageContainer: {
     flex: 1,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    marginLeft: -30,
+    marginTop: -50,
+  },
+  backgroundImage: {
+    width: '100%',
+    height: '100%',
+  },
+  contentContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: 'blue',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(5, 5, 45, 0.574)',
+    backgroundColor: 'rgba(8, 8, 44, 0.574)',
   },
   roundButton: {
     width: 140,

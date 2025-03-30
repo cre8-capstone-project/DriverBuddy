@@ -165,7 +165,7 @@ export default function SignUpScreen() {
               {showCameraView && (
                 <View style={styles.cameraViewContainer}>
                   <LinearGradient
-                    colors={['#e9ecf9', '#f4f1fb', '#ffffff']}
+                    colors={['#e9ecf9', '#fbfbfb', '#ffffff']}
                     style={StyleSheet.absoluteFill}
                   />
 
@@ -269,6 +269,7 @@ export default function SignUpScreen() {
                   paddingHorizontal: 0,
                 }}
                 inputContainerStyle={{
+                  height: 56,
                   borderWidth: 1,
                   borderColor: '#1E3A8A',
                   borderRadius: 14,
@@ -301,6 +302,7 @@ export default function SignUpScreen() {
                   paddingHorizontal: 0,
                 }}
                 inputContainerStyle={{
+                  height: 56,
                   borderWidth: 1,
                   borderColor: '#1E3A8A',
                   borderRadius: 14,
@@ -341,6 +343,7 @@ export default function SignUpScreen() {
                   marginBottom: -20,
                 }}
                 inputContainerStyle={{
+                  height: 56,
                   borderWidth: 1,
                   borderColor: '#1E3A8A',
                   borderRadius: 14,

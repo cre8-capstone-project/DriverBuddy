@@ -66,7 +66,7 @@ const SignInForm = () => {
     }
   };
   return (
-    <LinearGradient colors={['#e9ecf9', '#f4f1fb', '#ffffff']} style={StyleSheet.absoluteFill}>
+    <LinearGradient colors={['#e9ecf9', '#fbfbfb', '#ffffff']} style={StyleSheet.absoluteFill}>
       <StatusBar translucent backgroundColor="#e9ecf9" style="dark" />
       <SafeAreaView
         style={{flex: 1, backgroundColor: 'transparent'}}
@@ -97,6 +97,7 @@ const SignInForm = () => {
               paddingHorizontal: 0,
             }}
             inputContainerStyle={{
+              height: 56,
               borderWidth: 1,
               borderColor: '#1E3A8A',
               borderRadius: 14,
@@ -129,6 +130,7 @@ const SignInForm = () => {
               paddingHorizontal: 0,
             }}
             inputContainerStyle={{
+              height: 56,
               borderWidth: 1,
               borderColor: '#1E3A8A',
               borderRadius: 14,

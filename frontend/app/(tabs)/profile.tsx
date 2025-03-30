@@ -304,6 +304,7 @@ export default function ProfileScreen() {
                       paddingHorizontal: 0,
                     }}
                     inputContainerStyle={{
+                      height: 56,
                       borderWidth: 1,
                       borderColor: '#1E3A8A',
                       borderRadius: 14,
@@ -345,6 +346,7 @@ export default function ProfileScreen() {
                       paddingHorizontal: 0,
                     }}
                     inputContainerStyle={{
+                      height: 56,
                       borderWidth: 1,
                       borderColor: '#1E3A8A',
                       borderRadius: 14,
@@ -388,6 +390,7 @@ export default function ProfileScreen() {
                         paddingHorizontal: 0,
                       }}
                       inputContainerStyle={{
+                        height: 56,
                         borderWidth: 1,
                         borderColor: '#1E3A8A',
                         borderRadius: 14,

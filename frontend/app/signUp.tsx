@@ -154,8 +154,8 @@ export default function SignUpScreen() {
     }
   };
   return (
-    <LinearGradient colors={['#f1f6fa', '#ffffff', '#ffffff']} style={StyleSheet.absoluteFill}>
-      <StatusBar translucent backgroundColor="#f1f6fa" style="dark" />
+    <LinearGradient colors={['#e9ecf9', '#f4f1fb', '#ffffff']} style={StyleSheet.absoluteFill}>
+      <StatusBar translucent backgroundColor="#e9ecf9" style="dark" />
       <SafeAreaView
         style={{flex: 1, backgroundColor: 'transparent'}}
         edges={['top', 'bottom', 'left', 'right']}>
@@ -165,7 +165,7 @@ export default function SignUpScreen() {
               {showCameraView && (
                 <View style={styles.cameraViewContainer}>
                   <LinearGradient
-                    colors={['#f1f6fa', '#ffffff', '#ffffff']}
+                    colors={['#e9ecf9', '#f4f1fb', '#ffffff']}
                     style={StyleSheet.absoluteFill}
                   />
 

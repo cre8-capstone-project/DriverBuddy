@@ -109,7 +109,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             style={styles.finalSlide}
             key="slide3">
             <LinearGradient
-              colors={['#e9ecf9', '#f4f1fb', '#ffffff']}
+              colors={['#e9ecf9', '#fbfbfb', '#ffffff']}
               style={StyleSheet.absoluteFill}>
               <StatusBar translucent backgroundColor="#e9ecf9" style="dark" />
               <SafeAreaView
@@ -147,7 +147,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
   };
 
   return onboardingStep === 3 ? (
-    <LinearGradient colors={['#e9ecf9', '#f4f1fb', '#ffffff']} style={styles.container}>
+    <LinearGradient colors={['#e9ecf9', '#fbfbfb', '#ffffff']} style={styles.container}>
       {renderStep()}
       <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
     </LinearGradient>
@@ -161,22 +161,6 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
       </View>
     </View>
   );
-
-  // return (
-  //   <View style={styles.container}>
-  //     {renderStep()}
-
-  //     <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
-
-  //     {/* Navigation buttons */}
-  //     {onboardingStep < 3 ? (
-  //       <View style={styles.navigationContainer}>
-  //         <FullWidthButton title="Next" type="primary" onPress={handleNext} />
-  //         <FullWidthButton title="Skip" type="tertiary" onPress={() => setOnboardingStep(3)} />
-  //       </View>
-  //     ) : null}
-  //   </View>
-  // );
 };
 
 const styles = StyleSheet.create({

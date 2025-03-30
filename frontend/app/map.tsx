@@ -772,9 +772,10 @@ export const Map = forwardRef((props: Props, ref) => {
         setPinnedRestStop(station);
 
         // Zoom out to show the updated route with the added rest stop
-        if (origin && destination) {
-          const allLats = [origin.latitude, station.latitude, destination.latitude];
-          const allLngs = [origin.longitude, station.longitude, destination.longitude];
+        // ADDED OR UPDATED 29 MAR: Zoom out to show only origin and station
+        if (origin && station) {
+          const allLats = [origin.latitude, station.latitude];
+          const allLngs = [origin.longitude, station.longitude];
           const minLat = Math.min(...allLats);
           const maxLat = Math.max(...allLats);
           const minLng = Math.min(...allLngs);

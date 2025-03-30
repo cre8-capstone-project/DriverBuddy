@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoContainer: {
-    width: width / 3, // 1/3 of the screen width
+    width: width / 2, // 1/2 of the screen width
     aspectRatio: 1, // Maintain aspect ratio
     marginBottom: 30,
     // marginTop: 10,

@@ -17,6 +17,8 @@ import Welcome1 from '@/assets/images/Welcome1.png';
 import Welcome2 from '@/assets/images/Welcome2.png';
 import LogoHorizontal from '@/assets/images/drivebuddy-logo-name-horizontal.png';
 import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
+import DriveBuddyLogoGif from '@/assets/images/drivebuddy-logo-animation.gif';
+
 import {LinearGradient} from 'expo-linear-gradient';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
@@ -118,7 +120,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
                 <View style={styles.finalSlideContainer}>
                   <View style={styles.logoContainer}>
                     <Image
-                      source={DriveBuddyLogo as ImageSourcePropType}
+                      source={DriveBuddyLogoGif as ImageSourcePropType}
                       style={styles.finalLogo}
                       resizeMode="contain"
                     />
@@ -207,10 +209,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoContainer: {
-    width: width / 3, // 1/3 of the screen width
+    width: width / 2, // 1/2 of the screen width
     aspectRatio: 1, // Maintain aspect ratio
     marginBottom: 20,
-    marginTop: 20,
+    // marginTop: 20,
   },
   finalLogo: {
     width: '100%',

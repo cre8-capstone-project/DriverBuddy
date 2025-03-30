@@ -109,9 +109,9 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             style={styles.finalSlide}
             key="slide3">
             <LinearGradient
-              colors={['#f1f6fa', '#ffffff', '#ffffff']}
+              colors={['#e9ecf9', '#f4f1fb', '#ffffff']}
               style={StyleSheet.absoluteFill}>
-              <StatusBar translucent backgroundColor="#f1f6fa" style="dark" />
+              <StatusBar translucent backgroundColor="#e9ecf9" style="dark" />
               <SafeAreaView
                 style={{flex: 1, backgroundColor: 'transparent'}}
                 edges={['top', 'bottom', 'left', 'right']}>
@@ -147,7 +147,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
   };
 
   return onboardingStep === 3 ? (
-    <LinearGradient colors={['#f1f6fa', '#ffffff']} style={styles.container}>
+    <LinearGradient colors={['#e9ecf9', '#f4f1fb', '#ffffff']} style={styles.container}>
       {renderStep()}
       <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
     </LinearGradient>

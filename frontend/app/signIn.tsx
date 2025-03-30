@@ -186,8 +186,8 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: width / 3, // 1/3 of the screen width
     aspectRatio: 1, // Maintain aspect ratio
-    marginBottom: 20,
-    marginTop: 20,
+    marginBottom: 30,
+    // marginTop: 10,
   },
   logo: {
     width: '100%',

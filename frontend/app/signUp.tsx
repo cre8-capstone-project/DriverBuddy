@@ -154,7 +154,7 @@ export default function SignUpScreen() {
     }
   };
   return (
-    <LinearGradient colors={['#e9ecf9', '#f4f1fb', '#ffffff']} style={StyleSheet.absoluteFill}>
+    <LinearGradient colors={['#e9ecf9', '#fbfbfb', '#ffffff']} style={StyleSheet.absoluteFill}>
       <StatusBar translucent backgroundColor="#e9ecf9" style="dark" />
       <SafeAreaView
         style={{flex: 1, backgroundColor: 'transparent'}}
@@ -480,8 +480,8 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: width / 3, // 1/3 of the screen width
     aspectRatio: 1, // Maintain aspect ratio
-    marginBottom: 20,
-    marginTop: 20,
+    marginBottom: 30,
+    // marginTop: 10,
     marginLeft: 'auto',
     marginRight: 'auto',
   },

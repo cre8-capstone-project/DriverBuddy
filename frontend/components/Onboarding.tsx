@@ -16,7 +16,7 @@ import FullWidthButton from '@/components/FullWidthButton';
 import Welcome1 from '@/assets/images/Welcome1.png';
 import Welcome2 from '@/assets/images/Welcome2.png';
 import LogoHorizontal from '@/assets/images/drivebuddy-logo-name-horizontal.png';
-import LogoVertical from '@/assets/images/drivebuddy-logo-name.png';
+import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
 import {LinearGradient} from 'expo-linear-gradient';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
@@ -116,11 +116,13 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
                 style={{flex: 1, backgroundColor: 'transparent'}}
                 edges={['top', 'bottom', 'left', 'right']}>
                 <View style={styles.finalSlideContainer}>
-                  <Image
-                    source={LogoVertical as ImageSourcePropType}
-                    style={styles.finalLogo}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.logoContainer}>
+                    <Image
+                      source={DriveBuddyLogo as ImageSourcePropType}
+                      style={styles.finalLogo}
+                      resizeMode="contain"
+                    />
+                  </View>
 
                   <Text style={styles.finalText}>Drive aware, get there!</Text>
                   <View style={styles.buttonContainer}>
@@ -204,9 +206,16 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 20,
   },
+  logoContainer: {
+    width: width / 3, // 1/3 of the screen width
+    aspectRatio: 1, // Maintain aspect ratio
+    marginBottom: 20,
+    marginTop: 20,
+  },
   finalLogo: {
     width: '100%',
-    marginBottom: 20,
+    height: '100%',
+    // marginBottom: 20,
   },
   finalText: {
     fontSize: 64,

@@ -13,6 +13,8 @@ type FaceDetectionContextType = {
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   instructionStatus: boolean;
   setInstructionStatus: React.Dispatch<React.SetStateAction<boolean>>;
+  operationStatus: boolean;
+  setOperationStatus: React.Dispatch<React.SetStateAction<boolean>>;
   soundData: Audio.Sound | null;
   setSoundData: React.Dispatch<React.SetStateAction<Audio.Sound | null>>;
 };
@@ -24,6 +26,7 @@ export const FaceDetectionProvider = ({children}: {children: ReactNode}) => {
   const [alertStatus, setAlertStatus] = useState(false);
   const [message, setMessage] = useState('');
   const [instructionStatus, setInstructionStatus] = useState(false);
+  const [operationStatus, setOperationStatus] = useState(false);
   const [viewModeContext, setViewModeContext] = useState<ViewModeType>('mapView');
   const [soundData, setSoundData] = useState<Audio.Sound | null>(null);
 
@@ -40,6 +43,8 @@ export const FaceDetectionProvider = ({children}: {children: ReactNode}) => {
         setMessage,
         instructionStatus,
         setInstructionStatus,
+        operationStatus,
+        setOperationStatus,
         soundData,
         setSoundData,
       }}>

@@ -12,7 +12,8 @@ import {useLookAwayDetection} from './useLookAwayDetection';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 
 export const useDrowsinessDetection = () => {
-  const {alertStatus, setAlertStatus, setMessage, instructionStatus} = useFaceDetectionContext();
+  const {alertStatus, setAlertStatus, setMessage, instructionStatus, operationStatus} =
+    useFaceDetectionContext();
   const [leftEyeStatus, setLeftEyeStatus] = useState(false);
   const [rightEyeStatus, setRightEyeStatus] = useState(false);
   const {pitchAngleStatus} = useLookAwayDetection();
@@ -85,7 +86,7 @@ export const useDrowsinessDetection = () => {
         timestamp => now - timestamp <= BLINK_MONITORING_DURATION_WINDOW,
       ).length;
       if (eyeBlinkRateRef1.current >= BLINK_COUNT_THRESHOLD_HIGH) {
-        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
+        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus || operationStatus) {
           blinkTimestampsRef.current = [];
           blinkMidTimestampsRef.current = [];
           return;
@@ -102,7 +103,7 @@ export const useDrowsinessDetection = () => {
         timestamp => now - timestamp <= BLINK_MONITORING_DURATION_WINDOW,
       ).length;
       if (eyeBlinkRateRef2.current >= BLINK_COUNT_THRESHOLD) {
-        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
+        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus || operationStatus) {
           blinkTimestampsRef.current = [];
           blinkMidTimestampsRef.current = [];
           return;
@@ -135,7 +136,7 @@ export const useDrowsinessDetection = () => {
         startTimeDrowsinessRef.current = Date.now();
       } else if (Date.now() - startTimeDrowsinessRef.current >= BLINK_DURATION_LONG_THRESHOLD) {
         // Skip if the driver is not looking straight or alerting
-        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
+        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus || operationStatus) {
           startTimeDrowsinessRef.current = null;
           return;
         }
@@ -145,7 +146,7 @@ export const useDrowsinessDetection = () => {
         blinkMidTimestampsRef.current = [];
         startTimeDrowsinessRef.current = null;
       } else if (Date.now() - startTimeDrowsinessRef.current >= BLINK_DURATION_MID_THRESHOLD) {
-        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus) {
+        if (pitchAngleStatus !== 'center' || alertStatus || instructionStatus || operationStatus) {
           startTimeDrowsinessRef.current = null;
           return;
         }

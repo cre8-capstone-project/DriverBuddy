@@ -131,7 +131,7 @@ export const Map = forwardRef((props: Props, ref) => {
   // ADDED OR UPDATED 16 MAR: State to track the cycle count to trigger modal (separate from alertCount)
   const [cycle, setCycle] = useState(0);
   // UPDATED 14 MAR: Access alertCount and resetAlertCount from FaceDetectionContext
-  const {alertCount, soundData, setAlertStatus} = useFaceDetectionContext();
+  const {alertCount, soundData, setAlertStatus, setOperationStatus} = useFaceDetectionContext();
   // ADDED OR UPDATED 16 MAR: State to track the previous alertCount when the modal was closed
   const [prevAlertCount, setPrevAlertCount] = useState(alertCount);
   const {playSound} = usePlaySound();
@@ -546,6 +546,8 @@ export const Map = forwardRef((props: Props, ref) => {
 
         // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
         setShowContinueDriving(true);
+
+        setOperationStatus(true);
       } else {
         Alert.alert('No gas stations found nearby');
       }
@@ -620,6 +622,8 @@ export const Map = forwardRef((props: Props, ref) => {
 
     // ADDED OR UPDATED 26 MAR: Show rest stops button
     setShowRestStopsButton(true);
+
+    setOperationStatus(false);
   };
 
   // Function to geocode a place name using Google Geocoding API
@@ -753,6 +757,7 @@ export const Map = forwardRef((props: Props, ref) => {
     openSearch: (field: 'origin' | 'destination') => {
       setEditingField(field);
       setSearchModalVisible(true);
+      setOperationStatus(true);
     },
     clearSearch: () => {
       setCoordinateInput('');
@@ -810,11 +815,13 @@ export const Map = forwardRef((props: Props, ref) => {
     // Persist the input value entered
     setCoordinateInput(field === 'origin' ? originLabel : destinationLabel);
     setSearchModalVisible(true);
+    setOperationStatus(true);
   };
 
   // Close search modal
   const closeSearch = () => {
     setSearchModalVisible(false);
+    setOperationStatus(false);
     Keyboard.dismiss();
   };
 
@@ -964,7 +971,6 @@ export const Map = forwardRef((props: Props, ref) => {
             title={pinnedRestStop.name}
             // image={require('@/assets/images/rest-stop-pin.png')}
             image={restStopIcon}
-
           />
         )}
         {destination && (
@@ -983,7 +989,6 @@ export const Map = forwardRef((props: Props, ref) => {
             title={station.name}
             // image={require('@/assets/images/rest-stop-pin.png')}
             image={restStopIcon}
-
             // ADDED OR UPDATED 27 MAR: Show AddRestStoppanel on pin press
             onPress={() => handleRestStopPress(station)}
           />

@@ -16,10 +16,12 @@ export const HistoryView = () => {
     return startDate;
   });
 
-  const {totalSessionHours, totalNumberOfAlert, detailedData, loading} = useChartData(
-    displayMode,
-    startDate,
-  );
+  const {
+    totalSessionHours,
+    totalNumberOfAlert,
+    detailedData = [],
+    loading,
+  } = useChartData(displayMode, startDate);
 
   // Note:
   // Memoize chartProps to prevent the component from re-rendering with outdated detailedData
@@ -42,18 +44,23 @@ export const HistoryView = () => {
     },
   ];
 
+  const handleDisplayModeChange = (newMode: DisplayModeType) => {
+    if (loading) return;
+    setDisplayMode(newMode);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Driving History</Text>
       <ViewModeButtons
         displayMode={displayMode}
-        setDisplayMode={setDisplayMode}
+        setDisplayMode={handleDisplayModeChange}
         setStartDate={setStartDate}
       />
       <SummaryCard data={{totalSessionHours, totalNumberOfAlert}} loading={loading} />
       <ChartPager displayMode={displayMode} startDate={startDate} setStartDate={setStartDate} />
       {/* <Chart data={detailedData} viewMode={viewMode} /> */}
-      {loading ? (
+      {loading || !detailedData || detailedData.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#1E3A8A" />
         </View>

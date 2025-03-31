@@ -23,7 +23,11 @@ const Chart = ({data, displayMode}: Props) => {
     setFontLoaded(true);
   }, [font]);
 
-  if (data.length === 0) {
+  if (
+    !Array.isArray(data) ||
+    data.length === 0 ||
+    !data.every(item => item && item.alertPerHour !== undefined && item.date)
+  ) {
     return (
       <View style={styles.chartContainer}>
         <Text>No data available</Text>
@@ -31,13 +35,11 @@ const Chart = ({data, displayMode}: Props) => {
     );
   }
 
-  const startDate = data[0].date;
-
+  const startDate = data[0]?.date || '';
   const indexedData = data.map((item, index) => ({
     ...item,
     index: displayMode === 'day' ? index : index + 1,
   }));
-
   const maxAlertPerHour = Math.max(...data.map(item => item.alertPerHour));
 
   return (
@@ -59,8 +61,12 @@ const Chart = ({data, displayMode}: Props) => {
           }
           axisOptions={{
             font,
-            tickCount: data.length,
+            tickCount: data.length > 0 ? data.length : 0,
             formatXLabel(value) {
+              if (value === undefined || value === null) {
+                return '';
+              }
+
               if (displayMode === 'day') {
                 const timeLabels: {[key: number]: string} = {
                   0: '12AM',

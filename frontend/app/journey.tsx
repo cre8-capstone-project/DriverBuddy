@@ -24,8 +24,13 @@ const eyeIcon = require('@/assets/images/icon_detecting.png');
 
 export default function HomeScreen() {
   const {alertCount} = useFaceDetectionContext();
-  const {setViewModeContext, alertStatus, setInstructionStatus, instructionStatus} =
-    useFaceDetectionContext();
+  const {
+    setViewModeContext,
+    alertStatus,
+    setInstructionStatus,
+    instructionStatus,
+    operationStatus,
+  } = useFaceDetectionContext();
   const {playSound} = usePlaySound();
   const [viewMode, setViewMode] = useState<ViewModeType>('cameraView');
   const [driveDestinationStatus, setDriveDestinationStatus] = useState(false);
@@ -66,8 +71,12 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    console.log('[DEBUG] Detection Pause:', instructionStatus);
+    console.log('[DEBUG] Detection Pause (Instruction):', instructionStatus);
   }, [instructionStatus]);
+
+  useEffect(() => {
+    console.log('[DEBUG] Detection Pause (Operation):', operationStatus);
+  }, [operationStatus]);
 
   const triggerMessage = async (message: any) => {
     try {

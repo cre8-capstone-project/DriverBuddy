@@ -5,6 +5,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/drivebuddy-app-icon.png",
+    "splash": {
+      "image": "./assets/images/drivebuddy-app-icon-white-bg.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -24,7 +29,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/drivebuddy-app-icon.png",
+        "foregroundImage": "./assets/images/drivebuddy-app-icon-white-bg.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -53,7 +58,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/drivebuddy-app-icon.png",
+          "image": "./assets/images/drivebuddy-app-icon-white-bg.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

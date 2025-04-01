@@ -156,7 +156,7 @@ const SignInForm = () => {
 
           <View style={styles.buttonsContainer}>
             <FullWidthButton
-              title="Sign In"
+              title="Log In"
               type="primary"
               onPress={handleAuth}
               disabled={!isFormValid}

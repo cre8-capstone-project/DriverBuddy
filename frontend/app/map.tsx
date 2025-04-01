@@ -884,6 +884,16 @@ export const Map = forwardRef((props: Props, ref) => {
     Keyboard.dismiss();
   };
 
+  // ADDED OR UPDATED 01 APR: Add delay to ensure input is mounted before calling focus
+  // Fixes the keyboard not showing up when searching for a destination
+  useEffect(() => {
+    if (searchModalVisible && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current.focus();
+      }, 200);
+    }
+  }, [searchModalVisible]);
+
   // ADDED OR UPDATED 16 MAR: Close the destination card and zoom back to origin
   const closeDestinationCard = () => {
     setDestination(null);

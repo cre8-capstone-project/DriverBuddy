@@ -19,7 +19,7 @@ const theme = createTheme({
     greyOutline: '#C0C0C0', // Border color
     searchBg: '#EFEFEF',
     success: '#00FF5F', // Accent Color (Green)
-    error: '#d32f2f',
+    error: '#FF4B4B',
     warning: '#ed6c02',
     disabled: '#CCCCCC',
     divider: '#CCCCCC',

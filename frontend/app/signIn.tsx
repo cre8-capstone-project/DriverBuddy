@@ -22,6 +22,7 @@ import {ensureDefaultSettings} from '@/utils/utils';
 import {Icon} from '@rneui/themed';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
+import {useTheme} from '@rneui/themed';
 
 export default function SignInScreen() {
   const {showOnboardingSlide} = useLocalSearchParams();
@@ -46,6 +47,7 @@ const SignInForm = () => {
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const isFormValid = email.trim() !== '' && password.trim() !== '';
+  const {theme} = useTheme();
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -66,8 +68,10 @@ const SignInForm = () => {
     }
   };
   return (
-    <LinearGradient colors={['#e9ecf9', '#fbfbfb', '#ffffff']} style={StyleSheet.absoluteFill}>
-      <StatusBar translucent backgroundColor="#e9ecf9" style="dark" />
+    <LinearGradient
+      colors={['#A9FFFF', '#fbfbfb', '#fbfbfb', '#ffffff']}
+      style={StyleSheet.absoluteFill}>
+      <StatusBar translucent backgroundColor="#A9FFFF" style="dark" />
       <SafeAreaView
         style={{flex: 1, backgroundColor: 'transparent'}}
         edges={['top', 'bottom', 'left', 'right']}>
@@ -164,7 +168,7 @@ const SignInForm = () => {
             <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
               <Text>I do not have an account yet </Text>
               <TouchableOpacity onPress={() => router.replace('/signUp')}>
-                <Text style={{color: 'blue', fontWeight: 'bold'}}>Sign Up</Text>
+                <Text style={{color: theme.colors.primary, fontWeight: 'bold'}}>Sign Up</Text>
               </TouchableOpacity>
             </View>
           </View>

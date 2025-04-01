@@ -29,7 +29,7 @@ const TurnOffDetectionButton: React.FC<TurnOffDetectionButtonProps> = ({onPress,
           style={styles.icon}
         />
         <Text style={[styles.text, {color: disabled ? theme.colors.grey3 : theme.colors.grey0}]}>
-          Turn Off{'\n'}detection
+          Turn Off{'\n'}Detection
         </Text>
       </View>
     </TouchableOpacity>

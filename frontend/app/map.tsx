@@ -1,5 +1,14 @@
 import React, {useState, useEffect, useRef, forwardRef, useImperativeHandle} from 'react';
-import {StyleSheet, View, Alert, Modal, Keyboard, TouchableOpacity, Text} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Alert,
+  Modal,
+  Keyboard,
+  TouchableOpacity,
+  Text,
+  Image,
+} from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import {Input, ListItem, Icon} from '@rneui/themed';
 import MapViewDirections from 'react-native-maps-directions';
@@ -122,6 +131,20 @@ export const Map = forwardRef((props: Props, ref) => {
   // const [routeOrigin, setRouteOrigin] = useState<Region | null>(null); // ALPHA DEMO: Removed routeOrigin so the polyline is updated for the demo
   // UPDATED 14 MAR: Show or hide a destination card
   const [showDestinationCard, setShowDestinationCard] = useState(false);
+
+  // ADDED OR UPDATED 31 MAR: Use name instead of label for consistency
+  const [destinationStation, setDestinationStation] = useState<{
+    name?: string;
+    photos?: {photo_reference: string}[];
+    vicinity?: string;
+  } | null>(null);
+
+  // ADDED OR UPDATED 31 MAR: Distance and duration to destination
+  const [destinationMetrics, setDestinationMetrics] = useState<{
+    distance: number;
+    duration: number;
+  } | null>(null);
+
   // UPDATED 14 MAR: For showing/hiding the ShowRestStopsDialog
   const [showRestStopsModal, setShowRestStopsModal] = useState(false);
   // ADDED OR UPDATED 16 MAR: State to track the alertCount when the modal was closed
@@ -300,7 +323,7 @@ export const Map = forwardRef((props: Props, ref) => {
       const currentLocation = deviceLocation || origin; // UPDATED 04 MAR: If deviceLocation is not ready, fallback to origin
       if (currentLocation) {
         mapRef.current.animateCamera(
-          {center: currentLocation, pitch: 55, heading: 0, zoom: 19, altitude: 150},
+          {center: currentLocation, pitch: 45, heading: 0, zoom: 19, altitude: 150},
           {duration: 1000},
         );
       }
@@ -326,7 +349,7 @@ export const Map = forwardRef((props: Props, ref) => {
           center: deviceLocation,
           pitch: 0,
           heading: 0,
-          zoom: 18,
+          zoom: 19,
         },
         {duration: 1000},
       );
@@ -568,7 +591,7 @@ export const Map = forwardRef((props: Props, ref) => {
     setShowRestStopsModal(false);
     if (mapRef.current && deviceLocation) {
       mapRef.current.animateCamera(
-        {center: deviceLocation, pitch: 0, heading: 0, zoom: 18},
+        {center: deviceLocation, pitch: 0, heading: 0, zoom: 19},
         {duration: 1000},
       );
     }
@@ -613,7 +636,7 @@ export const Map = forwardRef((props: Props, ref) => {
     const currentLocation = deviceLocation || origin;
     if (mapRef.current && currentLocation) {
       mapRef.current.animateCamera(
-        {center: currentLocation, pitch: 55, heading: 0, zoom: 19, altitude: 150},
+        {center: currentLocation, pitch: 45, heading: 0, zoom: 19, altitude: 150},
         {duration: 1000},
       );
     }
@@ -671,29 +694,65 @@ export const Map = forwardRef((props: Props, ref) => {
   }, [coordinateInput, editingField]);
 
   // Only request location if origin is not already set (to persist state between navigations)
+  // useEffect(() => {
+  //   if (!origin) {
+  //     (async () => {
+  //       let {status} = await Location.requestForegroundPermissionsAsync();
+  //       if (status !== 'granted') {
+  //         Alert.alert(
+  //           'Permission Denied',
+  //           'Please allow location access to show your position on the map.',
+  //         );
+  //         return;
+  //       }
+  //       let currentLocation = await Location.getCurrentPositionAsync({});
+  //       const newRegion = {
+  //         latitude: currentLocation.coords.latitude,
+  //         longitude: currentLocation.coords.longitude,
+  //         latitudeDelta: 2,
+  //         longitudeDelta: 2,
+  //       };
+  //       setDeviceLocation(newRegion);
+  //       setOrigin(newRegion);
+  //       savedOrigin = newRegion;
+  //     })();
+  //   }
+  // }, []);
+
+  // ADDED OR UPDATED 31 MAR: Request location and delay zoom in to map until permission is granted
   useEffect(() => {
-    if (!origin) {
-      (async () => {
-        let {status} = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert(
-            'Permission Denied',
-            'Please allow location access to show your position on the map.',
-          );
-          return;
+    (async () => {
+      // Skip if origin is available
+      if (savedOrigin) return;
+
+      const {status} = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Denied',
+          "The map won't track your location until you allow location access.",
+        );
+        return;
+      }
+
+      // Once permission is granted, get the current location:
+      const currentLocation = await Location.getCurrentPositionAsync({});
+      const newRegion = {
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        latitudeDelta: 2,
+        longitudeDelta: 2,
+      };
+      setDeviceLocation(newRegion);
+      setOrigin(newRegion);
+      savedOrigin = newRegion;
+
+      // Give the map a small delay to mount before animating:
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(newRegion, 1000);
         }
-        let currentLocation = await Location.getCurrentPositionAsync({});
-        const newRegion = {
-          latitude: currentLocation.coords.latitude,
-          longitude: currentLocation.coords.longitude,
-          latitudeDelta: 2,
-          longitudeDelta: 2,
-        };
-        setDeviceLocation(newRegion);
-        setOrigin(newRegion);
-        savedOrigin = newRegion;
-      })();
-    }
+      }, 500);
+    })();
   }, []);
 
   // Effect to update the map in driving mode with realtime location updates
@@ -714,7 +773,7 @@ export const Map = forwardRef((props: Props, ref) => {
               mapRef.current.animateCamera(
                 {
                   center: {latitude, longitude},
-                  pitch: 55, // Slightly angled view
+                  pitch: 45, // Slightly angled view
                   heading: heading || 0,
                   zoom: 19, // Adjust zoom level as needed
                   altitude: 150, // Added altitude to support pitch animation
@@ -836,7 +895,7 @@ export const Map = forwardRef((props: Props, ref) => {
           center: origin,
           pitch: 0,
           heading: 0,
-          zoom: 18,
+          zoom: 19,
         },
         {duration: 1000},
       );
@@ -921,7 +980,10 @@ export const Map = forwardRef((props: Props, ref) => {
         longitudeDelta: lngDiff * 1.8 || 0.05,
       };
       console.log('Show recommended route using origin and latitude');
-      mapRef.current?.animateToRegion(region, 1000);
+      // ADDED OR UPDATED 31 MAR: Delay map zoom until showDestinationCard is rendered
+      setTimeout(() => {
+        mapRef.current?.animateToRegion(region, 1000);
+      }, 1000);
     }
   };
 
@@ -962,6 +1024,13 @@ export const Map = forwardRef((props: Props, ref) => {
             resetOnChange={false} // Prevents polyline from blinking when updating
             splitWaypoints={true} // Split waypoints to multiple routes to prevent higher Google costs
             waypoints={routeWaypoints} // Add waypoints to the route
+            // ADDED OR UPDATED 31 MAR: Store the distance and duration data
+            onReady={result => {
+              setDestinationMetrics({
+                distance: result.distance, // in km
+                duration: result.duration, // in minutes
+              });
+            }}
           />
         )}
         {/* ADDED OR UPDATED 28 MAR: Keep the chosen rest stop pinned separately */}
@@ -1050,12 +1119,63 @@ export const Map = forwardRef((props: Props, ref) => {
       )}
 
       {/* UPDATED 14 MAR: Destination card */}
-      {showDestinationCard && (
+      {/* {showDestinationCard && (
         <View style={styles.destinationCard}>
           <Text style={styles.destinationCardText}>{destinationLabel}</Text>
           <TouchableOpacity style={styles.destinationCardClose} onPress={closeDestinationCard}>
             <Icon name="close-circle-outline" type="ionicon" />
           </TouchableOpacity>
+        </View>
+      )} */}
+
+      {/* ADDED OR UPDATED 31: Improved destination card with photo, vicinity, distance, and duration */}
+      {showDestinationCard && (
+        <View style={styles.destinationCard}>
+          <View style={styles.destinationContent}>
+            {/* Left: show photo or placeholder */}
+            {(() => {
+              let photoUrl = '';
+              if (destinationStation?.photos?.length) {
+                const photoRef = destinationStation.photos[0].photo_reference;
+                photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoRef}&key=${GOOGLE_MAPS_APIKEY}`;
+              }
+              if (photoUrl) {
+                return <Image source={{uri: photoUrl}} style={styles.destinationCardImage} />;
+              } else {
+                return (
+                  <View style={[styles.destinationCardImage, styles.destinationCardPlaceholder]}>
+                    <Text>No Image</Text>
+                  </View>
+                );
+              }
+            })()}
+
+            {/* Right: show details */}
+            <View style={styles.destinationDetails}>
+              <View style={styles.destinationTitleRow}>
+                <Text style={styles.destinationName}>
+                  {destinationStation?.name ?? destinationLabel}
+                </Text>
+                <TouchableOpacity
+                  style={styles.destinationCardClose}
+                  onPress={closeDestinationCard}>
+                  <Icon name="close-circle-outline" type="ionicon" />
+                </TouchableOpacity>
+              </View>
+
+              {destinationStation?.vicinity && (
+                <Text style={styles.destinationAddress}>{destinationStation.vicinity}</Text>
+              )}
+
+              {destinationMetrics && (
+                <Text style={styles.destinationMetric}>
+                  {destinationMetrics.distance.toFixed(1)} km
+                  <Text style={styles.metricDivider}>{'  |  '}</Text>
+                  {destinationMetrics.duration.toFixed(0)} mins
+                </Text>
+              )}
+            </View>
+          </View>
         </View>
       )}
 
@@ -1110,6 +1230,14 @@ export const Map = forwardRef((props: Props, ref) => {
                       if (data.status === 'OK' && data.result) {
                         const location = data.result.geometry.location;
                         const displayLabel = suggestion.description;
+
+                        // ADDED OR UPDATED 31 MAR: Updated data to display
+                        setDestinationStation({
+                          name: data.result.name,
+                          photos: data.result.photos,
+                          vicinity: data.result.vicinity,
+                        });
+
                         selectCoordinate(
                           editingField!,
                           location.lat,
@@ -1287,27 +1415,105 @@ const styles = StyleSheet.create({
     paddingLeft: 6,
   },
   // UPDATED 14 MAR: Destination card
+  // destinationCard: {
+  //   position: 'absolute',
+  //   bottom: 96,
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: 'white',
+  //   padding: 10,
+  //   paddingLeft: 20,
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   justifyContent: 'space-between',
+  //   borderBottomWidth: 1,
+  //   borderBottomColor: theme.lightColors!.grey3,
+  // },
+  // destinationCardText: {
+  //   flex: 1,
+  //   fontSize: 16,
+  //   marginRight: 10,
+  // },
+  // destinationCardClose: {
+  //   padding: 5,
+  // },
+
+  // ADDED OR UPDATED 31 MAR: New destination card styles
   destinationCard: {
     position: 'absolute',
     bottom: 96,
     left: 0,
     right: 0,
     backgroundColor: 'white',
-    padding: 10,
-    paddingLeft: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: {width: 0, height: -5},
+    elevation: 20,
+    paddingTop: 20,
     borderBottomWidth: 1,
     borderBottomColor: theme.lightColors!.grey3,
   },
-  destinationCardText: {
+  destinationCardIndicator: {
+    width: 50,
+    height: 4,
+    backgroundColor: '#ccc',
+    alignSelf: 'center',
+    borderRadius: 2,
+    marginBottom: 10,
+  },
+  destinationContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  destinationCardImage: {
+    width: 140,
+    height: 100,
+    borderRadius: 10,
+  },
+  destinationCardPlaceholder: {
+    backgroundColor: '#eee',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  destinationDetails: {
+    display: 'flex',
     flex: 1,
-    fontSize: 16,
-    marginRight: 10,
+    marginLeft: 16,
+    justifyContent: 'flex-start',
+  },
+  destinationTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  destinationName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   destinationCardClose: {
-    padding: 5,
+    top: -8,
+    right: -4,
+    marginLeft: 5,
+  },
+  destinationAddress: {
+    fontSize: 16,
+    marginBottom: 6,
+  },
+  destinationMetric: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: theme.lightColors!.primary,
+  },
+  metricDivider: {
+    color: theme.lightColors!.grey3,
   },
 
   // ADDED OR UPDATED 16 MAR: Continue driving button

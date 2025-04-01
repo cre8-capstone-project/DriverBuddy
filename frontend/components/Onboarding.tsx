@@ -67,6 +67,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             <ImageBackground
               source={Welcome1 as ImageSourcePropType}
               style={styles.backgroundImage}
+              imageStyle={{top: 30}}
               resizeMode="cover">
               <View style={styles.overlay}>
                 <Image
@@ -91,6 +92,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             <ImageBackground
               source={Welcome2 as ImageSourcePropType}
               style={styles.backgroundImage}
+              imageStyle={{top: 30}}
               resizeMode="cover">
               <View style={styles.overlay}>
                 <Image
@@ -125,11 +127,10 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
                       resizeMode="contain"
                     />
                   </View>
-
                   <Text style={styles.finalText}>Drive aware, get there!</Text>
                   <View style={styles.buttonContainer}>
                     <FullWidthButton
-                      title="Create Account"
+                      title="Create an Account"
                       type="primary"
                       onPress={handleCreateAccount}
                     />
@@ -195,8 +196,8 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
+    fontFamily: 'Figtree-Bold',
     fontSize: 36,
-    fontWeight: 'bold',
     textAlign: 'left',
     alignSelf: 'flex-start',
     marginBottom: 10,
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoContainer: {
-    width: width / 2, // 1/2 of the screen width
+    width: width / 2.5, // 1/2.5 of the screen width
     aspectRatio: 1, // Maintain aspect ratio
     marginBottom: 20,
     // marginTop: 20,
@@ -220,47 +221,16 @@ const styles = StyleSheet.create({
     // marginBottom: 20,
   },
   finalText: {
-    fontSize: 64,
-    fontWeight: 'bold',
+    fontFamily: 'Figtree-Bold',
+    fontSize: 60,
     textAlign: 'center',
     marginBottom: 50,
     color: '#333',
+    marginHorizontal: 40,
   },
   buttonContainer: {
     width: '100%',
     paddingHorizontal: 20,
-  },
-  primaryButton: {
-    backgroundColor: '#4A80F0',
-    borderRadius: 12,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#4A80F0',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#4A80F0',
-    borderRadius: 12,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#4A80F0',
-    fontSize: 16,
-    fontWeight: '600',
   },
   navigationContainer: {
     // flexDirection: 'row',
@@ -270,24 +240,8 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 0,
     right: 0,
-  },
-  skipButton: {
-    padding: 10,
-  },
-  skipButtonText: {
-    color: '#666',
-    fontSize: 16,
-  },
-  navButton: {
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  navButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '500',
+    gap: 8,
+    marginBottom: 10,
   },
   backgroundImage: {
     flex: 1,
@@ -299,7 +253,7 @@ const styles = StyleSheet.create({
   overlay: {
     width: '100%',
     paddingHorizontal: 20,
-    marginTop: 30,
+    marginTop: 20,
     alignItems: 'flex-start',
   },
   logo: {

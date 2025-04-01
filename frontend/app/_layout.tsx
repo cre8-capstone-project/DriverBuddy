@@ -37,6 +37,7 @@ export default function RootLayout() {
   const {success, error} = useMigrations(drizzleDb, migrations);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'Figtree-Bold': require('../assets/fonts/Figtree-Bold.ttf'),
   });
 
   useEffect(() => {

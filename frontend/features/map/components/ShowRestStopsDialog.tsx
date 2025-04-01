@@ -12,7 +12,7 @@ type ShowRestStopsDialogProps = {
 };
 
 // Default auto-close time for modal in milliseconds
-const AUTO_CLOSE_DELAY = 12000;
+const AUTO_CLOSE_DELAY = 15000;
 
 export const ShowRestStopsDialog = ({
   isVisible,
@@ -53,7 +53,7 @@ export const ShowRestStopsDialog = ({
 
   return (
     // ADDED OR UPDATED 16 MAR: Removed onBackdropPress prop to avoid double dismissal when clicking buttons
-    <Dialog isVisible={isVisible}>
+    <Dialog isVisible={isVisible} overlayStyle={styles.dialogContainer}>
       <View style={styles.container}>
         <View style={{width: '100%', height: 4, backgroundColor: '#ddd', overflow: 'hidden'}}>
           <Animated.View
@@ -95,6 +95,12 @@ export const ShowRestStopsDialog = ({
 
 // Dialog styles
 const styles = StyleSheet.create({
+  dialogContainer: {
+    width: '90%',
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+  },
   container: {
     flexDirection: 'column',
     gap: 15,

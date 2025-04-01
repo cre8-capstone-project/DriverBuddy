@@ -419,7 +419,7 @@ export const Map = forwardRef((props: Props, ref) => {
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
           },
-          1500,
+          1000,
         );
         setInitialZoom(true);
       }
@@ -969,20 +969,25 @@ export const Map = forwardRef((props: Props, ref) => {
       mapRef.current?.animateToRegion(region, 1000);
     }
     if (field === 'destination' && origin) {
-      const midLat = (origin.latitude + latitude) / 2;
-      const midLng = (origin.longitude + longitude) / 2;
-      const latDiff = Math.abs(origin.latitude - latitude);
-      const lngDiff = Math.abs(origin.longitude - longitude);
-      const region = {
-        latitude: midLat,
-        longitude: midLng,
-        latitudeDelta: latDiff * 1.8 || 0.05,
-        longitudeDelta: lngDiff * 1.8 || 0.05,
-      };
+      // const midLat = (origin.latitude + latitude) / 2;
+      // const midLng = (origin.longitude + longitude) / 2;
+      // const latDiff = Math.abs(origin.latitude - latitude);
+      // const lngDiff = Math.abs(origin.longitude - longitude);
+      // const region = {
+      //   latitude: midLat,
+      //   longitude: midLng,
+      //   latitudeDelta: latDiff * 1.8 || 0.05,
+      //   longitudeDelta: lngDiff * 1.8 || 0.05,
+      // };
       console.log('Show recommended route using origin and latitude');
       // ADDED OR UPDATED 31 MAR: Delay map zoom until showDestinationCard is rendered
       setTimeout(() => {
-        mapRef.current?.animateToRegion(region, 1000);
+        // mapRef.current?.animateToRegion(region, 1000);
+        // ADDED OR UPDATED 31 MAR: Use fitToCoordinate instead to customize each edgePadding parameter
+        mapRef.current?.fitToCoordinates([origin, {latitude, longitude}], {
+          edgePadding: {top: 200, right: 20, bottom: 250, left: 20},
+          animated: true,
+        });
       }, 1000);
     }
   };
@@ -1167,13 +1172,33 @@ export const Map = forwardRef((props: Props, ref) => {
                 <Text style={styles.destinationAddress}>{destinationStation.vicinity}</Text>
               )}
 
-              {destinationMetrics && (
-                <Text style={styles.destinationMetric}>
-                  {destinationMetrics.distance.toFixed(1)} km
-                  <Text style={styles.metricDivider}>{'  |  '}</Text>
-                  {destinationMetrics.duration.toFixed(0)} mins
-                </Text>
-              )}
+              {destinationMetrics &&
+                (() => {
+                  const totalMins = destinationMetrics.duration;
+                  const hours = Math.floor(totalMins / 60);
+                  const minutes = Math.round(totalMins % 60);
+
+                  return (
+                    <View style={styles.destinationMetricIcon}>
+                      <Icon name="car-outline" type="material-community" size={18} />
+                      <Text style={styles.destinationMetric}>
+                        {' '}
+                        {destinationMetrics.distance.toFixed(1)} km{' '}
+                      </Text>
+                      <Text style={styles.metricDivider}>{' | '}</Text>
+                      <Icon
+                        name="clock-outline"
+                        type="material-community"
+                        size={17}
+                        style={styles.clockIcon}
+                      />
+                      <Text style={styles.destinationMetric}>
+                        {hours > 0 ? `${hours} hr ` : ''}
+                        {minutes} min
+                      </Text>
+                    </View>
+                  );
+                })()}
             </View>
           </View>
         </View>
@@ -1414,29 +1439,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     paddingLeft: 6,
   },
-  // UPDATED 14 MAR: Destination card
-  // destinationCard: {
-  //   position: 'absolute',
-  //   bottom: 96,
-  //   left: 0,
-  //   right: 0,
-  //   backgroundColor: 'white',
-  //   padding: 10,
-  //   paddingLeft: 20,
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   justifyContent: 'space-between',
-  //   borderBottomWidth: 1,
-  //   borderBottomColor: theme.lightColors!.grey3,
-  // },
-  // destinationCardText: {
-  //   flex: 1,
-  //   fontSize: 16,
-  //   marginRight: 10,
-  // },
-  // destinationCardClose: {
-  //   padding: 5,
-  // },
 
   // ADDED OR UPDATED 31 MAR: New destination card styles
   destinationCard: {
@@ -1514,6 +1516,14 @@ const styles = StyleSheet.create({
   },
   metricDivider: {
     color: theme.lightColors!.grey3,
+  },
+  destinationMetricIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  clockIcon: {
+    marginRight: 3,
+    top: 1,
   },
 
   // ADDED OR UPDATED 16 MAR: Continue driving button

@@ -11,25 +11,23 @@ const TurnOffDetectionButton: React.FC<TurnOffDetectionButtonProps> = ({onPress,
   const {theme} = useTheme();
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
-      style={[
-        styles.button,
-        {
-          backgroundColor: disabled ? theme.colors.grey3 : theme.colors.grey5,
-          borderColor: disabled ? theme.colors.grey3 : theme.colors.grey0,
-        },
-        styles.container,
-      ]}>
-      <Icon
-        name="videocam-off"
-        type="material"
-        color={disabled ? theme.colors.grey3 : theme.colors.grey0}
-        size={40}
-        style={styles.icon}
-      />
-      <View>
+    <TouchableOpacity onPress={onPress} disabled={disabled} style={styles.container}>
+      <View
+        style={[
+          styles.button,
+          {
+            backgroundColor: disabled ? theme.colors.grey3 : theme.colors.grey5,
+            borderColor: disabled ? theme.colors.grey3 : theme.colors.grey0,
+            borderWidth: 2,
+          },
+        ]}>
+        <Icon
+          name="videocam-off"
+          type="material"
+          color={disabled ? theme.colors.grey3 : theme.colors.grey0}
+          size={40}
+          style={styles.icon}
+        />
         <Text style={[styles.text, {color: disabled ? theme.colors.grey3 : theme.colors.grey0}]}>
           Turn Off{'\n'}detection
         </Text>
@@ -43,14 +41,13 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   button: {
-    flex: 1,
-    width: 180,
-    height: 64,
+    // flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    width: 180,
+    height: 64,
     borderRadius: 44,
-    borderWidth: 2,
     paddingHorizontal: 11,
   },
   icon: {

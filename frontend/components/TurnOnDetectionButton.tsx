@@ -19,7 +19,7 @@ const TurnOnDetectionButton: React.FC<TurnOnDetectionButtonProps> = ({onPress, d
         end={{x: 1, y: 1}}
         style={styles.button}>
         <Icon name="videocam" type="material" color="white" size={40} style={styles.icon} />
-        <Text style={[styles.text, {color: 'white'}]}>Turn On{'\n'}detection</Text>
+        <Text style={[styles.text, {color: 'white'}]}>Turn On{'\n'}Detection</Text>
       </LinearGradient>
     </TouchableOpacity>
   );

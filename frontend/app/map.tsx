@@ -614,11 +614,11 @@ export const Map = forwardRef((props: Props, ref) => {
       resumeDrivingAnim.stopAnimation(() => {
         Animated.timing(resumeDrivingAnim, {
           toValue: 60,
-          duration: 400,
+          duration: 500,
           useNativeDriver: true,
         }).start();
       });
-    }, 500);
+    }, 700);
 
     if (mapRef.current && deviceLocation) {
       mapRef.current.animateCamera(

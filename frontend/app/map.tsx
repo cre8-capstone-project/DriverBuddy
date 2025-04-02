@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Text,
   Image,
+  Animated,
 } from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import {Input, ListItem, Icon} from '@rneui/themed';
@@ -145,6 +146,9 @@ export const Map = forwardRef((props: Props, ref) => {
     distance: number;
     duration: number;
   } | null>(null);
+
+  // ADDED OR UPDATED 02 APR: Animation value for Resume Driving button
+  const resumeDrivingAnim = useRef(new Animated.Value(0)).current;
 
   // UPDATED 14 MAR: For showing/hiding the ShowRestStopsDialog
   const [showRestStopsModal, setShowRestStopsModal] = useState(false);
@@ -571,6 +575,15 @@ export const Map = forwardRef((props: Props, ref) => {
         // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
         setShowContinueDriving(true);
 
+        // ADDED OR UPDATED 01 APR: Slide Resume Driving button down
+        resumeDrivingAnim.stopAnimation(() => {
+          Animated.timing(resumeDrivingAnim, {
+            toValue: 60,
+            duration: 400,
+            useNativeDriver: true,
+          }).start();
+        });
+
         // ADDED OR UPDATED 01 APR: Hide navContainer in journey.tsx when rest stops are shown
         if (props.onToggleNav) {
           props.onToggleNav(true);
@@ -646,6 +659,16 @@ export const Map = forwardRef((props: Props, ref) => {
         {duration: 1000},
       );
     }
+
+    // ADDED OR UPDATED 02 APR: Slide Resume Driving button back up
+    resumeDrivingAnim.stopAnimation(() => {
+      Animated.timing(resumeDrivingAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    });
+
     // Hide continue driving button
     setShowContinueDriving(false);
 
@@ -1116,23 +1139,33 @@ export const Map = forwardRef((props: Props, ref) => {
       )}
 
       {/* ADDED OR UPDATED 26 MAR: Enable rest stops button */}
+      {/* ADDED OR UPDATED 02 APR: Wrap with animated for slide effect */}
       {showRestStopsButton && (
-        <View style={styles.nearbyStopsButtonContainer}>
+        <Animated.View
+          style={[
+            styles.nearbyStopsButtonContainer,
+            {transform: [{translateY: resumeDrivingAnim}]},
+          ]}>
           <TouchableOpacity style={styles.nearbyStopsButton} onPress={handleNearbyStops}>
             <Icon name="location-pin" type="material" size={20} />
             <Text style={styles.nearbyStopsButtonText}>Show Rest Stops</Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
 
       {/* ADDED OR UPDATED 16 MAR: Continue driving button */}
+      {/* ADDED OR UPDATED 02 APR: Wrap with animated for slide effect */}
       {showContinueDriving && (
-        <View style={styles.continueDrivingButtonContainer}>
+        <Animated.View
+          style={[
+            styles.continueDrivingButtonContainer,
+            {transform: [{translateY: resumeDrivingAnim}]},
+          ]}>
           <TouchableOpacity style={styles.continueDrivingButton} onPress={handleContinueDriving}>
             <Icon name="directions-car" type="material" size={20} />
             <Text style={styles.continueDrivingButtonText}>Resume Driving</Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
 
       {/* ADDED OR UPDATED 16 MAR: Show rest stops modal */}

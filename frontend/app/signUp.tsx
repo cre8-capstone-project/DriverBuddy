@@ -9,6 +9,8 @@ import {
   Dimensions,
   ImageSourcePropType,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {Timestamp} from 'firebase/firestore';
@@ -38,6 +40,7 @@ import TermAndConditionsDialog from '@/components/TermAndConditionsDialog';
 import VerificationErrorDialog from '@/components/VerificationErrorDialog';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
+import {ScrollView} from 'react-native';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -154,277 +157,303 @@ export default function SignUpScreen() {
     }
   };
   return (
-    <LinearGradient colors={['#e9ecf9', '#fbfbfb', '#ffffff']} style={StyleSheet.absoluteFill}>
-      <StatusBar translucent backgroundColor="#e9ecf9" style="dark" />
-      <SafeAreaView
-        style={{flex: 1, backgroundColor: 'transparent'}}
-        edges={['top', 'bottom', 'left', 'right']}>
-        <View style={styles.container}>
-          {validCode ? (
-            <>
-              {showCameraView && (
-                <View style={styles.cameraViewContainer}>
-                  <LinearGradient
-                    colors={['#e9ecf9', '#fbfbfb', '#ffffff']}
-                    style={StyleSheet.absoluteFill}
-                  />
-
-                  <View style={styles.cameraViewWrapper}>
-                    <Camera
-                      ref={camera}
-                      style={StyleSheet.absoluteFill}
-                      device={device}
-                      isActive={true}
-                      photo={true}
+    <LinearGradient
+      colors={['#A9FFFF', '#fbfbfb', '#fbfbfb', '#ffffff']}
+      style={StyleSheet.absoluteFill}>
+      <StatusBar translucent backgroundColor="#A9FFFF" style="dark" />
+      {showCameraView && (
+        <View style={styles.cameraViewContainer}>
+          <LinearGradient
+            colors={['#A9FFFF', '#fbfbfb', '#fbfbfb', '#ffffff']}
+            style={StyleSheet.absoluteFill}>
+            <StatusBar translucent backgroundColor="#A9FFFF" style="dark" />
+            <View style={styles.cameraViewWrapper}>
+              <Camera
+                ref={camera}
+                style={StyleSheet.absoluteFill}
+                device={device}
+                isActive={true}
+                photo={true}
+              />
+            </View>
+            <View style={styles.buttonsContainer}>
+              <FullWidthButton type="primary" title="Take Photo" onPress={takePhoto} />
+              <FullWidthButton
+                type="secondary"
+                title="Cancel"
+                onPress={() => setShowCameraView(prev => !prev)}
+              />
+            </View>
+          </LinearGradient>
+        </View>
+      )}
+      <SafeAreaView style={{flex: 1, justifyContent: 'flex-start', padding: 0}}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{flex: 1}}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{paddingBottom: 20, marginTop: 0}}
+            style={styles.container}>
+            {validCode ? (
+              <>
+                <View style={{width: '100%', justifyContent: 'center'}}>
+                  {/* Logo Container */}
+                  <View style={styles.logoNoNameContainer}>
+                    <Image
+                      source={DriveBuddyLogoNoName as ImageSourcePropType}
+                      style={styles.logo}
+                      resizeMode="contain"
                     />
                   </View>
-                  <FullWidthButton type="primary" title="Take Photo" onPress={takePhoto} />
-                  <FullWidthButton
-                    type="secondary"
-                    title="Cancel"
-                    onPress={() => setShowCameraView(prev => !prev)}
-                  />
+                  <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 10}}>
+                    {photoUri === '' ? 'Welcome to DriveBuddy!' : "You're Looking great!"}
+                  </Text>
+                  {photoUri === '' && (
+                    <Text style={{fontSize: 16, textAlign: 'center', marginBottom: 0}}>
+                      Let's upload your display image
+                    </Text>
+                  )}
+                  <View style={styles.profileImageContainer}>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 700,
+                        textAlign: 'center',
+                        marginBottom: 20,
+                      }}>
+                      {name}
+                    </Text>
+                    <Pressable onPress={pickImage} style={styles.profileImageWrapper}>
+                      <Image
+                        style={styles.profileImage}
+                        source={
+                          photoUri
+                            ? {uri: photoUri as string}
+                            : (profilePicturePlaceholder as ImageSourcePropType)
+                        }
+                      />
+                    </Pressable>
+                  </View>
+                  <View style={styles.buttonsContainer}>
+                    <FullWidthButton
+                      type="tertiary"
+                      title="Skip this for now"
+                      onPress={handleAuth}
+                    />
+                    <FullWidthButton
+                      type="secondary"
+                      title="Upload photo from phone"
+                      icon={{name: 'upload'}}
+                      onPress={pickImage}
+                    />
+                    <FullWidthButton
+                      type="secondary"
+                      title="Take a photo with the camera"
+                      icon={{name: 'camera'}}
+                      onPress={() => setShowCameraView(prev => !prev)}
+                    />
+
+                    {photoUri !== '' ? (
+                      <FullWidthButton type="primary" title="Complete" onPress={handleAuth} />
+                    ) : (
+                      ''
+                    )}
+                  </View>
                 </View>
-              )}
-              <View style={{width: '100%', justifyContent: 'center'}}>
+              </>
+            ) : (
+              <View style={{width: '100%', justifyContent: 'flex-start', overflow: 'visible'}}>
                 {/* Logo Container */}
-                <View style={styles.logoNoNameContainer}>
+                <View style={styles.logoContainer}>
                   <Image
-                    source={DriveBuddyLogoNoName as ImageSourcePropType}
+                    source={DriveBuddyLogo as ImageSourcePropType}
                     style={styles.logo}
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={{fontSize: 24, textAlign: 'center', marginBottom: 10}}>
-                  {photoUri === '' ? 'Welcome to DriveBuddy!' : "You're Looking great!"}
+                <Input
+                  label="Email"
+                  labelStyle={{
+                    fontSize: 15,
+                    fontWeight: '400',
+                    color: '#1E3A8A',
+                  }}
+                  placeholder="Your email address"
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() => setFocusedInput('email')}
+                  onBlur={() => setFocusedInput(null)}
+                  containerStyle={{
+                    width: '100%',
+                    paddingHorizontal: 0,
+                  }}
+                  inputContainerStyle={{
+                    height: 56,
+                    borderWidth: 1,
+                    borderColor: '#1E3A8A',
+                    borderRadius: 14,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    backgroundColor: focusedInput === 'email' ? '#E6FCFF' : 'white',
+                  }}
+                  inputStyle={{
+                    fontSize: 18,
+                    color: '#333',
+                  }}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+                <Input
+                  label="Password"
+                  labelStyle={{
+                    fontSize: 15,
+                    fontWeight: '400',
+                    color: '#1E3A8A',
+                  }}
+                  placeholder="Your password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!passwordVisible}
+                  onFocus={() => setFocusedInput('password')}
+                  onBlur={() => setFocusedInput(null)}
+                  containerStyle={{
+                    width: '100%',
+                    paddingHorizontal: 0,
+                  }}
+                  inputContainerStyle={{
+                    height: 56,
+                    borderWidth: 1,
+                    borderColor: '#1E3A8A',
+                    borderRadius: 14,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    backgroundColor: focusedInput === 'password' ? '#E6FCFF' : 'white',
+                  }}
+                  inputStyle={{
+                    fontSize: 18,
+                    color: '#333',
+                  }}
+                  rightIcon={
+                    <TouchableOpacity onPress={togglePasswordVisibility}>
+                      <Icon
+                        name={passwordVisible ? 'eye-off' : 'eye'}
+                        type="material-community"
+                        color="rgba(30, 58, 138, 0.6)"
+                        size={20}
+                      />
+                    </TouchableOpacity>
+                  }
+                />
+                <Input
+                  label="Verification code"
+                  labelStyle={{
+                    fontSize: 15,
+                    fontWeight: '400',
+                    color: '#1E3A8A',
+                  }}
+                  placeholder="Verification code"
+                  value={code}
+                  onChangeText={setCode}
+                  onFocus={() => setFocusedInput('code')}
+                  onBlur={() => setFocusedInput(null)}
+                  containerStyle={{
+                    width: '100%',
+                    paddingHorizontal: 0,
+                    marginBottom: -20,
+                  }}
+                  inputContainerStyle={{
+                    height: 56,
+                    borderWidth: 1,
+                    borderColor: '#1E3A8A',
+                    borderRadius: 14,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    backgroundColor: focusedInput === 'code' ? '#E6FCFF' : 'white',
+                  }}
+                  inputStyle={{
+                    fontSize: 18,
+                    color: '#333',
+                  }}
+                />
+                <Text style={{marginBottom: 30, marginLeft: 5, fontSize: 13}}>
+                  Please contact your admin to provide this code
                 </Text>
-                {photoUri === '' && (
-                  <Text style={{fontSize: 16, textAlign: 'center', marginBottom: 0}}>
-                    Let's upload your display image
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    marginTop: 10,
+                    marginBottom: 30,
+                  }}>
+                  <TouchableOpacity onPress={() => setTermsChecked(!termsChecked)}>
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderWidth: 1,
+                        borderColor: '#1E3A8A',
+                        backgroundColor: termsChecked ? '#1E3A8A' : 'white',
+                        borderRadius: 6,
+                        marginRight: 8,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      {termsChecked && <MaterialIcons name="check" size={18} color="white" />}
+                    </View>
+                  </TouchableOpacity>
+                  <Text style={{flex: 1, color: '#333', fontSize: 13, lineHeight: 18}}>
+                    I confirmed that I have thoroughly read and agreed to the terms and conditions
+                    outlined in this{' '}
+                    <Text
+                      style={{color: '#1E3A8A', fontWeight: 600}}
+                      onPress={() => setTermsModalVisible(true)}>
+                      User Agreement and Privacy Policy.
+                    </Text>
                   </Text>
-                )}
-                <View style={styles.profileImageContainer}>
-                  <Text
-                    style={{fontSize: 20, fontWeight: 700, textAlign: 'center', marginBottom: 20}}>
-                    {name}
-                  </Text>
-                  <Pressable onPress={pickImage} style={styles.profileImageWrapper}>
-                    <Image
-                      style={styles.profileImage}
-                      source={
-                        photoUri
-                          ? {uri: photoUri as string}
-                          : (profilePicturePlaceholder as ImageSourcePropType)
-                      }
-                    />
-                  </Pressable>
                 </View>
                 <View style={styles.buttonsContainer}>
-                  <FullWidthButton type="tertiary" title="Skip this for now" onPress={handleAuth} />
                   <FullWidthButton
-                    type="secondary"
-                    title="Upload photo from phone"
-                    icon={{name: 'upload'}}
-                    onPress={pickImage}
+                    title="Create an account"
+                    type="primary"
+                    onPress={validateCode}
+                    disabled={!isFormValid}
                   />
-                  <FullWidthButton
-                    type="secondary"
-                    title="Take a photo with the camera"
-                    icon={{name: 'camera'}}
-                    onPress={() => setShowCameraView(prev => !prev)}
-                  />
-
-                  {photoUri !== '' ? (
-                    <FullWidthButton type="primary" title="Complete" onPress={handleAuth} />
-                  ) : (
-                    ''
-                  )}
-                </View>
-              </View>
-            </>
-          ) : (
-            <View style={{width: '100%', justifyContent: 'center'}}>
-              {/* Logo Container */}
-              <View style={styles.logoContainer}>
-                <Image
-                  source={DriveBuddyLogo as ImageSourcePropType}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-              <Input
-                label="Email"
-                labelStyle={{
-                  fontSize: 15,
-                  fontWeight: '400',
-                  color: '#1E3A8A',
-                }}
-                placeholder="Your email address"
-                value={email}
-                onChangeText={setEmail}
-                onFocus={() => setFocusedInput('email')}
-                onBlur={() => setFocusedInput(null)}
-                containerStyle={{
-                  width: '100%',
-                  paddingHorizontal: 0,
-                }}
-                inputContainerStyle={{
-                  height: 56,
-                  borderWidth: 1,
-                  borderColor: '#1E3A8A',
-                  borderRadius: 14,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  backgroundColor: focusedInput === 'email' ? '#E6FCFF' : 'white',
-                }}
-                inputStyle={{
-                  fontSize: 18,
-                  color: '#333',
-                }}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-              <Input
-                label="Password"
-                labelStyle={{
-                  fontSize: 15,
-                  fontWeight: '400',
-                  color: '#1E3A8A',
-                }}
-                placeholder="Your password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!passwordVisible}
-                onFocus={() => setFocusedInput('password')}
-                onBlur={() => setFocusedInput(null)}
-                containerStyle={{
-                  width: '100%',
-                  paddingHorizontal: 0,
-                }}
-                inputContainerStyle={{
-                  height: 56,
-                  borderWidth: 1,
-                  borderColor: '#1E3A8A',
-                  borderRadius: 14,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  backgroundColor: focusedInput === 'password' ? '#E6FCFF' : 'white',
-                }}
-                inputStyle={{
-                  fontSize: 18,
-                  color: '#333',
-                }}
-                rightIcon={
-                  <TouchableOpacity onPress={togglePasswordVisibility}>
-                    <Icon
-                      name={passwordVisible ? 'eye-off' : 'eye'}
-                      type="material-community"
-                      color="rgba(30, 58, 138, 0.6)"
-                      size={20}
-                    />
-                  </TouchableOpacity>
-                }
-              />
-              <Input
-                label="Verification code"
-                labelStyle={{
-                  fontSize: 15,
-                  fontWeight: '400',
-                  color: '#1E3A8A',
-                }}
-                placeholder="Verification code"
-                value={code}
-                onChangeText={setCode}
-                onFocus={() => setFocusedInput('code')}
-                onBlur={() => setFocusedInput(null)}
-                containerStyle={{
-                  width: '100%',
-                  paddingHorizontal: 0,
-                  marginBottom: -20,
-                }}
-                inputContainerStyle={{
-                  height: 56,
-                  borderWidth: 1,
-                  borderColor: '#1E3A8A',
-                  borderRadius: 14,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  backgroundColor: focusedInput === 'code' ? '#E6FCFF' : 'white',
-                }}
-                inputStyle={{
-                  fontSize: 18,
-                  color: '#333',
-                }}
-              />
-              <Text style={{marginBottom: 30, marginLeft: 5, fontSize: 13}}>
-                Please contact your admin to provide this code
-              </Text>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  marginTop: 10,
-                  marginBottom: 30,
-                }}>
-                <TouchableOpacity onPress={() => setTermsChecked(!termsChecked)}>
                   <View
                     style={{
-                      width: 20,
-                      height: 20,
-                      borderWidth: 1,
-                      borderColor: '#1E3A8A',
-                      backgroundColor: termsChecked ? '#1E3A8A' : 'white',
-                      borderRadius: 6,
-                      marginRight: 8,
+                      flexDirection: 'row',
+                      marginTop: 20,
+                      marginBottom: 20,
                       justifyContent: 'center',
-                      alignItems: 'center',
                     }}>
-                    {termsChecked && <MaterialIcons name="check" size={18} color="white" />}
+                    <Text>Have an account? </Text>
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.replace({
+                          pathname: '/signIn',
+                          params: {showOnboardingSlide: 'false'},
+                        })
+                      }>
+                      <Text style={{color: 'blue', fontWeight: 'bold'}}>Sign In</Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
-                <Text style={{flex: 1, color: '#333', fontSize: 13, lineHeight: 18}}>
-                  I confirmed that I have thoroughly read and agreed to the terms and conditions
-                  outlined in this{' '}
-                  <Text
-                    style={{color: '#1E3A8A', fontWeight: 600}}
-                    onPress={() => setTermsModalVisible(true)}>
-                    User Agreement and Privacy Policy.
-                  </Text>
-                </Text>
-              </View>
-
-              <TermAndConditionsDialog
-                dialogVisible={termsModalVisible}
-                toggleDialog={() => setTermsModalVisible(false)}
-              />
-
-              <View style={styles.buttonsContainer}>
-                <FullWidthButton
-                  title="Create an account"
-                  type="primary"
-                  onPress={validateCode}
-                  disabled={!isFormValid}
-                />
-                <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
-                  <Text>Have an account? </Text>
-                  <TouchableOpacity
-                    onPress={() =>
-                      router.replace({
-                        pathname: '/signIn',
-                        params: {showOnboardingSlide: 'false'},
-                      })
-                    }>
-                    <Text style={{color: 'blue', fontWeight: 'bold'}}>Sign In</Text>
-                  </TouchableOpacity>
                 </View>
+
+                <TermAndConditionsDialog
+                  dialogVisible={termsModalVisible}
+                  toggleDialog={() => setTermsModalVisible(false)}
+                />
+
+                <VerificationErrorDialog
+                  dialogVisible={errorDialogVisible}
+                  toggleDialog={() => setErrorDialogVisible(false)}
+                />
               </View>
-              <VerificationErrorDialog
-                dialogVisible={errorDialogVisible}
-                toggleDialog={() => setErrorDialogVisible(false)}
-              />
-            </View>
-          )}
-        </View>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -440,15 +469,16 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     height: '100%',
-    padding: 10,
     justifyContent: 'space-between',
     gap: 10,
+    margin: 20,
   },
   cameraViewWrapper: {
     width: '100%',
-    height: '90%',
+    height: '80%',
     borderRadius: 20,
     overflow: 'hidden',
+    marginBottom: 10,
   },
   buttonsContainer: {
     gap: 10,
@@ -471,17 +501,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
   },
   container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
     padding: 20,
-    gap: 50,
+    paddingTop: 0,
   },
   logoContainer: {
     width: width / 2, // 1/2 of the screen width
     aspectRatio: 1, // Maintain aspect ratio
     marginBottom: 30,
-    // marginTop: 10,
+    marginTop: 0,
     marginLeft: 'auto',
     marginRight: 'auto',
   },

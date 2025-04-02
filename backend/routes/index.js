@@ -5,7 +5,6 @@ import admin from 'firebase-admin';
 import express from 'express';
 import fs from 'fs';
 import driverRoutes from './driverRoutes.js';
-// import historyRoutes from './historyRoutes.js';
 import invitationsRoutes from './invitationsRoutes.js';
 import faceDetectionSessionRoutes from '../dist/faceDetectionSessionRoutes.js';
 import companyRoutes from './companyRoutes.js';

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {TouchableOpacity, Text, StyleSheet, View} from 'react-native';
+import {TouchableOpacity, Text, StyleSheet, View, Platform} from 'react-native';
 import {useTheme} from '@rneui/themed';
 import {Feather} from '@expo/vector-icons';
 
@@ -25,93 +25,108 @@ const FullWidthButton: React.FC<FullWidthButtonProps> = ({
   const {theme} = useTheme();
   const [isPressed, setIsPressed] = useState(false);
 
-  const getButtonStyles = () => {
-    switch (type) {
-      case 'primary':
-        return [
-          styles.button,
-          {
-            backgroundColor: isPressed ? theme.colors.primary : theme.colors.primary,
-            shadowColor: isPressed ? theme.colors.primary : 'transparent',
-            elevation: isPressed ? 6 : 0,
-          },
-        ];
-      case 'secondary':
-        return [
-          styles.button,
-          {
-            backgroundColor: isPressed ? theme.colors.secondary : theme.colors.white,
-            borderColor: theme.colors.grey3,
-            borderWidth: 1,
-            shadowColor: isPressed ? theme.colors.primary : 'transparent',
-            elevation: isPressed ? 6 : 0,
-          },
-        ];
-      case 'tertiary':
-        return styles.button;
-      default:
-        return styles.button;
+  const getContainerStyle = () => {
+    const baseStyle: any = [styles.buttonWrapper];
+
+    let shadowColor = '#000'; // default shadow
+
+    if (isPressed) {
+      shadowColor = theme.colors.primary;
     }
+
+    const isPrimaryWithShadow = type === 'primary' && !disabled;
+    const isSecondaryWithShadow = type === 'secondary' && isPressed;
+
+    if (isPrimaryWithShadow || isSecondaryWithShadow) {
+      baseStyle.push({
+        backgroundColor: type === 'primary' ? theme.colors.primary : theme.colors.white,
+        ...Platform.select({
+          android: {
+            elevation: 3,
+          },
+          ios: {
+            shadowColor: shadowColor,
+            shadowOffset: {width: 0, height: 4},
+            shadowOpacity: 0.3,
+            shadowRadius: 6,
+          },
+        }),
+      });
+    } else {
+      baseStyle.push({
+        backgroundColor: type === 'primary' ? theme.colors.primary : theme.colors.white,
+        elevation: 0,
+        shadowOpacity: 0,
+      });
+    }
+
+    if (type === 'secondary') {
+      baseStyle.push({
+        borderColor: theme.colors.grey3,
+        borderWidth: 1,
+      });
+    }
+
+    if (disabled) {
+      baseStyle.push({backgroundColor: theme.colors.grey3});
+    }
+
+    return baseStyle;
   };
 
   const getTextStyles = () => {
     const baseStyles = [styles.text];
-
-    if (type === 'secondary') {
+    if (type === 'secondary' || type === 'tertiary') {
       baseStyles.push({color: theme.colors.primary});
     }
-
-    if (type === 'tertiary') {
-      baseStyles.push({
-        color: theme.colors.primary,
-        textDecorationLine: isPressed ? 'underline' : 'none',
-      });
-    }
-
     return baseStyles;
   };
 
   const getIconColor = () => {
     if (disabled) return theme.colors.grey4;
-
     if (type === 'primary') return 'white';
-    if (type === 'secondary') return theme.colors.primary;
-    if (type === 'tertiary') return theme.colors.primary;
-
-    return 'white';
+    return theme.colors.primary;
   };
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
-      activeOpacity={0.8}
-      style={[getButtonStyles(), disabled && {backgroundColor: theme.colors.grey3}]}
-      onPressIn={() => setIsPressed(true)}
-      onPressOut={() => setIsPressed(false)}>
-      <View style={styles.contentContainer}>
-        {icon && (
-          <Feather
-            name={icon.name}
-            size={icon.size || 20}
-            color={icon.color || getIconColor()}
-            style={[styles.icon]}
-          />
-        )}
-        <Text style={getTextStyles()}>{title}</Text>
-      </View>
-    </TouchableOpacity>
+    <View style={getContainerStyle()}>
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled}
+        activeOpacity={0.8}
+        onPressIn={() => setIsPressed(true)}
+        onPressOut={() => setIsPressed(false)}
+        style={styles.touchable}>
+        <View style={styles.contentContainer}>
+          {icon && (
+            <Feather
+              name={icon.name}
+              size={icon.size || 20}
+              color={icon.color || getIconColor()}
+              style={styles.icon}
+            />
+          )}
+          <Text style={getTextStyles()}>{title}</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
+  buttonWrapper: {
     width: '100%',
+    borderRadius: 9999,
+  },
+  touchable: {
     height: 46,
-    borderRadius: 25,
+    borderRadius: 50,
+    // paddingVertical: 12,
+    // paddingHorizontal: 16,
+    // borderRadius: 9999,
     justifyContent: 'center',
     alignItems: 'center',
-    alignContent: 'center',
+    width: '100%',
   },
   contentContainer: {
     flexDirection: 'row',

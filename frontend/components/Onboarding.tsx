@@ -16,7 +16,7 @@ import FullWidthButton from '@/components/FullWidthButton';
 import Welcome1 from '@/assets/images/Welcome1.png';
 import Welcome2 from '@/assets/images/Welcome2.png';
 import LogoHorizontal from '@/assets/images/drivebuddy-logo-name-horizontal.png';
-import DriveBuddyLogo from '@/assets/images/drivebuddy-logo-name.png';
+import {useTheme} from '@rneui/themed';
 import DriveBuddyLogoGif from '@/assets/images/drivebuddy-logo-animation.gif';
 
 import {LinearGradient} from 'expo-linear-gradient';
@@ -32,6 +32,7 @@ const {width, height} = Dimensions.get('window');
 const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
   const [onboardingStep, setOnboardingStep] = useState(1);
   const router = useRouter();
+  const {theme} = useTheme();
 
   const handleNext = () => {
     if (onboardingStep < 3) {
@@ -67,6 +68,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             <ImageBackground
               source={Welcome1 as ImageSourcePropType}
               style={styles.backgroundImage}
+              imageStyle={{top: 30}}
               resizeMode="cover">
               <View style={styles.overlay}>
                 <Image
@@ -91,6 +93,7 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             <ImageBackground
               source={Welcome2 as ImageSourcePropType}
               style={styles.backgroundImage}
+              imageStyle={{top: 30}}
               resizeMode="cover">
               <View style={styles.overlay}>
                 <Image
@@ -111,9 +114,9 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
             style={styles.finalSlide}
             key="slide3">
             <LinearGradient
-              colors={['#e9ecf9', '#fbfbfb', '#ffffff']}
+              colors={['#A9FFFF', '#fbfbfb', '#fbfbfb', '#ffffff']}
               style={StyleSheet.absoluteFill}>
-              <StatusBar translucent backgroundColor="#e9ecf9" style="dark" />
+              <StatusBar translucent backgroundColor="#A9FFFF" style="dark" />
               <SafeAreaView
                 style={{flex: 1, backgroundColor: 'transparent'}}
                 edges={['top', 'bottom', 'left', 'right']}>
@@ -125,18 +128,19 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
                       resizeMode="contain"
                     />
                   </View>
-
                   <Text style={styles.finalText}>Drive aware, get there!</Text>
                   <View style={styles.buttonContainer}>
                     <FullWidthButton
-                      title="Create Account"
+                      title="Create an Account"
                       type="primary"
                       onPress={handleCreateAccount}
                     />
                     <View style={{flexDirection: 'row', marginTop: 20, justifyContent: 'center'}}>
                       <Text>Already have an account? </Text>
                       <TouchableOpacity onPress={handleSignIn}>
-                        <Text style={{color: 'blue', fontWeight: 'bold'}}>Log In</Text>
+                        <Text style={{color: theme.colors.primary, fontWeight: 'bold'}}>
+                          Sign In
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -150,19 +154,16 @@ const Onboarding: React.FC<OnboardingProps> = ({callback}) => {
     }
   };
 
-  return onboardingStep === 3 ? (
-    <LinearGradient colors={['#e9ecf9', '#fbfbfb', '#ffffff']} style={styles.container}>
-      {renderStep()}
-      <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
-    </LinearGradient>
-  ) : (
+  return (
     <View style={styles.container}>
       {renderStep()}
       <StepsIndicator stepsNumber={3} currentStep={onboardingStep} />
-      <View style={styles.navigationContainer}>
-        <FullWidthButton title="Next" type="primary" onPress={handleNext} />
-        <FullWidthButton title="Skip" type="tertiary" onPress={() => setOnboardingStep(3)} />
-      </View>
+      {onboardingStep < 3 && (
+        <View style={styles.navigationContainer}>
+          <FullWidthButton title="Next" type="primary" onPress={handleNext} />
+          <FullWidthButton title="Skip" type="tertiary" onPress={() => setOnboardingStep(3)} />
+        </View>
+      )}
     </View>
   );
 };
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   },
   finalSlideContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
   },
   image: {
@@ -195,8 +196,8 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
+    fontFamily: 'Figtree-Bold',
     fontSize: 36,
-    fontWeight: 'bold',
     textAlign: 'left',
     alignSelf: 'flex-start',
     marginBottom: 10,
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoContainer: {
-    width: width / 2, // 1/2 of the screen width
+    width: width / 2, // 1/2.5 of the screen width
     aspectRatio: 1, // Maintain aspect ratio
     marginBottom: 20,
     // marginTop: 20,
@@ -220,47 +221,16 @@ const styles = StyleSheet.create({
     // marginBottom: 20,
   },
   finalText: {
-    fontSize: 64,
-    fontWeight: 'bold',
+    fontFamily: 'Figtree-Bold',
+    fontSize: 45,
     textAlign: 'center',
     marginBottom: 50,
     color: '#333',
+    marginHorizontal: 40,
   },
   buttonContainer: {
     width: '100%',
     paddingHorizontal: 20,
-  },
-  primaryButton: {
-    backgroundColor: '#4A80F0',
-    borderRadius: 12,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#4A80F0',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#4A80F0',
-    borderRadius: 12,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#4A80F0',
-    fontSize: 16,
-    fontWeight: '600',
   },
   navigationContainer: {
     // flexDirection: 'row',
@@ -270,24 +240,8 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 0,
     right: 0,
-  },
-  skipButton: {
-    padding: 10,
-  },
-  skipButtonText: {
-    color: '#666',
-    fontSize: 16,
-  },
-  navButton: {
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  navButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '500',
+    gap: 8,
+    marginBottom: 10,
   },
   backgroundImage: {
     flex: 1,
@@ -299,7 +253,7 @@ const styles = StyleSheet.create({
   overlay: {
     width: '100%',
     paddingHorizontal: 20,
-    marginTop: 30,
+    marginTop: 20,
     alignItems: 'flex-start',
   },
   logo: {

@@ -24,8 +24,10 @@ import auth from '@react-native-firebase/auth';
 import {useRouter} from 'expo-router';
 import FullWidthButton from '@/components/FullWidthButton';
 import {Input, Icon} from 'react-native-elements';
+import {useTheme} from '@rneui/themed';
 
 export default function ProfileScreen() {
+  const {theme} = useTheme();
   const {user} = useAuth();
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
@@ -436,7 +438,9 @@ export default function ProfileScreen() {
                 </View>
               ) : (
                 <View style={styles.profileInfoContainer}>
-                  <Text style={styles.nameText}>{driver.name}</Text>
+                  <Text style={[styles.nameText, {color: theme.colors.primary}]}>
+                    {driver.name}
+                  </Text>
 
                   <View style={styles.infoRow}>
                     <Text style={styles.label}>Company:</Text>
@@ -457,7 +461,9 @@ export default function ProfileScreen() {
                 </View>
               )}
               <View style={styles.buttonContainer}>
-                <FullWidthButton title="Sign out" type="tertiary" onPress={handleSignOut} />
+                {!editMode && (
+                  <FullWidthButton title="Sign out" type="tertiary" onPress={handleSignOut} />
+                )}
               </View>
             </View>
           </ScrollView>

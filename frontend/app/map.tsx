@@ -575,7 +575,7 @@ export const Map = forwardRef((props: Props, ref) => {
         // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
         setShowContinueDriving(true);
 
-        // ADDED OR UPDATED 01 APR: Slide Resume Driving button down
+        // ADDED OR UPDATED 02 APR: Slide Resume Driving button down
         resumeDrivingAnim.stopAnimation(() => {
           Animated.timing(resumeDrivingAnim, {
             toValue: 60,
@@ -608,6 +608,18 @@ export const Map = forwardRef((props: Props, ref) => {
     setLastModalAlertCount(alertCount);
     // Then close the modal
     setShowRestStopsModal(false);
+
+    // ADDED OR UPDATED 02 APR: Slide Resume Driving button down
+    setTimeout(() => {
+      resumeDrivingAnim.stopAnimation(() => {
+        Animated.timing(resumeDrivingAnim, {
+          toValue: 60,
+          duration: 400,
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 500);
+
     if (mapRef.current && deviceLocation) {
       mapRef.current.animateCamera(
         {center: deviceLocation, pitch: 0, heading: 0, zoom: 19},

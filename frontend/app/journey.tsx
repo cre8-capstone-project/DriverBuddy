@@ -1,5 +1,5 @@
 import React, {useCallback, useRef, useState, useEffect} from 'react';
-import {View, StyleSheet, Text, Image, ImageSourcePropType, AppState} from 'react-native';
+import {View, StyleSheet, Text, Image, ImageSourcePropType, AppState, Animated} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {CameraView} from '@/features/safety-alert/components/CameraView';
 import {Map} from '@/app/map';
@@ -49,6 +49,18 @@ export default function HomeScreen() {
     longitude: number;
     name: string;
   } | null>(null);
+
+  // Cocoy's Update: Animation for navContainer
+  const navSlideAnim = useRef(new Animated.Value(0)).current;
+
+  // Cocoy's Update: Function to hide/slide navContainer
+  const slideNav = (hide: boolean) => {
+    Animated.timing(navSlideAnim, {
+      toValue: hide ? 100 : 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  };
 
   useEffect(() => {
     console.log('[DEBUG] Journey component is mounted');
@@ -142,6 +154,7 @@ export default function HomeScreen() {
             setSelectedRestStop(station);
             setShowRestStopPanel(true);
           }}
+          onToggleNav={slideNav} // ADDED OR UPDATED 01 APR: Pass navContainer hide/unhide function
         />
       </View>
       <View
@@ -166,7 +179,8 @@ export default function HomeScreen() {
         />
       </View>
 
-      <View style={styles.navContainer}>
+      {/* Cocoy's Update: Wrap navContainer in animated view to hide/unhide */}
+      <Animated.View style={[styles.navContainer, {transform: [{translateY: navSlideAnim}]}]}>
         {/* Back Home Button */}
         {!driveModeStatus && !driveDestinationStatus && isFaceDetectionActive && (
           <BackButton onPress={toggleEndDialog} />
@@ -231,7 +245,7 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {showRestStopPanel && (
         <View style={styles.addRestStopPanelOverlay} pointerEvents="auto">

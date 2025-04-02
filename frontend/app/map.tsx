@@ -69,6 +69,7 @@ type Props = {
   onShowRestStopPanel?: (
     station: {latitude: number; longitude: number; name: string} | null,
   ) => void; // ADDED OR UPDATED 27 MAR: Callback to tell journey.tsx when to show AddRestStopPanel
+  onToggleNav?: (hide: boolean) => void; // // ADDED OR UPDATED 01 APR: Prop to toggle nav container in journey.tsx
 };
 
 // Save values temporarily so they can be used later even if the app is closed or reloaded
@@ -570,6 +571,11 @@ export const Map = forwardRef((props: Props, ref) => {
         // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
         setShowContinueDriving(true);
 
+        // ADDED OR UPDATED 01 APR: Hide navContainer in journey.tsx when rest stops are shown
+        if (props.onToggleNav) {
+          props.onToggleNav(true);
+        }
+
         setOperationStatus(true);
       } else {
         Alert.alert('No gas stations found nearby');
@@ -647,6 +653,11 @@ export const Map = forwardRef((props: Props, ref) => {
     setShowRestStopsButton(true);
 
     setOperationStatus(false);
+
+    // ADDED OR UPDATED 01 APR: Unhide navContainer in journey.tsx
+    if (props.onToggleNav) {
+      props.onToggleNav(false);
+    }
   };
 
   // Function to geocode a place name using Google Geocoding API
@@ -883,6 +894,16 @@ export const Map = forwardRef((props: Props, ref) => {
     setOperationStatus(false);
     Keyboard.dismiss();
   };
+
+  // ADDED OR UPDATED 01 APR: Add delay to ensure input is mounted before calling focus
+  // Fixes the keyboard not showing up when searching for a destination
+  useEffect(() => {
+    if (searchModalVisible && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current.focus();
+      }, 500);
+    }
+  }, [searchModalVisible]);
 
   // ADDED OR UPDATED 16 MAR: Close the destination card and zoom back to origin
   const closeDestinationCard = () => {

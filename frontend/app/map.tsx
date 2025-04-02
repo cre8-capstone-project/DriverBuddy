@@ -569,20 +569,25 @@ export const Map = forwardRef((props: Props, ref) => {
         setPrevAlertCount(alertCount);
         setDisableDrivingWatchPosition(true);
 
-        // ADDED OR UPDATED 26 MAR: Hide rest stops button
-        setShowRestStopsButton(false);
-
-        // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
-        setShowContinueDriving(true);
-
         // ADDED OR UPDATED 02 APR: Slide Resume Driving button down
         resumeDrivingAnim.stopAnimation(() => {
           Animated.timing(resumeDrivingAnim, {
             toValue: 60,
             duration: 400,
             useNativeDriver: true,
-          }).start();
+          }).start(({ finished }) => {
+            if (finished) {
+              // Hide the button AFTER the animation completes
+              setShowRestStopsButton(false);
+            }
+          });
         });
+
+        // ADDED OR UPDATED 26 MAR: Hide rest stops button
+        // setShowRestStopsButton(false);
+
+        // ADDED OR UPDATED 16 MAR: Display continue driving button after rest stops are shown
+        setShowContinueDriving(true);
 
         // ADDED OR UPDATED 01 APR: Hide navContainer in journey.tsx when rest stops are shown
         if (props.onToggleNav) {
@@ -1620,6 +1625,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '400',
     paddingLeft: 6,
+    marginHorizontal: 5,
   },
   // ADDED OR UPDATED 27 MAR: Override parent thumbnail scaling (miniWindowView scale of 0.25)
   mapThumbnailCrop: {

@@ -35,7 +35,7 @@ export const DRAWSINESS_ALERT_MESSAGE: Message[] = [
     sound: soundMap['3-beeps-mid-pitch.mp3'],
   },
   {
-    message: "Seems like you're getting sleepy. Please consider taking a quick break!",
+    message: "Seems like you're getting sleepy. Take a moment to recharge if needed!",
     voice: soundMap['message1-4.mp3'],
     sound: soundMap['3-beeps-mid-pitch.mp3'],
   },

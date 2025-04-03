@@ -5,6 +5,7 @@ import {Dimensions} from 'react-native';
 type SnackBarOption = {
   duration: number;
   position: number;
+  backgroundColor?: string; // Cocoy's Update: Option to change backgroundColor
 };
 
 export const useSnackBar = () => {
@@ -28,7 +29,7 @@ export const useSnackBar = () => {
       animation: true,
       hideOnPress: true,
       delay: 0,
-      backgroundColor: 'rgba(0, 0, 0, 1)',
+      backgroundColor: options.backgroundColor ?? 'rgba(0, 0, 0, 1)', // Cocoy's Update: Option to change backgroundColor
       textColor: 'white',
     });
   };

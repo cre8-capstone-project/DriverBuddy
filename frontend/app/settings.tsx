@@ -11,6 +11,7 @@ import theme from '@/components/Theme';
 import FullWidthButton from '@/components/FullWidthButton';
 import {useRouter} from 'expo-router';
 import {updateMapSettings} from '@/features/map/constants/settings';
+import {useSnackBar} from '@/components/SnackBar'; // Cocoy's Update: Function to display snackbar
 
 const restStopOptions = [
   {id: 1, label: 'Gas Stations'},
@@ -25,6 +26,7 @@ const alertSoundOptions = [
 
 const SettingsScreen = () => {
   const router = useRouter();
+  const {showSnackBar} = useSnackBar(); // Cocoy's Update: Function to display snackbar
   const [settings, setSettings] = useState({
     restStopTypes: [1],
     restStopCount: 3,
@@ -100,10 +102,25 @@ const SettingsScreen = () => {
         );
       }
 
-      Alert.alert('Success', 'Settings updated successfully');
+      // Alert.alert('Success', 'Settings updated successfully');
+
+      // Cocoy's Update: Use snackbar instead of alert
+      showSnackBar('Settings updated successfully', {
+        position: 70,
+        backgroundColor: '#008000',
+        duration: 3000,
+      });
+
       setInitialSettings(settings);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update settings');
+      // Alert.alert('Error', 'Failed to update settings');
+
+      // Cocoy's Update: Use snackbar instead of alert
+      showSnackBar('Failed to update settings', {
+        position: 70,
+        backgroundColor: '#FF0000',
+        duration: 3000,
+      });
     }
   };
 
@@ -226,6 +243,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: 20,
     gap: 20,
+    marginTop: 40,
   },
   menuButtonContainer: {
     flexDirection: 'row',

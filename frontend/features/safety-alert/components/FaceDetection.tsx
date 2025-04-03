@@ -7,10 +7,10 @@ import {AlertingMessage} from '@/features/safety-alert/components/AlertingMessag
 import {FaceDetectingLabel} from '@/features/safety-alert/components/FaceDetectingLabel';
 import {useFaceDetectionContext} from '@/contexts/FaceDetectionProvider';
 import {Icon} from '@rneui/themed';
-import {BLINK_MONITORING_DURATION_WINDOW} from '@/features/safety-alert/constants/thresholds';
 import type {ViewModeType} from '@/types/ViewModeType';
 
 const eyeIcon = require('@/assets/images/icon_detecting.png');
+const faceIcon = require('@/assets/images/icon_face.png');
 const {width} = Dimensions.get('window');
 
 const DEBUG_MODE = true;
@@ -21,7 +21,7 @@ type Props = {
 };
 
 const FaceDetection = ({device, viewMode}: Props) => {
-  const {alertCount, alertStatus, message} = useFaceDetectionContext();
+  const {alertCount, alertStatus} = useFaceDetectionContext();
 
   useEffect(() => {
     console.log('[DEBUG] FaceDetection component is mounted');
@@ -37,8 +37,6 @@ const FaceDetection = ({device, viewMode}: Props) => {
     leftEyeStatus,
     rightEyeStatus,
     pitchAngleStatus,
-    eyeBlinkRate1,
-    eyeBlinkRate2,
   } = useFaceDetection();
 
   return (
@@ -74,20 +72,37 @@ const FaceDetection = ({device, viewMode}: Props) => {
 
       {DEBUG_MODE && (
         <View style={styles.debugContainer}>
-          <Text style={[styles.debugText, {color: alertStatus ? '#FF4B4B' : 'lightgreen'}]}>
-            ----- Debug Mode -----{'\n'}
-            Left Eye={leftEyeStatus ? 'closed' : 'open'}
-            {'\n'}
-            Right Eye={rightEyeStatus ? 'closed' : 'open'}
-            {'\n'}
-            Eye Blink Rate1: {eyeBlinkRate1}/{BLINK_MONITORING_DURATION_WINDOW / 1000}sec
-            {'\n'}
-            Eye Blink Rate2: {eyeBlinkRate2}/{BLINK_MONITORING_DURATION_WINDOW / 1000}sec
-            {'\n'}
-            Face Direction: {pitchAngleStatus}
-            {'\n'}
-            Alert: {message}
-          </Text>
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Icon name="visibility" color="white" size={16} />
+              <Text style={[styles.debugText, {color: 'white'}]}>Eyes</Text>
+            </View>
+            <Text style={{fontSize: 20, color: 'white'}}>
+              {leftEyeStatus || rightEyeStatus ? 'Closed' : 'Open'}
+            </Text>
+          </View>
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              {/* <Icon name="child-care" color="white" size={16} /> */}
+              <Image source={faceIcon} style={[{width: 16, height: 15.22}]} />
+              <Text style={[styles.debugText, {color: 'white'}]}>Face</Text>
+            </View>
+            <Text style={{fontSize: 20, color: 'white'}}>
+              {pitchAngleStatus.charAt(0).toUpperCase() + pitchAngleStatus.slice(1)}
+            </Text>
+          </View>
         </View>
       )}
     </View>
@@ -106,7 +121,7 @@ const styles = StyleSheet.create({
     height: 85,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(10, 10, 10, 0.6)',
   },
   alertText: {
     color: 'white',
@@ -119,13 +134,21 @@ const styles = StyleSheet.create({
   },
   debugContainer: {
     position: 'absolute',
-    top: '5%',
-    left: '50%',
+    flexDirection: 'column',
+    gap: 20,
+    top: 10,
+    right: 10,
+    borderRadius: 15,
+    height: 150,
+    width: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(10, 10, 10, 0.6)',
   },
   debugText: {
     color: 'lightgreen',
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 16,
+    // fontWeight: 'bold',
   },
 });
 

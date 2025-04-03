@@ -297,8 +297,10 @@ export const Map = forwardRef((props: Props, ref) => {
 
     // ADDED OR UPDATED 19 MAR: Switch to map view when destination is selected
     if (destination) {
-      setViewMode('mapView');
-      setViewModeContext('mapView');
+      setTimeout(() => {
+        setViewMode('mapView');
+        setViewModeContext('mapView');
+      }, 500); // ADDED OR UPDATED 03 APR: Add delay before switching to mapView
     }
   }, [destination, drivingMode, setViewMode, setViewModeContext]);
 
@@ -1049,7 +1051,7 @@ export const Map = forwardRef((props: Props, ref) => {
           edgePadding: {top: 200, right: 20, bottom: 250, left: 20},
           animated: true,
         });
-      }, 1000);
+      }, 2000);
     }
   };
 

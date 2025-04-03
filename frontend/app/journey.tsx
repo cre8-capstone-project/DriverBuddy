@@ -320,6 +320,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   alertText: {
+    fontSize: 18,
     color: 'white',
   },
   alertCountText: {

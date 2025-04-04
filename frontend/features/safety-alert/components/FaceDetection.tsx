@@ -83,7 +83,7 @@ const FaceDetection = ({device, viewMode}: Props) => {
               <Icon name="visibility" color="white" size={16} />
               <Text style={[styles.debugText, {color: 'white'}]}>Eyes</Text>
             </View>
-            <Text style={{fontSize: 20, color: 'white'}}>
+            <Text style={{fontSize: 20, color: 'white', textAlign: 'center'}}>
               {leftEyeStatus || rightEyeStatus ? 'Closed' : 'Open'}
             </Text>
           </View>
@@ -99,7 +99,7 @@ const FaceDetection = ({device, viewMode}: Props) => {
               <Image source={faceIcon} style={[{width: 16, height: 15.22}]} />
               <Text style={[styles.debugText, {color: 'white'}]}>Face</Text>
             </View>
-            <Text style={{fontSize: 20, color: 'white'}}>
+            <Text style={{fontSize: 20, color: 'white', textAlign: 'center'}}>
               {pitchAngleStatus.charAt(0).toUpperCase() + pitchAngleStatus.slice(1)}
             </Text>
           </View>

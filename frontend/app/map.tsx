@@ -330,7 +330,7 @@ export const Map = forwardRef((props: Props, ref) => {
       const currentLocation = deviceLocation || origin; // UPDATED 04 MAR: If deviceLocation is not ready, fallback to origin
       if (currentLocation) {
         mapRef.current.animateCamera(
-          {center: currentLocation, pitch: 45, heading: 0, zoom: 19, altitude: 150},
+          {center: currentLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
           {duration: 1000},
         );
       }
@@ -356,7 +356,7 @@ export const Map = forwardRef((props: Props, ref) => {
           center: deviceLocation,
           pitch: 0,
           heading: 0,
-          zoom: 19,
+          zoom: 18,
         },
         {duration: 1000},
       );
@@ -629,7 +629,7 @@ export const Map = forwardRef((props: Props, ref) => {
 
     if (mapRef.current && deviceLocation) {
       mapRef.current.animateCamera(
-        {center: deviceLocation, pitch: 0, heading: 0, zoom: 19},
+        {center: deviceLocation, pitch: 0, heading: 0, zoom: 18},
         {duration: 1000},
       );
     }
@@ -674,7 +674,7 @@ export const Map = forwardRef((props: Props, ref) => {
     const currentLocation = deviceLocation || origin;
     if (mapRef.current && currentLocation) {
       mapRef.current.animateCamera(
-        {center: currentLocation, pitch: 45, heading: 0, zoom: 19, altitude: 150},
+        {center: currentLocation, pitch: 45, heading: 0, zoom: 18, altitude: 150},
         {duration: 1000},
       );
     }
@@ -828,7 +828,7 @@ export const Map = forwardRef((props: Props, ref) => {
                   center: {latitude, longitude},
                   pitch: 45, // Slightly angled view
                   heading: heading || 0,
-                  zoom: 19, // Adjust zoom level as needed
+                  zoom: 18, // Adjust zoom level as needed
                   altitude: 150, // Added altitude to support pitch animation
                 },
                 {duration: 1000},
@@ -958,7 +958,7 @@ export const Map = forwardRef((props: Props, ref) => {
           center: origin,
           pitch: 0,
           heading: 0,
-          zoom: 19,
+          zoom: 18,
         },
         {duration: 1000},
       );

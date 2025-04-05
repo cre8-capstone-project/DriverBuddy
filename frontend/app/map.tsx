@@ -28,6 +28,7 @@ import {getSettings} from '@/services/SettingsService';
 import {usePlaySound} from '@/hooks/usePlaySound';
 import {INSTRUCTION_MESSAGE} from '@/features/safety-alert/constants/messages';
 import AddRestStopPanel from '@/features/map/components/AddRestStopPanel'; // ADDED OR UPDATED 27 MAR: Import AddRestStopPanel
+import {LinearGradient} from 'expo-linear-gradient'; // ADDED OR UPDATED 04 APR: Resume driving button
 
 // Get API key from .env
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_APIKEY ?? '';
@@ -575,7 +576,7 @@ export const Map = forwardRef((props: Props, ref) => {
             toValue: 60,
             duration: 400,
             useNativeDriver: true,
-          }).start(({ finished }) => {
+          }).start(({finished}) => {
             if (finished) {
               // Hide the button AFTER the animation completes
               setShowRestStopsButton(false);
@@ -1164,7 +1165,7 @@ export const Map = forwardRef((props: Props, ref) => {
             {transform: [{translateY: resumeDrivingAnim}]},
           ]}>
           <TouchableOpacity style={styles.nearbyStopsButton} onPress={handleNearbyStops}>
-            <Icon name="location-pin" type="material" size={20} />
+            <Icon name="location-pin" type="material" size={24} />
             <Text style={styles.nearbyStopsButtonText}>Show Rest Stops</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -1178,9 +1179,15 @@ export const Map = forwardRef((props: Props, ref) => {
             styles.continueDrivingButtonContainer,
             {transform: [{translateY: resumeDrivingAnim}]},
           ]}>
-          <TouchableOpacity style={styles.continueDrivingButton} onPress={handleContinueDriving}>
-            <Icon name="directions-car" type="material" size={20} />
-            <Text style={styles.continueDrivingButtonText}>Resume Driving</Text>
+          <TouchableOpacity onPress={handleContinueDriving}>
+            <LinearGradient
+              colors={['rgba(0, 255, 255, 1)', 'rgba(30, 58, 138, 1)']}
+              start={{x: 0, y: 0}}
+              end={{x: 1, y: 1}}
+              style={styles.continueDrivingButton}>
+              <Icon name="directions-car" type="material" size={24} color="white" />
+              <Text style={styles.continueDrivingButtonText}>Resume Driving</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -1484,7 +1491,7 @@ const styles = StyleSheet.create({
   // UPDATED 11 MAR: Nearby Stops button container style
   nearbyStopsButtonContainer: {
     position: 'absolute',
-    bottom: 108,
+    bottom: 114,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -1504,10 +1511,11 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
+    height: 64,
   },
   nearbyStopsButtonText: {
-    fontSize: 17,
-    fontWeight: '400',
+    fontSize: 18,
+    fontWeight: '500',
     paddingLeft: 6,
   },
 
@@ -1600,7 +1608,7 @@ const styles = StyleSheet.create({
   // ADDED OR UPDATED 16 MAR: Continue driving button
   continueDrivingButtonContainer: {
     position: 'absolute',
-    bottom: 108,
+    bottom: 114,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -1620,12 +1628,14 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
+    height: 64,
   },
   continueDrivingButtonText: {
-    fontSize: 17,
-    fontWeight: '400',
+    fontSize: 18,
+    fontWeight: '500',
     paddingLeft: 6,
     marginHorizontal: 5,
+    color: 'white',
   },
   // ADDED OR UPDATED 27 MAR: Override parent thumbnail scaling (miniWindowView scale of 0.25)
   mapThumbnailCrop: {

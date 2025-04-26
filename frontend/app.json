@@ -24,7 +24,7 @@
       "bundleIdentifier": "com.cre8.DriveBuddy",
       "googleServicesFile": "./GoogleService-Info.plist",
       "config": {
-        "googleMapsApiKey": "AIzaSyDIAo1tsrhW48a34z8OsWOdMrjsQS9LAt0"
+        "googleMapsApiKey": ""
       }
     },
     "android": {
@@ -42,7 +42,7 @@
       "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyDIAo1tsrhW48a34z8OsWOdMrjsQS9LAt0"
+          "apiKey": ""
         }
       }
     },
